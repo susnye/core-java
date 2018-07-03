@@ -33,283 +33,292 @@ import org.hibernate.exception.ConstraintViolationException;
 
 public class DatabaseManager {
 
-  private static DatabaseManager instance;
-  private static SessionFactory sessionFactory;
-  private static TypeSafeProperties prop;
-  private static String dbAddress;
-  private static String dbUser;
-  private static String dbPassword;
-  private static final Logger log = Logger.getLogger(DatabaseManager.class.getName());
+    private static DatabaseManager instance;
+    private static SessionFactory sessionFactory;
+    private static TypeSafeProperties prop;
+    private static String dbAddress;
+    private static String dbUser;
+    private static String dbPassword;
+    private static final Logger log = Logger.getLogger(DatabaseManager.class.getName());
 
-  static {
-    if (getProp().containsKey("db_address") || getProp().containsKey("log4j.appender.DB.URL")) {
-      if (getProp().containsKey("db_address")) {
-        dbAddress = getProp().getProperty("db_address");
-        dbUser = getProp().getProperty("db_user");
-        dbPassword = getProp().getProperty("db_password");
-      } else {
-        dbAddress = getProp().getProperty("log4j.appender.DB.URL", "jdbc:mysql://127.0.0.1:3306/log");
-        dbUser = getProp().getProperty("log4j.appender.DB.user", "root");
-        dbPassword = getProp().getProperty("log4j.appender.DB.password", "root");
-      }
+    static {
+        if (getProp().containsKey("db_address") || getProp().containsKey("log4j.appender.DB.URL")) {
+            if (getProp().containsKey("db_address")) {
+                dbAddress = getProp().getProperty("db_address");
+                dbUser = getProp().getProperty("db_user");
+                dbPassword = getProp().getProperty("db_password");
+            } else {
+                dbAddress = getProp().getProperty("log4j.appender.DB.URL", "jdbc:mysql://127.0.0.1:3306/log");
+                dbUser = getProp().getProperty("log4j.appender.DB.user", "root");
+                dbPassword = getProp().getProperty("log4j.appender.DB.password", "root");
+            }
 
-      try {
+            try {
+                if (sessionFactory == null) {
+                    Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress)
+                            .setProperty("hibernate.connection.username", dbUser)
+                            .setProperty("hibernate.connection.password", dbPassword);
+                    sessionFactory = configuration.buildSessionFactory();
+                }
+            } catch (Exception e) {
+                if (!prop.containsKey("db_address")) {
+                    e.printStackTrace();
+                    System.out.println("Database connection could not be established, logging may not work! Check log4j.properties!");
+                    Logger.getRootLogger().setLevel(Level.OFF);
+                } else {
+                    throw new ServiceConfigurationError("Database connection could not be established, check app.properties!", e);
+                }
+            }
+        }
+    }
+
+    private DatabaseManager() {
+    }
+
+    public static void init() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+    }
+
+    public static DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
+    }
+
+    public static void closeSessionFactory() {
+        if (sessionFactory != null) {
+            sessionFactory.close();
+        }
+        instance = null;
+    }
+
+    private synchronized static TypeSafeProperties getProp() {
+        try {
+            if (prop == null) {
+                prop = new TypeSafeProperties();
+                File file;
+                if (new File("app.properties").exists()) {
+                    file = new File("app.properties");
+                } else {
+                    file = new File("config" + File.separator + "app.properties");
+                }
+                FileInputStream inputStream = new FileInputStream(file);
+                prop.load(inputStream);
+
+                if (!prop.containsKey("db_address")) {
+                    if (new File("log4j.properties").exists()) {
+                        file = new File("log4j.properties");
+                    } else {
+                        file = new File("config" + File.separator + "log4j.properties");
+                    }
+                    inputStream = new FileInputStream(file);
+                    prop.load(inputStream);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            throw new ServiceConfigurationError("App.properties file not found, make sure you have the correct working directory set! (directory where "
+                    + "the config folder can be found)", ex);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return prop;
+    }
+
+    public <T> T get(Class<T> queryClass, int id) {
+        T object;
+        Transaction transaction = null;
+
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            object = session.get(queryClass, id);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+
+        return object;
+    }
+
+    private SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
-          Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress)
-                                                           .setProperty("hibernate.connection.username", dbUser)
-                                                           .setProperty("hibernate.connection.password", dbPassword);
-          sessionFactory = configuration.buildSessionFactory();
+            Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress)
+                    .setProperty("hibernate.connection.username", dbUser)
+                    .setProperty("hibernate.connection.password", dbPassword);
+            sessionFactory = configuration.buildSessionFactory();
         }
-      } catch (Exception e) {
-        if (!prop.containsKey("db_address")) {
-          e.printStackTrace();
-          System.out.println("Database connection could not be established, logging may not work! Check log4j.properties!");
-          Logger.getRootLogger().setLevel(Level.OFF);
-        } else {
-          throw new ServiceConfigurationError("Database connection could not be established, check app.properties!", e);
+        return sessionFactory;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<T> queryClass, Map<String, Object> restrictionMap) {
+        T object;
+        Transaction transaction = null;
+
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Criteria criteria = session.createCriteria(queryClass);
+            if (restrictionMap != null && !restrictionMap.isEmpty()) {
+                for (Entry<String, Object> entry : restrictionMap.entrySet()) {
+                    criteria.add(Restrictions.eq(entry.getKey(), entry.getValue()));
+                }
+            }
+            object = (T) criteria.uniqueResult();
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("get throws exception: " + e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
-      }
+
+        return object;
     }
-  }
 
-  private DatabaseManager() {
-  }
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getAll(Class<T> queryClass, Map<String, Object> restrictionMap) {
+        List<T> retrievedList;
+        Transaction transaction = null;
 
-  public static void init() {
-    if (instance == null) {
-      instance = new DatabaseManager();
-    }
-  }
-
-  public static DatabaseManager getInstance() {
-    if (instance == null) {
-      instance = new DatabaseManager();
-    }
-    return instance;
-  }
-
-  public static void closeSessionFactory() {
-    if (sessionFactory != null) {
-      sessionFactory.close();
-    }
-    instance = null;
-  }
-
-  private synchronized static TypeSafeProperties getProp() {
-    try {
-      if (prop == null) {
-        prop = new TypeSafeProperties();
-        File file = new File("config" + File.separator + "app.properties");
-        FileInputStream inputStream = new FileInputStream(file);
-        prop.load(inputStream);
-
-        if (!prop.containsKey("db_address")) {
-          file = new File("config" + File.separator + "log4j.properties");
-          inputStream = new FileInputStream(file);
-          prop.load(inputStream);
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Criteria criteria = session.createCriteria(queryClass);
+            if (restrictionMap != null && !restrictionMap.isEmpty()) {
+                for (Entry<String, Object> entry : restrictionMap.entrySet()) {
+                    criteria.add(Restrictions.eq(entry.getKey(), entry.getValue()));
+                }
+            }
+            retrievedList = (List<T>) criteria.list();
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getAll throws exception: " + e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
-      }
-    } catch (FileNotFoundException ex) {
-      throw new ServiceConfigurationError("App.properties file not found, make sure you have the correct working directory set! (directory where "
-                                              + "the config folder can be found)", ex);
-    } catch (Exception ex) {
-      ex.printStackTrace();
+
+        return retrievedList;
     }
 
-    return prop;
-  }
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getAllOfEither(Class<T> queryClass, Map<String, Object> restrictionMap) {
+        List<T> retrievedList;
+        Transaction transaction = null;
 
-  public <T> T get(Class<T> queryClass, int id) {
-    T object;
-    Transaction transaction = null;
-
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      object = session.get(queryClass, id);
-      transaction.commit();
-    } catch (Exception e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
-    }
-
-    return object;
-  }
-
-  private SessionFactory getSessionFactory() {
-    if (sessionFactory == null) {
-      Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress)
-                                                       .setProperty("hibernate.connection.username", dbUser)
-                                                       .setProperty("hibernate.connection.password", dbPassword);
-      sessionFactory = configuration.buildSessionFactory();
-    }
-    return sessionFactory;
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T> T get(Class<T> queryClass, Map<String, Object> restrictionMap) {
-    T object;
-    Transaction transaction = null;
-
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      Criteria criteria = session.createCriteria(queryClass);
-      if (restrictionMap != null && !restrictionMap.isEmpty()) {
-        for (Entry<String, Object> entry : restrictionMap.entrySet()) {
-          criteria.add(Restrictions.eq(entry.getKey(), entry.getValue()));
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Criteria criteria = session.createCriteria(queryClass);
+            if (restrictionMap != null && !restrictionMap.isEmpty()) {
+                Disjunction disjunction = Restrictions.disjunction();
+                for (Entry<String, Object> entry : restrictionMap.entrySet()) {
+                    disjunction.add(Restrictions.eq(entry.getKey(), entry.getValue()));
+                }
+                criteria.add(disjunction);
+            }
+            retrievedList = (List<T>) criteria.list();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
-      }
-      object = (T) criteria.uniqueResult();
-      transaction.commit();
-    } catch (Exception e) {
-      e.printStackTrace();
-      log.error("get throws exception: " + e.getMessage());
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
+
+        return retrievedList;
     }
 
-    return object;
-  }
 
-  @SuppressWarnings("unchecked")
-  public <T> List<T> getAll(Class<T> queryClass, Map<String, Object> restrictionMap) {
-    List<T> retrievedList;
-    Transaction transaction = null;
+    public <T> T save(T object) {
+        Transaction transaction = null;
 
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      Criteria criteria = session.createCriteria(queryClass);
-      if (restrictionMap != null && !restrictionMap.isEmpty()) {
-        for (Entry<String, Object> entry : restrictionMap.entrySet()) {
-          criteria.add(Restrictions.eq(entry.getKey(), entry.getValue()));
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            session.save(object);
+            transaction.commit();
+        } catch (ConstraintViolationException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            log.error("DatabaseManager:save throws DuplicateEntryException");
+            throw new DuplicateEntryException(
+                    "There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
+                    Status.BAD_REQUEST.getStatusCode(), e);
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
-      }
-      retrievedList = (List<T>) criteria.list();
-      transaction.commit();
-    } catch (Exception e) {
-      e.printStackTrace();
-      log.error("getAll throws exception: " + e.getMessage());
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
+
+        return object;
     }
 
-    return retrievedList;
-  }
 
-  @SuppressWarnings("unchecked")
-  public <T> List<T> getAllOfEither(Class<T> queryClass, Map<String, Object> restrictionMap) {
-    List<T> retrievedList;
-    Transaction transaction = null;
+    public <T> T merge(T object) {
+        Transaction transaction = null;
 
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      Criteria criteria = session.createCriteria(queryClass);
-      if (restrictionMap != null && !restrictionMap.isEmpty()) {
-        Disjunction disjunction = Restrictions.disjunction();
-        for (Entry<String, Object> entry : restrictionMap.entrySet()) {
-          disjunction.add(Restrictions.eq(entry.getKey(), entry.getValue()));
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            session.merge(object);
+            transaction.commit();
+        } catch (ConstraintViolationException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            log.error("DatabaseManager:merge throws DuplicateEntryException");
+            throw new DuplicateEntryException(
+                    "There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
+                    Status.BAD_REQUEST.getStatusCode(), e);
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
-        criteria.add(disjunction);
-      }
-      retrievedList = (List<T>) criteria.list();
-      transaction.commit();
-    } catch (Exception e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
+
+        return object;
     }
 
-    return retrievedList;
-  }
+    public <T> void delete(T object) {
+        Transaction transaction = null;
 
-
-  public <T> T save(T object) {
-    Transaction transaction = null;
-
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      session.save(object);
-      transaction.commit();
-    } catch (ConstraintViolationException e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      log.error("DatabaseManager:save throws DuplicateEntryException");
-      throw new DuplicateEntryException(
-          "There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
-          Status.BAD_REQUEST.getStatusCode(), e);
-    } catch (Exception e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
+        try (Session session = getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            session.delete(object);
+            transaction.commit();
+        } catch (ConstraintViolationException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            log.error("DatabaseManager:delete throws ConstraintViolationException");
+            throw new DuplicateEntryException(
+                    "There is a reference to this object in another table, which prevents the delete operation. (" + object.getClass() + ")",
+                    Status.BAD_REQUEST.getStatusCode(), e);
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        }
     }
 
-    return object;
-  }
-
-
-  public <T> T merge(T object) {
-    Transaction transaction = null;
-
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      session.merge(object);
-      transaction.commit();
-    } catch (ConstraintViolationException e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      log.error("DatabaseManager:merge throws DuplicateEntryException");
-      throw new DuplicateEntryException(
-          "There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
-          Status.BAD_REQUEST.getStatusCode(), e);
-    } catch (Exception e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
+    // NOTE this only works well on tables which dont have any connection to any other tables (HQL does not do cascading)
+    @SuppressWarnings("unused")
+    public void deleteAll(String tableName) {
+        Session session = getSessionFactory().openSession();
+        String stringQuery = "DELETE FROM " + tableName;
+        Query query = session.createQuery(stringQuery);
+        query.executeUpdate();
     }
-
-    return object;
-  }
-
-  public <T> void delete(T object) {
-    Transaction transaction = null;
-
-    try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      session.delete(object);
-      transaction.commit();
-    } catch (ConstraintViolationException e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      log.error("DatabaseManager:delete throws ConstraintViolationException");
-      throw new DuplicateEntryException(
-          "There is a reference to this object in another table, which prevents the delete operation. (" + object.getClass() + ")",
-          Status.BAD_REQUEST.getStatusCode(), e);
-    } catch (Exception e) {
-      if (transaction != null) {
-        transaction.rollback();
-      }
-      throw e;
-    }
-  }
-
-  // NOTE this only works well on tables which dont have any connection to any other tables (HQL does not do cascading)
-  @SuppressWarnings("unused")
-  public void deleteAll(String tableName) {
-    Session session = getSessionFactory().openSession();
-    String stringQuery = "DELETE FROM " + tableName;
-    Query query = session.createQuery(stringQuery);
-    query.executeUpdate();
-  }
 
 }

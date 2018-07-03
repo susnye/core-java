@@ -64,7 +64,11 @@ public abstract class ArrowheadMain {
   private static final Logger log = Logger.getLogger(ArrowheadMain.class.getName());
 
   static {
-    PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    if (new File("log4j.properties").exists()) {
+      PropertyConfigurator.configure("log4j.properties");
+    } else {
+      PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    }
   }
 
   protected void init(CoreSystem coreSystem, String[] args, Set<Class<?>> classes, String[] packages) {
