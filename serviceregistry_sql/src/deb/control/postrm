@@ -23,7 +23,10 @@ SERVICE_NAME="service-registry-sql"
 
 case "$1" in
     purge)
-        rm /etc/arrowhead/${SERVICE_NAME}/app.properties /etc/arrowhead/${SERVICE_NAME}/log4j.properties
+        rm -f \
+            /etc/arrowhead/${SERVICE_NAME}/app.properties \
+            /etc/arrowhead/${SERVICE_NAME}/log4j.properties \
+            /etc/arrowhead/${SERVICE_NAME}/keystore.p12
         rmdir /etc/arrowhead/${SERVICE_NAME} 2>/dev/null || true
         rmdir /etc/arrowhead 2>/dev/null || true
     ;;

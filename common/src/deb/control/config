@@ -54,6 +54,7 @@ if [ -z "$RET" ]; then
 fi
 
 db_get arrowhead-common/mysql_password; PASS_DB=$RET
+mysql -u root < /usr/share/arrowhead/scripts/create_common_db_empty.sql
 mysql -u root < /usr/share/arrowhead/scripts/create_log_db_empty.sql
 if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
     mysql -e "CREATE USER arrowhead@localhost IDENTIFIED BY '${PASS_DB}';"

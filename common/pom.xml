@@ -180,6 +180,12 @@
                   <dst>/usr/share/arrowhead/scripts/create_log_db_empty.sql</dst>
                 </data>
 
+                <data>
+                  <type>file</type>
+                  <src>${project.basedir}/src/deb/create_common_db_empty.sql</src>
+                  <dst>/usr/share/arrowhead/scripts/create_common_db_empty.sql</dst>
+                </data>
+
               </dataSet>
             </configuration>
           </execution>

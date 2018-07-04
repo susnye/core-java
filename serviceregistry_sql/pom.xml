@@ -168,18 +168,6 @@
                   <dst>/usr/share/arrowhead/scripts/create_service_registry_db_empty.sql</dst>
                 </data>
 
-                <data>
-                  <type>link</type>
-                  <symlink>true</symlink>
-                  <linkName>${project.build.finalName}.jar</linkName>
-                  <linkTarget>/usr/share/arrowhead/systems/${project.build.finalName}.jar</linkTarget>
-                  <mapper>
-                    <type>perm</type>
-                    <prefix>/etc/arrowhead/systems.d</prefix>
-                    <user>arrowhead</user>
-                  </mapper>
-                </data>
-
               </dataSet>
             </configuration>
           </execution>

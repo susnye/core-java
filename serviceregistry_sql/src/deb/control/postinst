@@ -28,18 +28,19 @@ case "$1" in
         echo "Configuring MySQL database..." >&2
         mysql -u root < ${MYSQL_SCRIPT}
 
-        if [ ! -d "/etc/arrowhead/service-registry-sql" ]; then
+        if [ ! -d "/etc/arrowhead/${SERVICE_NAME}" ]; then
             mkdir -p /etc/arrowhead/${SERVICE_NAME}
         fi
 
         db_get arrowhead-common/mysql_password; PASS_DB=$RET
         db_get arrowhead-common/cert_password; PASS_CERT=$RET
+        db_get arrowhead-common/cloudname; CLOUDNAME=$RET
+        db_get arrowhead-common/operator; OPERATOR=$RET
+        db_get arrowhead-common/company; COMPANY=$RET
+        db_get arrowhead-common/organisation; ORGANISATION=$RET
+        db_get arrowhead-common/country; COUNTRY=$RET
 
-        if ! keytool -list \
-            -alias ${SERVICE_NAME} \
-            -keystore /etc/arrowhead/cert/keystore.p12 \
-            -storepass ${PASS_CERT} 2>&1 >/dev/null; then
-
+        if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/keystore.p12" ]; then
             keytool -genkeypair \
                 -alias ${SERVICE_NAME} \
                 -keyalg RSA \
@@ -47,27 +48,42 @@ case "$1" in
                 -dname "CN=${SERVICE_NAME}.${CLOUDNAME}.${OPERATOR}.arrowhead.eu, OU=${ORGANISATION}, O=${COMPANY}, C=${COUNTRY}" \
                 -validity 3650 \
                 -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/cert/keystore.p12 \
+                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
                 -storepass ${PASS_CERT} \
                 -storetype PKCS12
+
+            keytool -export \
+                -alias cloud \
+                -storepass ${PASS_CERT} \
+                -keystore /etc/arrowhead/cert/keystore.p12 \
+            | keytool -import \
+                -trustcacerts \
+                -alias cloud \
+                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
+                -keypass ${PASS_CERT} \
+                -storepass ${PASS_CERT} \
+                -storetype PKCS12 \
+                -noprompt
 
             keytool -certreq \
                 -alias ${SERVICE_NAME} \
                 -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/cert/keystore.p12 \
+                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
                 -storepass ${PASS_CERT} \
-                | keytool -gencert \
+            | keytool -gencert \
                 -alias cloud \
                 -keypass ${PASS_CERT} \
                 -keystore /etc/arrowhead/cert/keystore.p12 \
                 -storepass ${PASS_CERT} \
-                | keytool -importcert \
+            | keytool -importcert \
                 -alias ${SERVICE_NAME} \
                 -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/cert/keystore.p12 \
+                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
                 -storepass ${PASS_CERT} \
                 -noprompt
 
+            chown :arrowhead /etc/arrowhead/${SERVICE_NAME}/keystore.p12
+            chmod 640 /etc/arrowhead/${SERVICE_NAME}/keystore.p12
         fi
 
         if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/app.properties" ]; then
@@ -82,7 +98,7 @@ db_address=jdbc:mysql://127.0.0.1:3306/arrowhead?useSSL=false
 ##########################################
 
 # Certificate related paths and passwords
-keystore=/etc/arrowhead/cert/keystore.p12
+keystore=/etc/arrowhead/${SERVICE_NAME}/keystore.p12
 keystorepass=${PASS_CERT}
 keypass=${PASS_CERT}
 truststore=/etc/arrowhead/cert/truststore.p12
