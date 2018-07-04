@@ -169,6 +169,7 @@ public abstract class ArrowheadMain {
     String keyPass = props.getProperty("keypass");
     String truststorePath = props.getProperty("truststore");
     String truststorePass = props.getProperty("truststorepass");
+    String alias = props.getProperty("alias");
 
     SSLContextConfigurator sslCon = new SSLContextConfigurator();
     sslCon.setKeyStoreFile(keystorePath);
@@ -185,7 +186,7 @@ public abstract class ArrowheadMain {
     Utility.setSSLContext(sslContext);
 
     KeyStore keyStore = SecurityUtils.loadKeyStore(keystorePath, keystorePass);
-    X509Certificate serverCert = SecurityUtils.getFirstCertFromKeyStore(keyStore);
+    X509Certificate serverCert = alias != null ? SecurityUtils.getCertAliasFromKeyStore(keyStore, alias) : SecurityUtils.getFirstCertFromKeyStore(keyStore);
     base64PublicKey = Base64.getEncoder().encodeToString(serverCert.getPublicKey().getEncoded());
     System.out.println("Server PublicKey Base64: " + base64PublicKey);
     String serverCN = SecurityUtils.getCertCNFromSubject(serverCert.getSubjectDN().getName());
