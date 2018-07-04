@@ -255,7 +255,12 @@ public class DatabaseManager {
                     Status.BAD_REQUEST.getStatusCode(), e);
         } catch (Exception e) {
             if (transaction != null) {
-                transaction.rollback();
+                try {
+                    transaction.rollback();
+                } catch (Exception e1) {
+                    e.printStackTrace();
+                    throw e1;
+                }
             }
             throw e;
         }

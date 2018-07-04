@@ -195,6 +195,7 @@ public abstract class ArrowheadMain {
           "Server CN ( " + serverCN + ") is not compliant with the Arrowhead cert structure, since it does not have 5 parts, or does not end with"
               + " \"arrowhead.eu.\"", Status.UNAUTHORIZED.getStatusCode());
     }
+    System.out.println("Certificate of the secure server: " + serverCN);
     log.info("Certificate of the secure server: " + serverCN);
     config.property("server_common_name", serverCN);
 
