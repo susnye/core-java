@@ -1,0 +1,103 @@
+#!/bin/sh -e
+
+. /usr/share/debconf/confmodule
+
+# We do not yet support changing values...
+db_get arrowhead-common/cloudname
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/cloudname || true
+fi
+db_get arrowhead-common/operator
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/operator || true
+fi
+db_get arrowhead-common/company
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/company || true
+fi
+db_get arrowhead-common/organisation
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/organisation || true
+fi
+db_get arrowhead-common/country
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/country || true
+fi
+db_get arrowhead-common/mysql_password
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/mysql_password || true
+fi
+db_get arrowhead-common/cert_password
+if [ -z "$RET" ]; then
+    db_input high arrowhead-common/cert_password || true
+fi
+db_go || true
+
+mkdir -p /etc/arrowhead/cert
+
+if [ ! -d /var/log/arrowhead ]; then
+    mkdir -p /var/log/arrowhead
+    chown arrowhead:adm /var/log/arrowhead
+    chmod 750 /var/log/arrowhead
+fi
+
+db_get arrowhead-common/mysql_password
+if [ -z "$RET" ]; then
+    PASS="$(openssl rand -base64 12)"
+    db_set arrowhead-common/mysql_password ${PASS}
+fi
+
+db_get arrowhead-common/cert_password
+if [ -z "$RET" ]; then
+    PASS="$(openssl rand -base64 12)"
+    db_set arrowhead-common/cert_password ${PASS}
+fi
+
+db_get arrowhead-common/mysql_password; PASS_DB=$RET
+mysql -u root < /usr/share/arrowhead/scripts/create_log_db_empty.sql
+if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
+    mysql -e "CREATE USER arrowhead@localhost IDENTIFIED BY '${PASS_DB}';"
+    mysql -e "GRANT ALL PRIVILEGES ON arrowhead.* TO arrowhead@'localhost';"
+    mysql -e "FLUSH PRIVILEGES;"
+fi
+
+db_get arrowhead-common/cert_password; PASS_CERT=$RET
+if [ ! -f "/etc/arrowhead/cert/keystore.p12" ]; then
+    db_get arrowhead-common/cloudname; CLOUDNAME=$RET
+    db_get arrowhead-common/operator; OPERATOR=$RET
+    db_get arrowhead-common/company; COMPANY=$RET
+    db_get arrowhead-common/organisation; ORGANISATION=$RET
+    db_get arrowhead-common/country; COUNTRY=$RET
+
+    keytool -genkeypair \
+        -alias cloud \
+        -keyalg RSA \
+        -keysize 2048 \
+        -dname "CN=${CLOUDNAME}.${OPERATOR}.arrowhead.eu, OU=${ORGANISATION}, O=${COMPANY}, C=${COUNTRY}" \
+        -validity 3650 \
+        -keypass ${PASS_CERT} \
+        -keystore /etc/arrowhead/cert/keystore.p12 \
+        -storepass ${PASS_CERT} \
+        -storetype PKCS12
+
+    chown :arrowhead /etc/arrowhead/cert/keystore.p12
+    chmod 640 /etc/arrowhead/cert/keystore.p12
+fi
+
+if [ ! -f "/etc/arrowhead/cert/truststore.p12" ]; then
+    keytool -export \
+        -alias cloud \
+        -storepass ${PASS_CERT} \
+        -keystore /etc/arrowhead/cert/keystore.p12 \
+    | keytool -import \
+        -trustcacerts \
+        -alias cloud \
+        -keystore /etc/arrowhead/cert/truststore.p12 \
+        -keypass ${PASS_CERT} \
+        -storepass ${PASS_CERT} \
+        -storetype PKCS12 \
+        -noprompt
+
+    chown :arrowhead /etc/arrowhead/cert/truststore.p12
+    chmod 640 /etc/arrowhead/cert/truststore.p12
+fi

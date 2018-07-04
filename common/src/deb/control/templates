@@ -1,0 +1,38 @@
+Template: arrowhead-common/cloudname
+Type: string
+Default: ah40
+Description: The name of the Arrowhead local cloud
+
+Template: arrowhead-common/operator
+Type: string
+Default: ciss
+Description: The name of the operator of the local cloud
+
+Template: arrowhead-common/company
+Type: string
+Default: aau
+Description: The name of your company
+
+Template: arrowhead-common/organisation
+Type: string
+Default: ciss
+Description: The name of your organisation
+
+Template: arrowhead-common/country
+Type: string
+Default: dk
+Description: The name of your country
+
+Template: arrowhead-common/mysql_password
+Type: password
+Default:
+Description: Password for the MySQL database (leave empty for random)
+
+Template: arrowhead-common/cert_password
+Type: password
+Default:
+Description: Password for the certificates and stores (leave empty for random)
+
+Template: arrowhead-common/reconf_warning
+Type: note
+Description: You have to manually reconfigure all Arrowhead systems when changing passwords
