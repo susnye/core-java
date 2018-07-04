@@ -62,20 +62,11 @@ public final class SecurityUtils {
     try {
       Enumeration<String> enumeration = keystore.aliases();
       String alias = enumeration.nextElement();
-      return getCertAliasFromKeyStore(keystore, alias);
+      Certificate certificate = keystore.getCertificate(alias);
+      return (X509Certificate) certificate;
     } catch (KeyStoreException | NoSuchElementException e) {
       log.error("Getting the first cert from keystore failed: " + e.toString() + " " + e.getMessage());
       throw new ServiceConfigurationError("Getting the first cert from keystore failed...", e);
-    }
-  }
-
-  public static X509Certificate getCertAliasFromKeyStore(KeyStore keystore, String alias) {
-    try {
-      Certificate certificate = keystore.getCertificate(alias);
-      return (X509Certificate) certificate;
-    } catch (KeyStoreException e) {
-      log.error("Getting cert from keystore failed: " + e.toString() + " " + e.getMessage());
-      throw new ServiceConfigurationError("Getting cert from keystore failed...", e);
     }
   }
 
