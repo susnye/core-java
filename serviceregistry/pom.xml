@@ -18,7 +18,7 @@
     <version>4.0</version>
   </parent>
 
-  <artifactId>serviceregistry</artifactId>
+  <artifactId>arrowhead-serviceregistry</artifactId>
   <packaging>jar</packaging>
 
   <properties>
@@ -39,7 +39,7 @@
 
     <dependency>
       <groupId>eu.arrowhead</groupId>
-      <artifactId>dnssd</artifactId>
+      <artifactId>arrowhead-dnssd</artifactId>
     </dependency>
 
   </dependencies>
@@ -82,7 +82,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>eu.arrowhead.core.serviceregistry.ServiceRegistryMain</mainClass>
-              <classpathPrefix>lib/</classpathPrefix>
+              <classpathPrefix>../lib/</classpathPrefix>
             </manifest>
           </archive>
         </configuration>

@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for arrowhead-authorization
+# postinst script for arrowhead-eventhandler
 #
 # see: dh_installdeb(1)
 
@@ -7,9 +7,10 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-MYSQL_SCRIPT="/usr/share/arrowhead/db/create_authorization_db_empty.sql"
-SERVICE_NAME="authorization"
-PKG_NAME="arrowhead-authorization"
+MYSQL_SCRIPT="/usr/share/arrowhead/db/create_event_handler_db_empty.sql"
+SERVICE_NAME="event-handler"
+CN_NAME="event_handler"
+PKG_NAME="arrowhead-eventhandler"
 
 # summary of how this script can be called:
 #        * <postinst> `configure' <most-recently-configured-version>
@@ -27,13 +28,9 @@ case "$1" in
     configure)
         echo "Configuring MySQL database..." >&2
         mysql -u root < /usr/share/arrowhead/db/create_logs_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_cloud_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_interface_list_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
         mysql -u root < ${MYSQL_SCRIPT}
-        mysql -u root < /usr/share/arrowhead/db/create_own_cloud_tbl_empty.sql
+        mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
 
         db_get arrowhead-common/mysql_password; PASS_DB=$RET
         if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
@@ -58,7 +55,7 @@ case "$1" in
                 -alias ${SERVICE_NAME} \
                 -keyalg RSA \
                 -keysize 2048 \
-                -dname "CN=${SERVICE_NAME}.${CLOUDNAME}.${OPERATOR}.arrowhead.eu, OU=${ORGANISATION}, O=${COMPANY}, C=${COUNTRY}" \
+                -dname "CN=${CN_NAME}.${CLOUDNAME}.${OPERATOR}.arrowhead.eu, OU=${ORGANISATION}, O=${COMPANY}, C=${COUNTRY}" \
                 -validity 3650 \
                 -keypass ${PASS_CERT} \
                 -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
@@ -123,17 +120,22 @@ truststorepass=${PASS_CERT}
 
 # Webserver parameters
 address=0.0.0.0
-insecure_port=8444
-secure_port=8445
+insecure_port=8454
+secure_port=8455
 
 # Service Registry
 sr_address=0.0.0.0
 sr_insecure_port=8442
 sr_secure_port=8443
 
-# Other
-enable_auth_for_cloud=true
+# Publishing tolerance: clients can publish events with timestamps X number of minutes before the current time (but not with older timestamps)
+# 0 means the tolerance is infinite (events can be published with any timestamp from the past)
+event_publishing_tolerance=60
 
+# Removing old filters from the database based on the endDate field
+remove_old_filters=false
+# DB check interval in minutes
+check_interval=60
 EOF
             chown root:arrowhead /etc/arrowhead/${SERVICE_NAME}/app.properties
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/app.properties

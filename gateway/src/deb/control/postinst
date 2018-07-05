@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for arrowhead-authorization
+# postinst script for arrowhead-gateway
 #
 # see: dh_installdeb(1)
 
@@ -7,9 +7,8 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-MYSQL_SCRIPT="/usr/share/arrowhead/db/create_authorization_db_empty.sql"
-SERVICE_NAME="authorization"
-PKG_NAME="arrowhead-authorization"
+SERVICE_NAME="gateway"
+PKG_NAME="arrowhead-gateway"
 
 # summary of how this script can be called:
 #        * <postinst> `configure' <most-recently-configured-version>
@@ -25,27 +24,11 @@ PKG_NAME="arrowhead-authorization"
 
 case "$1" in
     configure)
-        echo "Configuring MySQL database..." >&2
-        mysql -u root < /usr/share/arrowhead/db/create_logs_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_cloud_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_interface_list_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
-        mysql -u root < ${MYSQL_SCRIPT}
-        mysql -u root < /usr/share/arrowhead/db/create_own_cloud_tbl_empty.sql
-
-        db_get arrowhead-common/mysql_password; PASS_DB=$RET
-        if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
-            mysql -e "CREATE USER arrowhead@localhost IDENTIFIED BY '${PASS_DB}';"
-            mysql -e "GRANT ALL PRIVILEGES ON arrowhead.* TO arrowhead@'localhost';"
-            mysql -e "FLUSH PRIVILEGES;"
-        fi
-
         if [ ! -d "/etc/arrowhead/${SERVICE_NAME}" ]; then
             mkdir -p /etc/arrowhead/${SERVICE_NAME}
         fi
 
+        db_get arrowhead-common/mysql_password; PASS_DB=$RET
         db_get arrowhead-common/cert_password; PASS_CERT=$RET
         db_get arrowhead-common/cloudname; CLOUDNAME=$RET
         db_get arrowhead-common/operator; OPERATOR=$RET
@@ -99,13 +82,19 @@ case "$1" in
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/keystore.p12
         fi
 
+        if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/master.crt" ]; then
+            keytool -export \
+                -alias master \
+                -storepass ${PASS_CERT} \
+                -keystore /etc/arrowhead/cert/master.p12 \
+                -file /etc/arrowhead/${SERVICE_NAME}/master.crt
+
+            chown :arrowhead /etc/arrowhead/${SERVICE_NAME}/master.crt
+            chmod 640 /etc/arrowhead/${SERVICE_NAME}/master.crt
+        fi
+
         if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/app.properties" ]; then
             /bin/cat <<EOF >/etc/arrowhead/${SERVICE_NAME}/app.properties
-# Database parameters
-db_user=arrowhead
-db_password=${PASS_DB}
-db_address=jdbc:mysql://127.0.0.1:3306/arrowhead?useSSL=false
-
 ##########################################
 # MANDATORY PARAMETERS ONLY IN SECURE MODE
 ##########################################
@@ -116,6 +105,8 @@ keystorepass=${PASS_CERT}
 keypass=${PASS_CERT}
 truststore=/etc/arrowhead/cert/truststore.p12
 truststorepass=${PASS_CERT}
+trustpass=${PASS_CERT}
+master_arrowhead_cert=/etc/arrowhead/${SERVICE_NAME}/master.crt
 
 ################################################
 # NON-MANDATORY PARAMETERS (defaults are showed)
@@ -123,17 +114,17 @@ truststorepass=${PASS_CERT}
 
 # Webserver parameters
 address=0.0.0.0
-insecure_port=8444
-secure_port=8445
+insecure_port=8452
+secure_port=8453
 
 # Service Registry
 sr_address=0.0.0.0
 sr_insecure_port=8442
 sr_secure_port=8443
 
-# Other
-enable_auth_for_cloud=true
-
+# Socket openings port range
+min_port=8000
+max_port=8100
 EOF
             chown root:arrowhead /etc/arrowhead/${SERVICE_NAME}/app.properties
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/app.properties

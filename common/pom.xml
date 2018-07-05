@@ -175,15 +175,13 @@
                 </data>
 
                 <data>
-                  <type>file</type>
-                  <src>${project.basedir}/src/deb/create_log_db_empty.sql</src>
-                  <dst>/usr/share/arrowhead/scripts/create_log_db_empty.sql</dst>
-                </data>
-
-                <data>
-                  <type>file</type>
-                  <src>${project.basedir}/src/deb/create_common_db_empty.sql</src>
-                  <dst>/usr/share/arrowhead/scripts/create_common_db_empty.sql</dst>
+                  <src>${project.basedir}/src/deb/sql</src>
+                  <type>directory</type>
+                  <includes>*.sql</includes>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/share/arrowhead/db</prefix>
+                  </mapper>
                 </data>
 
               </dataSet>

@@ -1,0 +1,13 @@
+[Unit]
+Description=arrowhead-gatekeeper
+After=network.target mysql.target arrowhead-serviceregistry-sql.target
+
+[Service]
+WorkingDirectory=/etc/arrowhead/gatekeeper
+ExecStart=/usr/bin/java --add-modules java.xml.bind -jar /usr/share/arrowhead/systems/arrowhead-gatekeeper-4.0.jar -d -daemon -tls
+Type=simple
+User=arrowhead
+Group=arrowhead
+
+[Install]
+WantedBy=default.target

@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for arrowhead-authorization
+# postinst script for arrowhead-gatekeeper
 #
 # see: dh_installdeb(1)
 
@@ -7,9 +7,9 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-MYSQL_SCRIPT="/usr/share/arrowhead/db/create_authorization_db_empty.sql"
-SERVICE_NAME="authorization"
-PKG_NAME="arrowhead-authorization"
+MYSQL_SCRIPT="/usr/share/arrowhead/db/create_gatekeeper_db_empty.sql"
+SERVICE_NAME="gatekeeper"
+PKG_NAME="arrowhead-gatekeeper"
 
 # summary of how this script can be called:
 #        * <postinst> `configure' <most-recently-configured-version>
@@ -28,11 +28,8 @@ case "$1" in
         echo "Configuring MySQL database..." >&2
         mysql -u root < /usr/share/arrowhead/db/create_logs_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_arrowhead_cloud_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_interface_list_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
         mysql -u root < ${MYSQL_SCRIPT}
+        mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_own_cloud_tbl_empty.sql
 
         db_get arrowhead-common/mysql_password; PASS_DB=$RET
@@ -99,6 +96,17 @@ case "$1" in
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/keystore.p12
         fi
 
+        if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/master.crt" ]; then
+            keytool -export \
+                -alias master \
+                -storepass ${PASS_CERT} \
+                -keystore /etc/arrowhead/cert/master.p12 \
+                -file /etc/arrowhead/${SERVICE_NAME}/master.crt
+
+            chown :arrowhead /etc/arrowhead/${SERVICE_NAME}/master.crt
+            chmod 640 /etc/arrowhead/${SERVICE_NAME}/master.crt
+        fi
+
         if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/app.properties" ]; then
             /bin/cat <<EOF >/etc/arrowhead/${SERVICE_NAME}/app.properties
 # Database parameters
@@ -117,23 +125,39 @@ keypass=${PASS_CERT}
 truststore=/etc/arrowhead/cert/truststore.p12
 truststorepass=${PASS_CERT}
 
+# Certificate related paths and passwords
+gatekeeper_keystore=/etc/arrowhead/${SERVICE_NAME}/keystore.p12
+gatekeeper_keystore_pass=${PASS_CERT}
+gatekeeper_keypass=${PASS_CERT}
+cloud_keystore=/etc/arrowhead/cert/cloud.p12
+cloud_keystore_pass=${PASS_CERT}
+cloud_keypass=${PASS_CERT}
+master_arrowhead_cert=/etc/arrowhead/${SERVICE_NAME}/master.crt
+
 ################################################
 # NON-MANDATORY PARAMETERS (defaults are showed)
 ################################################
 
 # Webserver parameters
 address=0.0.0.0
-insecure_port=8444
-secure_port=8445
+internal_insecure_port=8446
+internal_secure_port=8447
+external_insecure_port=8448
+external_secure_port=8449
 
 # Service Registry
 sr_address=0.0.0.0
 sr_insecure_port=8442
 sr_secure_port=8443
 
-# Other
-enable_auth_for_cloud=true
+# Orchestrator
+orch_address=0.0.0.0
+orch_insecure_port=8440
+orch_secure_port=8441
 
+# Other
+timeout=30000
+use_gateway=true
 EOF
             chown root:arrowhead /etc/arrowhead/${SERVICE_NAME}/app.properties
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/app.properties

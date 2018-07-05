@@ -5,6 +5,6 @@ Priority: optional
 Architecture: all
 Maintainer: Thomas Pedersen <tp@cs.aau.dk>
 Homepage: http://www.arrowhead.eu
-Description: Arrowhead Common
+Description: Arrowhead Gateway System
 Distribution: development
-Depends: default-jre-headless, openssl, debconf
+Depends: default-jre-headless, arrowhead-serviceregistry-sql

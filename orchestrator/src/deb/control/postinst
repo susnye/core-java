@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for arrowhead-authorization
+# postinst script for arrowhead-orchestrator
 #
 # see: dh_installdeb(1)
 
@@ -7,9 +7,9 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-MYSQL_SCRIPT="/usr/share/arrowhead/db/create_authorization_db_empty.sql"
-SERVICE_NAME="authorization"
-PKG_NAME="arrowhead-authorization"
+MYSQL_SCRIPT="/usr/share/arrowhead/db/create_orchestrator_db_empty.sql"
+SERVICE_NAME="orchestrator"
+PKG_NAME="arrowhead-orchestrator"
 
 # summary of how this script can be called:
 #        * <postinst> `configure' <most-recently-configured-version>
@@ -33,7 +33,6 @@ case "$1" in
         mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
         mysql -u root < ${MYSQL_SCRIPT}
-        mysql -u root < /usr/share/arrowhead/db/create_own_cloud_tbl_empty.sql
 
         db_get arrowhead-common/mysql_password; PASS_DB=$RET
         if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
@@ -123,17 +122,13 @@ truststorepass=${PASS_CERT}
 
 # Webserver parameters
 address=0.0.0.0
-insecure_port=8444
-secure_port=8445
+insecure_port=8440
+secure_port=8441
 
 # Service Registry
 sr_address=0.0.0.0
 sr_insecure_port=8442
 sr_secure_port=8443
-
-# Other
-enable_auth_for_cloud=true
-
 EOF
             chown root:arrowhead /etc/arrowhead/${SERVICE_NAME}/app.properties
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/app.properties

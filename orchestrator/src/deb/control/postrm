@@ -1,9 +1,11 @@
 #!/bin/sh
-# postrm script for arrowhead-common
+# postrm script for arrowhead-orchestrator
 #
 # see: dh_installdeb(1)
 
 set -e
+
+SERVICE_NAME="orchestrator"
 
 # summary of how this script can be called:
 #        * <postrm> `remove'
@@ -21,10 +23,11 @@ set -e
 
 case "$1" in
     purge)
-        rm -f /etc/arrowhead/cert/cloud.p12
-        rm -f /etc/arrowhead/cert/master.p12
-        rm -f /etc/arrowhead/cert/truststore.p12
-        rmdir /etc/arrowhead/cert 2>/dev/null || true
+        rm -f \
+            /etc/arrowhead/${SERVICE_NAME}/app.properties \
+            /etc/arrowhead/${SERVICE_NAME}/log4j.properties \
+            /etc/arrowhead/${SERVICE_NAME}/keystore.p12
+        rmdir /etc/arrowhead/${SERVICE_NAME} 2>/dev/null || true
         rmdir /etc/arrowhead 2>/dev/null || true
     ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

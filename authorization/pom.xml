@@ -172,7 +172,7 @@
                 <data>
                   <type>file</type>
                   <src>${project.basedir}/src/deb/create_authorization_db_empty.sql</src>
-                  <dst>/usr/share/arrowhead/scripts/create_authorization_db_empty.sql</dst>
+                  <dst>/usr/share/arrowhead/db/create_authorization_db_empty.sql</dst>
                 </data>
 
                 <data>
