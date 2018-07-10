@@ -165,6 +165,15 @@
                 </data>
 
                 <data>
+                  <type>file</type>
+                  <src>${project.basedir}/src/deb/ahconf.sh</src>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/share/arrowhead/conf</prefix>
+                  </mapper>
+                </data>
+
+                <data>
                   <src>${project.build.directory}/lib</src>
                   <type>directory</type>
                   <includes>*.jar</includes>

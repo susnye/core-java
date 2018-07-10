@@ -7,7 +7,6 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-MYSQL_SCRIPT="/usr/share/arrowhead/db/create_authorization_db_empty.sql"
 SERVICE_NAME="authorization"
 PKG_NAME="arrowhead-authorization"
 
@@ -25,6 +24,8 @@ PKG_NAME="arrowhead-authorization"
 
 case "$1" in
     configure)
+        . /usr/share/arrowhead/conf/ahconf.sh
+
         echo "Configuring MySQL database..." >&2
         mysql -u root < /usr/share/arrowhead/db/create_logs_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_arrowhead_cloud_tbl_empty.sql
@@ -32,78 +33,22 @@ case "$1" in
         mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_interface_list_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
-        mysql -u root < ${MYSQL_SCRIPT}
+        mysql -u root < /usr/share/arrowhead/db/create_authorization_db_empty.sql
         mysql -u root < /usr/share/arrowhead/db/create_own_cloud_tbl_empty.sql
 
-        db_get arrowhead-common/mysql_password; PASS_DB=$RET
-        if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
-            mysql -e "CREATE USER arrowhead@localhost IDENTIFIED BY '${PASS_DB}';"
-            mysql -e "GRANT ALL PRIVILEGES ON arrowhead.* TO arrowhead@'localhost';"
-            mysql -e "FLUSH PRIVILEGES;"
-        fi
+        ah_gen_db_user
 
         if [ ! -d "/etc/arrowhead/${SERVICE_NAME}" ]; then
             mkdir -p /etc/arrowhead/${SERVICE_NAME}
         fi
 
-        db_get arrowhead-common/cert_password; PASS_CERT=$RET
-        db_get arrowhead-common/cloudname; CLOUDNAME=$RET
-        db_get arrowhead-common/operator; OPERATOR=$RET
-        db_get arrowhead-common/company; COMPANY=$RET
-        db_get arrowhead-common/organisation; ORGANISATION=$RET
-        db_get arrowhead-common/country; COUNTRY=$RET
-
-        if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/keystore.p12" ]; then
-            keytool -genkeypair \
-                -alias ${SERVICE_NAME} \
-                -keyalg RSA \
-                -keysize 2048 \
-                -dname "CN=${SERVICE_NAME}.${CLOUDNAME}.${OPERATOR}.arrowhead.eu, OU=${ORGANISATION}, O=${COMPANY}, C=${COUNTRY}" \
-                -validity 3650 \
-                -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
-                -storepass ${PASS_CERT} \
-                -storetype PKCS12
-
-            keytool -export \
-                -alias cloud \
-                -storepass ${PASS_CERT} \
-                -keystore /etc/arrowhead/cert/cloud.p12 \
-            | keytool -import \
-                -trustcacerts \
-                -alias cloud \
-                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
-                -keypass ${PASS_CERT} \
-                -storepass ${PASS_CERT} \
-                -storetype PKCS12 \
-                -noprompt
-
-            keytool -certreq \
-                -alias ${SERVICE_NAME} \
-                -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
-                -storepass ${PASS_CERT} \
-            | keytool -gencert \
-                -alias cloud \
-                -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/cert/cloud.p12 \
-                -storepass ${PASS_CERT} \
-            | keytool -importcert \
-                -alias ${SERVICE_NAME} \
-                -keypass ${PASS_CERT} \
-                -keystore /etc/arrowhead/${SERVICE_NAME}/keystore.p12 \
-                -storepass ${PASS_CERT} \
-                -noprompt
-
-            chown :arrowhead /etc/arrowhead/${SERVICE_NAME}/keystore.p12
-            chmod 640 /etc/arrowhead/${SERVICE_NAME}/keystore.p12
-        fi
+        ah_gen_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
 
         if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/app.properties" ]; then
             /bin/cat <<EOF >/etc/arrowhead/${SERVICE_NAME}/app.properties
 # Database parameters
 db_user=arrowhead
-db_password=${PASS_DB}
+db_password=${AH_PASS_DB}
 db_address=jdbc:mysql://127.0.0.1:3306/arrowhead?useSSL=false
 
 ##########################################
@@ -111,11 +56,11 @@ db_address=jdbc:mysql://127.0.0.1:3306/arrowhead?useSSL=false
 ##########################################
 
 # Certificate related paths and passwords
-keystore=/etc/arrowhead/${SERVICE_NAME}/keystore.p12
-keystorepass=${PASS_CERT}
-keypass=${PASS_CERT}
+keystore=/etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12
+keystorepass=${AH_PASS_CERT}
+keypass=${AH_PASS_CERT}
 truststore=/etc/arrowhead/cert/truststore.p12
-truststorepass=${PASS_CERT}
+truststorepass=${AH_PASS_CERT}
 
 ################################################
 # NON-MANDATORY PARAMETERS (defaults are showed)
@@ -139,46 +84,7 @@ EOF
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/app.properties
         fi
 
-        if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/log4j.properties" ]; then
-            /bin/cat <<EOF >/etc/arrowhead/${SERVICE_NAME}/log4j.properties
-# Define the root logger with appender file
-log4j.rootLogger=INFO, DB, FILE
-
-# Database related config
-# Define the DB appender
-log4j.appender.DB=org.apache.log4j.jdbc.JDBCAppender
-# Set Database Driver
-log4j.appender.DB.driver=com.mysql.jdbc.Driver
-# Set Database URL
-log4j.appender.DB.URL=jdbc:mysql://127.0.0.1:3306/arrowhead?useSSL=false
-# Set database user name and password
-log4j.appender.DB.user=arrowhead
-log4j.appender.DB.password=${PASS_DB}
-# Set the SQL statement to be executed.
-log4j.appender.DB.sql=INSERT INTO logs VALUES(DEFAULT,'%d{yyyy-MM-dd HH:mm:ss}','%C','%p','%m')
-# Define the layout for file appender
-log4j.appender.DB.layout=org.apache.log4j.PatternLayout
-# Disable Hibernate verbose logging
-log4j.logger.org.hibernate=fatal
-
-# File related config
-# Define the file appender
-log4j.appender.FILE=org.apache.log4j.FileAppender
-# Set the name of the file
-log4j.appender.FILE.File=/var/log/arrowhead/${SERVICE_NAME}.log
-# Set the immediate flush to true (default)
-log4j.appender.FILE.ImmediateFlush=true
-# Set the threshold to debug mode
-log4j.appender.FILE.Threshold=debug
-# Set the append to false, overwrite
-log4j.appender.FILE.Append=false
-# Define the layout for file appender
-log4j.appender.FILE.layout=org.apache.log4j.PatternLayout
-log4j.appender.FILE.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss}, %C, %p, %m%n
-EOF
-            chown root:arrowhead /etc/arrowhead/${SERVICE_NAME}/log4j.properties
-            chmod 640 /etc/arrowhead/${SERVICE_NAME}/log4j.properties
-        fi
+        ah_gen_log4j ${SERVICE_NAME}
 
         echo "Restarting ${PKG_NAME}..." >&2
         systemctl daemon-reload
