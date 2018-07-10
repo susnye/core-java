@@ -55,6 +55,6 @@ fi
 
 . /usr/share/arrowhead/conf/ahconf.sh
 
-ah_gen_cert /etc/arrowhead/cert master "arrowhead.eu"
-ah_gen_signed /etc/arrowhead/cert cloud "${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert master
-ah_gen_trust /etc/arrowhead/cert /etc/arrowhead/cert cloud
+ah_cert /etc/arrowhead/cert master "arrowhead.eu"
+ah_cert_signed /etc/arrowhead/cert cloud "${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert master
+ah_cert_trust /etc/arrowhead/cert /etc/arrowhead/cert cloud

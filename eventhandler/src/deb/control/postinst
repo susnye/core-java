@@ -28,18 +28,17 @@ case "$1" in
         . /usr/share/arrowhead/conf/ahconf.sh
 
         echo "Configuring MySQL database..." >&2
-        mysql -u root < /usr/share/arrowhead/db/create_logs_tbl_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
+        ah_db_logs
+        ah_db_arrowhead_system
         mysql -u root < /usr/share/arrowhead/db/create_event_handler_db_empty.sql
-        mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
-
-        ah_gen_db_user
+        ah_db_hibernate_sequence
+        ah_db_user
 
         if [ ! -d "/etc/arrowhead/${SERVICE_NAME}" ]; then
             mkdir -p /etc/arrowhead/${SERVICE_NAME}
         fi
 
-        ah_gen_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${CN_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
+        ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${CN_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
 
         if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/app.properties" ]; then
             /bin/cat <<EOF >/etc/arrowhead/${SERVICE_NAME}/app.properties
@@ -86,7 +85,7 @@ EOF
             chmod 640 /etc/arrowhead/${SERVICE_NAME}/app.properties
         fi
 
-        ah_gen_log4j ${SERVICE_NAME}
+        ah_log4j_conf ${SERVICE_NAME}
 
         echo "Restarting ${PKG_NAME}..." >&2
         systemctl daemon-reload

@@ -8,7 +8,7 @@ db_get arrowhead-common/company; AH_COMPANY=$RET
 db_get arrowhead-common/organisation; AH_ORGANISATION=$RET
 db_get arrowhead-common/country; AH_COUNTRY=$RET
 
-ah_gen_cert () {
+ah_cert () {
     if [ ! -f "${1}/${2}.p12" ]; then
         keytool -genkeypair \
             -alias ${2} \
@@ -26,9 +26,9 @@ ah_gen_cert () {
     fi
 }
 
-ah_gen_signed () {
+ah_cert_signed () {
     if [ ! -f "${1}/${2}.p12" ]; then
-        ah_gen_cert $1 $2 $3
+        ah_cert $1 $2 $3
 
         keytool -export \
             -alias ${5} \
@@ -62,7 +62,7 @@ ah_gen_signed () {
     fi
 }
 
-ah_gen_trust () {
+ah_cert_trust () {
     if [ ! -f "${1}/truststore.p12" ]; then
         keytool -export \
             -alias ${3} \
@@ -82,7 +82,7 @@ ah_gen_trust () {
     fi
 }
 
-ah_gen_db_user () {
+ah_db_user () {
     if [ $(mysql -u root -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'arrowhead')") != 1 ]; then
         mysql -e "CREATE USER arrowhead@localhost IDENTIFIED BY '${AH_PASS_DB}';"
         mysql -e "GRANT ALL PRIVILEGES ON arrowhead.* TO arrowhead@'localhost';"
@@ -90,7 +90,35 @@ ah_gen_db_user () {
     fi
 }
 
-ah_gen_log4j () {
+ah_db_logs () {
+    mysql -u root < /usr/share/arrowhead/db/create_logs_tbl_empty.sql
+}
+
+ah_db_arrowhead_cloud () {
+    mysql -u root < /usr/share/arrowhead/db/create_arrowhead_cloud_tbl_empty.sql
+}
+
+ah_db_arrowhead_service () {
+    mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_tbl_empty.sql
+}
+
+ah_db_arrowhead_service_interface_list () {
+    mysql -u root < /usr/share/arrowhead/db/create_arrowhead_service_interface_list_tbl_empty.sql
+}
+
+ah_db_arrowhead_system () {
+    mysql -u root < /usr/share/arrowhead/db/create_arrowhead_system_tbl_empty.sql
+}
+
+ah_db_hibernate_sequence () {
+    mysql -u root < /usr/share/arrowhead/db/create_hibernate_sequence_tbl_empty.sql
+}
+
+ah_db_own_cloud () {
+    mysql -u root < /usr/share/arrowhead/db/create_own_cloud_tbl_empty.sql
+}
+
+ah_log4j_conf () {
     if [ ! -f "/etc/arrowhead/${1}/log4j.properties" ]; then
         /bin/cat <<EOF >/etc/arrowhead/${1}/log4j.properties
 # Define the root logger with appender file
@@ -133,7 +161,7 @@ EOF
     fi
 }
 
-ah_export_cert () {
+ah_cert_export () {
     if [ ! -f "${3}/${2}.crt" ]; then
         keytool -export \
             -alias ${2} \
