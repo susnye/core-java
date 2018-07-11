@@ -119,6 +119,9 @@ public abstract class ArrowheadMain {
   }
 
   protected void listenForInput() {
+    // For Systemd scripts to detect when we're done (do not change)
+    log.info("Startup completed.");
+
     if (daemon) {
       System.out.println("In daemon mode, process will terminate for TERM signal...");
       Runtime.getRuntime().addShutdownHook(new Thread(() -> {

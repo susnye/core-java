@@ -138,6 +138,9 @@ public class GatekeeperMain {
     Utility.setServiceRegistryUri(SERVICE_REGISTRY_URI);
     getCoreSystemServiceUris();
 
+    // For Systemd scripts to detect when we're done (do not change)
+    log.info("Startup completed.");
+
     if (daemon) {
       System.out.println("In daemon mode, process will terminate for TERM signal...");
       Runtime.getRuntime().addShutdownHook(new Thread(() -> {
