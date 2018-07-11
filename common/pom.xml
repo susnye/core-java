@@ -174,6 +174,17 @@
                 </data>
 
                 <data>
+                  <type>file</type>
+                  <src>${project.basedir}/src/deb/ahcert.sh</src>
+                  <dst>ahcert</dst>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/bin</prefix>
+                    <filemode>775</filemode>
+                  </mapper>
+                </data>
+
+                <data>
                   <src>${project.build.directory}/lib</src>
                   <type>directory</type>
                   <includes>*.jar</includes>
