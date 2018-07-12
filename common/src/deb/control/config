@@ -2,27 +2,14 @@
 
 . /usr/share/debconf/confmodule
 
-# We do not yet support changing values...
-db_get arrowhead-common/cloudname
-if [ -z "$RET" ]; then
-    db_input high arrowhead-common/cloudname || true
-fi
-db_get arrowhead-common/operator
-if [ -z "$RET" ]; then
-    db_input high arrowhead-common/operator || true
-fi
-db_get arrowhead-common/company
-if [ -z "$RET" ]; then
-    db_input high arrowhead-common/company || true
-fi
-db_get arrowhead-common/organisation
-if [ -z "$RET" ]; then
-    db_input high arrowhead-common/organisation || true
-fi
-db_get arrowhead-common/country
-if [ -z "$RET" ]; then
-    db_input high arrowhead-common/country || true
-fi
+# Changing these will only influence new certificates
+db_input high arrowhead-common/cloudname || true
+db_input high arrowhead-common/operator || true
+db_input high arrowhead-common/company || true
+db_input high arrowhead-common/organisation || true
+db_input high arrowhead-common/country || true
+
+# We do not yet support changing passwords...
 db_get arrowhead-common/mysql_password
 if [ -z "$RET" ]; then
     db_input high arrowhead-common/mysql_password || true
@@ -32,6 +19,8 @@ if [ -z "$RET" ]; then
     db_input high arrowhead-common/cert_password || true
 fi
 db_go || true
+
+adduser --system --no-create-home --group arrowhead
 
 mkdir -p /etc/arrowhead/cert
 

@@ -22,7 +22,6 @@ set -e
 
 case "$1" in
     configure)
-        adduser --system --no-create-home --group arrowhead
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
