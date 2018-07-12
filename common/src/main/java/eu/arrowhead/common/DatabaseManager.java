@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceConfigurationError;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -242,9 +243,15 @@ public class DatabaseManager {
         Transaction transaction = null;
 
         try (Session session = getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.save(object);
-            transaction.commit();
+            try {
+                transaction = session.beginTransaction();
+                session.save(object);
+                transaction.commit();
+            } catch (PersistenceException e) {
+                // Fix: Newer library versions encapsulates the ConstraintViolationException within a PersistenceException
+                if (e.getCause() instanceof ConstraintViolationException) throw ((ConstraintViolationException)e.getCause());
+                else throw e;
+            }
         } catch (ConstraintViolationException e) {
             if (transaction != null) {
                 transaction.rollback();
