@@ -85,3 +85,5 @@ show tables;
 
 `apt purge` can be used to remove configuration files for a fresh installation,
 but database and log files are currently kept, and should be removed manually.
+
+If you need to generate a new certificate for an application system, signed with the cloud certificate: `sudo ahcert PATH SYSTEM_NAME`, e.g. `sudo ahcert ~/ SecureTemperatureSensor`.
