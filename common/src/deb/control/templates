@@ -26,12 +26,12 @@ Description: The name of your country
 Template: arrowhead-common/mysql_password
 Type: password
 Default:
-Description: Password for the MySQL database (leave empty for random)
+Description: Password for the MySQL database (leave empty for random). Note that password is stored by debconf in '/var/cache/debconf/passwords.dat'.
 
 Template: arrowhead-common/cert_password
 Type: password
 Default:
-Description: Password for the certificates and stores (leave empty for random)
+Description: Password for the certificates and stores (leave empty for random). Note that password is stored by debconf in '/var/cache/debconf/passwords.dat'.
 
 Template: arrowhead-common/reconf_warning
 Type: note
