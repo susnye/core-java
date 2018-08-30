@@ -20,6 +20,7 @@
     <module>authorization</module>
     <module>choreographer</module>
     <module>common</module>
+    <module>datamanager</module>
     <module>deviceregistry</module>
     <module>dnssd</module>
     <module>eventhandler</module>
