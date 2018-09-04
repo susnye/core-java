@@ -388,6 +388,7 @@ Should delete files and directories created by postinst.
 set -e
 
 SERVICE_NAME="gatekeeper"
+PKG_NAME="arrowhead-gatekeeper"
 
 # summary of how this script can be called:
 #        * <postrm> `remove'
@@ -406,11 +407,14 @@ SERVICE_NAME="gatekeeper"
 case "$1" in
     purge)
         rm -f \
+            /var/log/arrowhead/${SERVICE_NAME}.log \
             /etc/arrowhead/${SERVICE_NAME}/app.properties \
             /etc/arrowhead/${SERVICE_NAME}/log4j.properties \
             /etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12 \
             /etc/arrowhead/${SERVICE_NAME}/master.crt
         rmdir /etc/arrowhead/${SERVICE_NAME} 2>/dev/null || true
+        rmdir /var/log/arrowhead 2>/dev/null || true
+        echo PURGE | debconf-communicate ${PKG_NAME}
     ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
     ;;

@@ -5,6 +5,8 @@
 
 set -e
 
+PKG_NAME="arrowhead-common"
+
 # summary of how this script can be called:
 #        * <postrm> `remove'
 #        * <postrm> `purge'
@@ -26,6 +28,14 @@ case "$1" in
         rm -f /etc/arrowhead/cert/truststore.p12
         rmdir /etc/arrowhead/cert 2>/dev/null || true
         rmdir /etc/arrowhead 2>/dev/null || true
+        rmdir /var/log/arrowhead 2>/dev/null || true
+        if command -v mysql 2>&1 >/dev/null; then
+            mysql -u root <<EOF
+DROP DATABASE arrowhead;
+DROP USER arrowhead@localhost;
+EOF
+        fi
+        echo PURGE | debconf-communicate ${PKG_NAME}
     ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
     ;;
