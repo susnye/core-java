@@ -19,7 +19,8 @@ ah_cert () {
             -keypass ${AH_PASS_CERT} \
             -keystore ${1}/${2}.p12 \
             -storepass ${AH_PASS_CERT} \
-            -storetype PKCS12
+            -storetype PKCS12 \
+            -ext BasicConstraints:"Subject is a CA\nPath Length Constraint: None"
 
         chown :arrowhead ${1}/${2}.p12
         chmod 640 ${1}/${2}.p12
