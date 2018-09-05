@@ -35,7 +35,7 @@ DROP DATABASE IF EXISTS arrowhead;
 DROP USER IF EXISTS arrowhead@localhost;
 EOF
         fi
-        deluser arrowhead
+        deluser arrowhead || true
         echo PURGE | debconf-communicate ${PKG_NAME}
     ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
