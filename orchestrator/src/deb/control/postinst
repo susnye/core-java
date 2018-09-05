@@ -41,6 +41,7 @@ case "$1" in
         fi
 
         ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
+        ah_cert_import "/etc/arrowhead/cert" "master" "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME}
 
         if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/app.properties" ]; then
             /bin/cat <<EOF >/etc/arrowhead/${SERVICE_NAME}/app.properties

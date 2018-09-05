@@ -173,3 +173,17 @@ ah_cert_export () {
         chmod 640 ${3}/${2}.crt
     fi
 }
+
+ah_cert_import () {
+    keytool -import \
+        -trustcacerts \
+        -file ${1}/${2}.crt \
+        -alias ${2} \
+        -keystore ${3}/${4}.p12 \
+        -keypass ${AH_PASS_CERT} \
+        -storepass ${AH_PASS_CERT} \
+        -storetype PKCS12 \
+        -noprompt
+}
+
+
