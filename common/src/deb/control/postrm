@@ -31,10 +31,11 @@ case "$1" in
         rmdir /var/log/arrowhead 2>/dev/null || true
         if command -v mysql 2>&1 >/dev/null; then
             mysql -u root <<EOF
-DROP DATABASE arrowhead;
-DROP USER arrowhead@localhost;
+DROP DATABASE IF EXISTS arrowhead;
+DROP USER IF EXISTS arrowhead@localhost;
 EOF
         fi
+        deluser arrowhead
         echo PURGE | debconf-communicate ${PKG_NAME}
     ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
