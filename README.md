@@ -83,7 +83,12 @@ use arrowhead;
 show tables;
 ```
 
-`apt purge` can be used to remove configuration files for a fresh installation,
-but database and log files are currently kept, and should be removed manually.
+`apt purge` can be used to remove configuration files, database, log files, etc. Use `sudo apt purge arrowhead-\*` to
+remove everything arrowhead related.
 
-If you need to generate a new certificate for an application system, signed with the cloud certificate: `sudo ahcert PATH SYSTEM_NAME`, e.g. `sudo ahcert ~/ SecureTemperatureSensor`.
+If you need to generate a new certificate for an application system, signed with the cloud certificate:
+`sudo ahcert PATH SYSTEM_NAME`, e.g. `sudo ahcert ~/ SecureTemperatureSensor`.
+
+For the provider and consumer example in the client skeletons, the script `sudo ah_quickstart_gen` can be used to
+generate the necessary certificates and database entries. It will also output the certificate/keystore password. Note,
+this script should only be used for test clouds on a clean installation.
