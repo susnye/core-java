@@ -2,12 +2,59 @@
 
 . /usr/share/debconf/confmodule
 
+db_input high arrowhead-common/install_type || true
+db_go || true
+
+db_get arrowhead-common/install_type
+install_type="$RET"
+
+mkdir -p /etc/arrowhead/cert/
+adduser --system --no-create-home --group arrowhead
+
+if [ "$install_type" = "Authorized" ]; then
+    if [ ! -f /etc/arrowhead/cert/cloud.p12 ]; then
+        user=$(logname)
+        hdir=$(eval echo "~$user")
+        db_set arrowhead-common/cloud_cert "${hdir}"/cloud.p12
+        db_set arrowhead-common/master_cert "${hdir}"/master.crt
+
+        db_input critical arrowhead-common/cloud_cert || true
+        db_input critical arrowhead-common/cloud_password || true
+        db_input critical arrowhead-common/master_cert || true
+        db_go || true
+
+        db_get arrowhead-common/cloud_cert; cloud_cert=$RET
+        db_get arrowhead-common/cloud_password; cloud_password=$RET
+        db_get arrowhead-common/master_cert; master_cert=$RET
+
+        db_set arrowhead-common/cert_password "${cloud_password}"
+
+        cp "${cloud_cert}" "/etc/arrowhead/cert/cloud.p12"
+        chown :arrowhead "/etc/arrowhead/cert/cloud.p12"
+        chmod 640 "/etc/arrowhead/cert/cloud.p12"
+
+        cp "${master_cert}" "/etc/arrowhead/cert/master.crt"
+        chown :arrowhead "/etc/arrowhead/cert/master.crt"
+        chmod 640 "/etc/arrowhead/cert/master.crt"
+
+        subject=$(keytool -list -keystore "/etc/arrowhead/cert/cloud.p12" -storepass ${cloud_password} -v -alias cloud | grep "Owner:" | head -n1 | sed 's|Owner: ||')
+        cloud_name=$(echo "$subject" | sed 's|^.*CN=\([^.]*\)\..*$|\1|')
+        operator=$(echo "$subject" | sed 's|^.*OU=\([^,]*\),.*$|\1|')
+        company=$(echo "$subject" | sed 's|^.*O=\([^,]*\),.*$|\1|')
+        country=$(echo "$subject" | sed 's|^.*C=\([^,]*\)\(,.*\)\{0,1\}$|\1|')
+
+        db_set arrowhead-common/cloudname ${cloud_name}
+        db_set arrowhead-common/operator ${operator}
+        db_set arrowhead-common/company ${company}
+        db_set arrowhead-common/country ${country}
+    fi
+fi
+
 # Changing these will only influence new certificates
-db_input high arrowhead-common/cloudname || true
-db_input high arrowhead-common/operator || true
-db_input high arrowhead-common/company || true
-db_input high arrowhead-common/organisation || true
-db_input high arrowhead-common/country || true
+db_input medium arrowhead-common/cloudname || true
+db_input medium arrowhead-common/operator || true
+db_input medium arrowhead-common/company || true
+db_input medium arrowhead-common/country || true
 
 # We do not yet support changing passwords...
 db_get arrowhead-common/mysql_password
@@ -19,10 +66,6 @@ if [ -z "$RET" ]; then
     db_input high arrowhead-common/cert_password || true
 fi
 db_go || true
-
-adduser --system --no-create-home --group arrowhead
-
-mkdir -p /etc/arrowhead/cert
 
 if [ ! -d /var/log/arrowhead ]; then
     mkdir -p /var/log/arrowhead
@@ -44,6 +87,10 @@ fi
 
 . /usr/share/arrowhead/conf/ahconf.sh
 
-ah_cert /etc/arrowhead/cert master "arrowhead.eu"
-ah_cert_signed /etc/arrowhead/cert cloud "${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert master
+if [ "$install_type" = "Detached" ]; then
+    ah_cert /etc/arrowhead/cert master "arrowhead.eu"
+    ah_cert_export "/etc/arrowhead/cert" master "/etc/arrowhead/cert"
+    ah_cert_signed /etc/arrowhead/cert cloud "${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert master
+fi
+
 ah_cert_trust /etc/arrowhead/cert /etc/arrowhead/cert cloud

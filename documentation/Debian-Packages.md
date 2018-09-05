@@ -277,12 +277,6 @@ fi
 ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
 ```
 
-- If a master certificate file is required, this can be exported with:
-
-```bash
-ah_cert_export "/etc/arrowhead/cert" master "/etc/arrowhead/${SERVICE_NAME}"
-```
-
 - Insert data into MySQL database if required (Gatekeeper currently does this)
 
 ```bash
@@ -411,7 +405,7 @@ case "$1" in
             /etc/arrowhead/${SERVICE_NAME}/app.properties \
             /etc/arrowhead/${SERVICE_NAME}/log4j.properties \
             /etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12 \
-            /etc/arrowhead/${SERVICE_NAME}/master.crt
+            /etc/arrowhead/cert/master.crt
         rmdir /etc/arrowhead/${SERVICE_NAME} 2>/dev/null || true
         rmdir /var/log/arrowhead 2>/dev/null || true
         echo PURGE | debconf-communicate ${PKG_NAME}

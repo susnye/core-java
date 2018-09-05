@@ -5,7 +5,6 @@ db_get arrowhead-common/cert_password; AH_PASS_CERT=$RET
 db_get arrowhead-common/cloudname; AH_CLOUD_NAME=$RET
 db_get arrowhead-common/operator; AH_OPERATOR=$RET
 db_get arrowhead-common/company; AH_COMPANY=$RET
-db_get arrowhead-common/organisation; AH_ORGANISATION=$RET
 db_get arrowhead-common/country; AH_COUNTRY=$RET
 
 ah_cert () {
@@ -14,7 +13,7 @@ ah_cert () {
             -alias ${2} \
             -keyalg RSA \
             -keysize 2048 \
-            -dname "CN=${3}, OU=${AH_ORGANISATION}, O=${AH_COMPANY}, C=${AH_COUNTRY}" \
+            -dname "CN=${3}, OU=${AH_OPERATOR}, O=${AH_COMPANY}, C=${AH_COUNTRY}" \
             -validity 3650 \
             -keypass ${AH_PASS_CERT} \
             -keystore ${1}/${2}.p12 \

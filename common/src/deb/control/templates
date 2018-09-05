@@ -1,26 +1,41 @@
+Template: arrowhead-common/install_type
+Type: select
+Choices: Detached, Authorized
+Description: Do you want to perform (1) a detached, standalone install or (2) authorized install with externally issued cloud cert?
+
+Template: arrowhead-common/cloud_cert
+Type: string
+Default: /cloud.p12
+Description: Enter the path for the externally issued cloud cert
+
+Template: arrowhead-common/master_cert
+Type: string
+Default: /master.crt
+Description: Enter the path for the externally issued cloud cert
+
+Template: arrowhead-common/cloud_password
+Type: password
+Default:
+Description: Enter the password for the externally issued cloud cert
+
 Template: arrowhead-common/cloudname
 Type: string
-Default: ah40
+Default: testcloud
 Description: The name of the Arrowhead local cloud
 
 Template: arrowhead-common/operator
 Type: string
-Default: ciss
+Default: user
 Description: The name of the operator of the local cloud
 
 Template: arrowhead-common/company
 Type: string
-Default: aau
+Default: arrowhead
 Description: The name of your company
-
-Template: arrowhead-common/organisation
-Type: string
-Default: ciss
-Description: The name of your organisation
 
 Template: arrowhead-common/country
 Type: string
-Default: dk
+Default: eu
 Description: The name of your country
 
 Template: arrowhead-common/mysql_password
