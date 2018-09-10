@@ -64,7 +64,11 @@ public abstract class ArrowheadMain {
   private static final Logger log = Logger.getLogger(ArrowheadMain.class.getName());
 
   static {
-    PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    if (new File("log4j.properties").exists()) {
+      PropertyConfigurator.configure("log4j.properties");
+    } else {
+      PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    }
   }
 
   protected void init(CoreSystem coreSystem, String[] args, Set<Class<?>> classes, String[] packages) {
@@ -115,6 +119,9 @@ public abstract class ArrowheadMain {
   }
 
   protected void listenForInput() {
+    // For Systemd scripts to detect when we're done (do not change)
+    log.info("Startup completed.");
+
     if (daemon) {
       System.out.println("In daemon mode, process will terminate for TERM signal...");
       Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -191,6 +198,7 @@ public abstract class ArrowheadMain {
           "Server CN ( " + serverCN + ") is not compliant with the Arrowhead cert structure, since it does not have 5 parts, or does not end with"
               + " \"arrowhead.eu.\"", Status.UNAUTHORIZED.getStatusCode());
     }
+    System.out.println("Certificate of the secure server: " + serverCN);
     log.info("Certificate of the secure server: " + serverCN);
     config.property("server_common_name", serverCN);
 

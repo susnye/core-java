@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceConfigurationError;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -99,12 +100,21 @@ public class DatabaseManager {
     try {
       if (prop == null) {
         prop = new TypeSafeProperties();
-        File file = new File("config" + File.separator + "app.properties");
+        File file;
+        if (new File("app.properties").exists()) {
+          file = new File("app.properties");
+        } else {
+          file = new File("config" + File.separator + "app.properties");
+        }
         FileInputStream inputStream = new FileInputStream(file);
         prop.load(inputStream);
 
         if (!prop.containsKey("db_address")) {
-          file = new File("config" + File.separator + "log4j.properties");
+          if (new File("log4j.properties").exists()) {
+            file = new File("log4j.properties");
+          } else {
+            file = new File("config" + File.separator + "log4j.properties");
+          }
           inputStream = new FileInputStream(file);
           prop.load(inputStream);
         }
@@ -233,9 +243,18 @@ public class DatabaseManager {
     Transaction transaction = null;
 
     try (Session session = getSessionFactory().openSession()) {
-      transaction = session.beginTransaction();
-      session.save(object);
-      transaction.commit();
+      try {
+        transaction = session.beginTransaction();
+        session.save(object);
+        transaction.commit();
+      } catch (PersistenceException e) {
+        // Fix: Newer library versions encapsulates the ConstraintViolationException within a PersistenceException
+        if (e.getCause() instanceof ConstraintViolationException) {
+          throw ((ConstraintViolationException) e.getCause());
+        } else {
+          throw e;
+        }
+      }
     } catch (ConstraintViolationException e) {
       if (transaction != null) {
         transaction.rollback();
@@ -246,7 +265,12 @@ public class DatabaseManager {
           Status.BAD_REQUEST.getStatusCode(), e);
     } catch (Exception e) {
       if (transaction != null) {
-        transaction.rollback();
+        try {
+          transaction.rollback();
+        } catch (Exception e1) {
+          e.printStackTrace();
+          throw e1;
+        }
       }
       throw e;
     }

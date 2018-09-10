@@ -34,13 +34,15 @@
     <mvn.compiler.version>3.1</mvn.compiler.version>
     <mvn.compile.target>1.8</mvn.compile.target>
     <dnsjava.version>2.1.0</dnsjava.version>
-    <hibernate.version>5.1.0.Final</hibernate.version>
+    <!-- Hibernate 5.1.x depends on javassist 3.20.0 which performs an 'illegal reflective access operation' -->
+    <hibernate.version>5.2.17.Final</hibernate.version>
     <hikari.cp.version>2.6.1</hikari.cp.version>
     <jackson.version>2.9.5</jackson.version>
     <javax.servlet.version>3.1.0</javax.servlet.version>
     <jersey.version>2.23.1</jersey.version>
     <log4j.version>1.2.17</log4j.version>
-    <mysql.connector.version>5.1.6</mysql.connector.version>
+    <!-- New Authentication in MySQL 8, need connector 5.1.46 or later -->
+    <mysql.connector.version>5.1.46</mysql.connector.version>
     <slf4j.version>1.7.21</slf4j.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -74,13 +76,13 @@
 
       <dependency>
         <groupId>eu.arrowhead</groupId>
-        <artifactId>common</artifactId>
+        <artifactId>arrowhead-common</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <dependency>
         <groupId>eu.arrowhead</groupId>
-        <artifactId>dnssd</artifactId>
+        <artifactId>arrowhead-dnssd</artifactId>
         <version>${project.version}</version>
       </dependency>
 

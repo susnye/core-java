@@ -69,7 +69,11 @@ public class GatekeeperMain {
   private static final Logger log = Logger.getLogger(GatekeeperMain.class.getName());
 
   static {
-    PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    if (new File("log4j.properties").exists()) {
+      PropertyConfigurator.configure("log4j.properties");
+    } else {
+      PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    }
     props = Utility.getProp("app.properties");
     USE_GATEWAY = props.getBooleanProperty("use_gateway", false);
     TIMEOUT = props.getIntProperty("timeout", 30000);
@@ -133,6 +137,9 @@ public class GatekeeperMain {
     }
     Utility.setServiceRegistryUri(SERVICE_REGISTRY_URI);
     getCoreSystemServiceUris();
+
+    // For Systemd scripts to detect when we're done (do not change)
+    log.info("Startup completed.");
 
     if (daemon) {
       System.out.println("In daemon mode, process will terminate for TERM signal...");

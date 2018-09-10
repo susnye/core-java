@@ -19,7 +19,7 @@
     <version>4.0</version>
   </parent>
 
-  <artifactId>choreographer</artifactId>
+  <artifactId>arrowhead-choreographer</artifactId>
   <packaging>jar</packaging>
 
   <properties>
@@ -35,7 +35,7 @@
 
     <dependency>
       <groupId>eu.arrowhead</groupId>
-      <artifactId>common</artifactId>
+      <artifactId>arrowhead-common</artifactId>
     </dependency>
 
   </dependencies>
@@ -78,7 +78,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>eu.arrowhead.core.choreographer.ChoreographerMain</mainClass>
-              <classpathPrefix>lib/</classpathPrefix>
+              <classpathPrefix>../lib/</classpathPrefix>
             </manifest>
           </archive>
         </configuration>
