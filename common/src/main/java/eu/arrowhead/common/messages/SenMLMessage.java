@@ -18,6 +18,13 @@ public class SenMLMessage{
   @NotNull
   private String bn;
 
+  private Double bt;
+  private String bu;
+  private Double bv;
+  private Double bs;
+  private Short bver;
+  Vector<Record> e
+
   public SenMLMessage() {
 
   }
@@ -29,5 +36,38 @@ public class SenMLMessage{
   public String getBn() {
     return bn;
   }
+
+  public void setBt(Double bt) {
+    this.bt = bt;
+  }
+
+  public Double getBt() {
+    return bt;
+  }
+
+  public void setBu(String bu) {
+    this.bu = bu;
+  }
+
+  public String getBu() {
+    return bu;
+  }
+
+  public class Record {
+    private String n;
+
+    public Record() {
+
+    }
+
+    public String getN() {
+      return n;
+    }
+    public void setN(String n) {
+      this.n = n;
+    }
+
+  }
+
 
 }
