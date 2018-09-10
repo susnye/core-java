@@ -13,7 +13,9 @@ import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.Utility;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.messages.SenMLMessage;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,5 +31,31 @@ final class DataManagerService {
   private static final Logger log = Logger.getLogger(DataManagerResource.class.getName());
   private static final DatabaseManager dm = DatabaseManager.getInstance();
 
+  private static List<String> endpoints = new ArrayList<>();
+
+  static boolean createEndpoint(String name) {
+    Iterator<String> epi = endpoints.iterator();
+    boolean found = false;
+
+    while (epi.hasNext()) {
+      String currentep = epi.next();
+      System.out.println("Found endpoint: " + currentep);
+      if (name.equals(currentep)) {
+        found = true;
+        return false;
+      }
+    }
+
+    endpoints.add(name);
+    return true;
+  }
+
+  static boolean updateEndpoint(SenMLMessage msg) {
+    return false;
+  }
+
+  static boolean deleteEndpoint(String name) { //XXX: do not support this now right now
+    return false;
+  }
 
 }
