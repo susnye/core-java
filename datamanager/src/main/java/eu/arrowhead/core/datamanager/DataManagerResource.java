@@ -10,9 +10,8 @@
 package eu.arrowhead.core.datamanager;
 
 import eu.arrowhead.common.Utility;
-import eu.arrowhead.common.database.EventFilter;
 import eu.arrowhead.common.exception.BadPayloadException;
-import eu.arrowhead.common.messages.PublishEvent;
+import eu.arrowhead.common.messages.SenMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import javax.validation.Valid;
@@ -50,7 +49,7 @@ public class DataManagerResource {
 
   @POST
   @Path("storage")
-  public Response storeData(@Valid PublishEvent eventPublished, @Context ContainerRequestContext requestContext) {
+  public Response storeData(@Valid SenMLMessage sml, @Context ContainerRequestContext requestContext) {
     int statusCode = 0;
     log.info("storage returned with status code: " + 0);
     return Response.status(Status.OK).build();
@@ -61,15 +60,15 @@ public class DataManagerResource {
   @Path("storage/{consumerName}")
   public Response getData(@PathParam("consumerName") String consumerName) {
     int statusCode = 0;
-    log.info("getData returned with status code: " + statusCode);
+    System.out.println("getData returned with status code: " + statusCode);
     return Response.status(Status.OK).build();
   }
 
   @PUT
   @Path("storage/{consumerName}")
-  public Response PutData(@PathParam("consumerName") String consumerName) {
+  public Response PutData(@PathParam("consumerName") String consumerName, @Valid SenMLMessage sml) {
     int statusCode = 0;
-    log.info("putData returned with status code: " + statusCode);
+    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.getBn());
     return Response.status(Status.OK).build();
   }
 
