@@ -68,7 +68,9 @@ public class DataManagerResource {
   @Path("storage/{consumerName}")
   public Response PutData(@PathParam("consumerName") String consumerName, @Valid SenMLMessage sml) {
     boolean statusCode = DataManagerService.createEndpoint(consumerName);
-    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.getBn() + " at: ");
+    statusCode = DataManagerService.updateEndpoint(consumerName, sml);
+    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.getBn() + " at: " + sml.getBt());
+
     return Response.status(Status.OK).build();
   }
 

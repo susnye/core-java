@@ -9,6 +9,7 @@
 
 package eu.arrowhead.common.messages;
 
+import java.util.Vector;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -23,7 +24,7 @@ public class SenMLMessage{
   private Double bv;
   private Double bs;
   private Short bver;
-  Vector<Record> e
+  Vector<Record> e;
 
   public SenMLMessage() {
 

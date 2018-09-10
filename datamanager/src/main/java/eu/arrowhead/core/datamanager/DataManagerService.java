@@ -50,7 +50,7 @@ final class DataManagerService {
     return true;
   }
 
-  static boolean updateEndpoint(SenMLMessage msg) {
+  static boolean updateEndpoint(String name, SenMLMessage msg) {
     return false;
   }
 
