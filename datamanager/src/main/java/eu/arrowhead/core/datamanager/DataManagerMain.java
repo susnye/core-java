@@ -11,13 +11,15 @@ package eu.arrowhead.core.datamanager;
 
 import eu.arrowhead.common.ArrowheadMain;
 import eu.arrowhead.common.misc.CoreSystem;
+import eu.arrowhead.common.web.ArrowheadSystemApi;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 public class DataManagerMain extends ArrowheadMain {
 
   private DataManagerMain(String[] args) {
-    Set<Class<?>> classes = new HashSet<>();
+    Set<Class<?>> classes = new HashSet<>(Arrays.asList(DataManagerResource.class, ArrowheadSystemApi.class));
     String[] packages = {"eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter"};
     init(CoreSystem.CHOREOGRAPHER, args, classes, packages);
     listenForInput();

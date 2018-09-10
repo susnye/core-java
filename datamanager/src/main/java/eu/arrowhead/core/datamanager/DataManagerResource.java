@@ -44,26 +44,32 @@ public class DataManagerResource {
   @GET
   @Produces(MediaType.TEXT_PLAIN)
   public String getIt() {
+    log.info("datamanager");
     return "This is the DataManager Arrowhead Core System.";
   }
 
   @POST
   @Path("storage")
   public Response storeData(@Valid PublishEvent eventPublished, @Context ContainerRequestContext requestContext) {
+    int statusCode = 0;
+    log.info("storage returned with status code: " + 0);
     return Response.status(Status.OK).build();
   }
 
 
   @GET
-  @Produces(MediaType.APPLICATION_JSON)
   @Path("storage/{consumerName}")
   public Response getData(@PathParam("consumerName") String consumerName) {
+    int statusCode = 0;
+    log.info("getData returned with status code: " + statusCode);
     return Response.status(Status.OK).build();
   }
 
   @PUT
   @Path("storage/{consumerName}")
   public Response PutData(@PathParam("consumerName") String consumerName) {
+    int statusCode = 0;
+    log.info("putData returned with status code: " + statusCode);
     return Response.status(Status.OK).build();
   }
 
