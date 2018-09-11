@@ -26,40 +26,65 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 
-final class DataManagerService {
+final class ProxyService {
 
   private static final Logger log = Logger.getLogger(DataManagerResource.class.getName());
-  private static final DatabaseManager dm = DatabaseManager.getInstance();
+  //private static final DatabaseManager dm = DatabaseManager.getInstance();
 
-  private static List<String> endpoints = new ArrayList<>();
+  private static List<ProxyElement> endpoints = new ArrayList<>();
 
-  static boolean createEndpoint(String name) {
-    Iterator<String> epi = endpoints.iterator();
-    boolean found = false;
+  static ProxyElement getEndpoint(String name) {
+    Iterator<ProxyElement> epi = endpoints.iterator();
 
     while (epi.hasNext()) {
-      String currentep = epi.next();
-      System.out.println("Found endpoint: " + currentep);
-      if (name.equals(currentep)) {
-        found = true;
-        return false;
+      ProxyElement curpe = epi.next();
+      System.out.println("Found endpoint: " + curpe.name);
+      if (name.equals(curpe.name)) {
+        return curpe;
       }
     }
 
-    endpoints.add(name);
-    return true;
+    return null;
   }
 
   static boolean updateEndpoint(String name, SenMLMessage msg) {
+    Iterator<ProxyElement> epi = endpoints.iterator();
+
+    while (epi.hasNext()) {
+      ProxyElement pe = epi.next();
+      if (name.equals(pe.name)) {
+	System.out.println("Found endpoint: " + pe.name);
+	pe.msg = msg;
+	System.out.println("Updating with: " + msg.toString());
+        return true;
+      }
+    }
     return false;
   }
 
   static SenMLMessage fetchEndpoint(String name) {
+    Iterator<ProxyElement> epi = endpoints.iterator();
+
+    while (epi.hasNext()) {
+      ProxyElement pe = epi.next();
+      if (name.equals(pe.name)) {
+	System.out.println("Found endpoint: " + pe.name);
+        return pe.msg;
+      }
+    }
+    System.out.println("Endpoint: " + name + " not found");
     return null;
+  }
+
+  static boolean addEndpoint(ProxyElement e) {
+    endpoints.add(e);
+    return true;
   }
 
   static boolean deleteEndpoint(String name) { //XXX: do not support this now right now
     return false;
   }
 
+
+  
 }

@@ -47,6 +47,8 @@ public class DataManagerResource {
     return "This is the DataManager Arrowhead Core System.";
   }
 
+
+  /* Historian Service */
   @POST
   @Path("storage")
   public Response storeData(@Valid SenMLMessage sml, @Context ContainerRequestContext requestContext) {
@@ -74,5 +76,43 @@ public class DataManagerResource {
     return Response.status(Status.OK).build();
   }
 
+
+  /* Proxy Service */
+  @POST
+  @Path("proxy")
+  public Response proxy(@Valid SenMLMessage sml, @Context ContainerRequestContext requestContext) {
+    int statusCode = 0;
+    log.info("Proxy returned with status code: " + 0);
+    return Response.status(Status.OK).build();
+  }
+
+
+  @GET
+  @Path("proxy/{consumerName}")
+  public Response proxyGet(@PathParam("consumerName") String consumerName) {
+    int statusCode = 0;
+    ProxyElement pe = ProxyService.getEndpoint(consumerName);
+    if (pe == null) {
+      System.out.println("proxyGet returned with NULL data");
+      return Response.status(Status.NOT_FOUND).build();
+    }
+
+    System.out.println("getData returned with data: " + pe.msg.toString());
+    return Response.status(Status.OK).entity(pe.msg).build();
+  }
+
+  @PUT
+  @Path("proxy/{consumerName}")
+  public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SenMLMessage sml) {
+    ProxyElement pe = ProxyService.getEndpoint(consumerName);
+    if (pe == null) {
+      pe = new ProxyElement(consumerName);
+      ProxyService.addEndpoint(pe);
+    }
+    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
+    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.getBn() + " at: " + sml.getBt());
+
+    return Response.status(Status.OK).build();
+  }
 
 }
