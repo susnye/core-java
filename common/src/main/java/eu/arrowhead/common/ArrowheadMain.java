@@ -137,7 +137,7 @@ public abstract class ArrowheadMain {
 	      stop = true;
 	    break;
 	    case "help":
-	    System.out.println("Supported command:\n  help\tPrints help message\n  stop\t Shutdown the system");
+	    System.out.println("Supported commands:\n  help\tPrints help message\n  stop\tShutdown the system");
 	    break;
 	  }
         } while (stop != true);
