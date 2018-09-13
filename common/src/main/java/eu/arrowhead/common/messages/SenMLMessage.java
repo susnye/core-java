@@ -15,6 +15,38 @@ import javax.validation.constraints.NotNull;
 
 public class SenMLMessage{
 
+
+  Vector<Record> e;
+
+  public SenMLMessage() {
+
+  }
+
+  public void setBn(String bn) {
+    //this.bn = bn;
+  }
+
+  public String getBn() {
+    return "";
+  }
+
+  public void setBt(Double bt) {
+    //this.bt = bt;
+  }
+
+  public Double getBt() {
+    return null;
+  }
+
+  public void setBu(String bu) {
+    //this.bu = bu;
+  }
+
+  public String getBu() {
+    return "";
+  }
+
+  public class Record {
   @Valid
   @NotNull
   private String bn;
@@ -24,37 +56,6 @@ public class SenMLMessage{
   private Double bv;
   private Double bs;
   private Short bver;
-  Vector<Record> e;
-
-  public SenMLMessage() {
-
-  }
-
-  public void setBn(String bn) {
-    this.bn = bn;
-  }
-
-  public String getBn() {
-    return bn;
-  }
-
-  public void setBt(Double bt) {
-    this.bt = bt;
-  }
-
-  public Double getBt() {
-    return bt;
-  }
-
-  public void setBu(String bu) {
-    this.bu = bu;
-  }
-
-  public String getBu() {
-    return bu;
-  }
-
-  public class Record {
     private String n;
 
     public Record() {

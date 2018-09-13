@@ -21,7 +21,7 @@ public class DataManagerMain extends ArrowheadMain {
   private DataManagerMain(String[] args) {
     Set<Class<?>> classes = new HashSet<>(Arrays.asList(DataManagerResource.class, ArrowheadSystemApi.class));
     String[] packages = {"eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter"};
-    init(CoreSystem.CHOREOGRAPHER, args, classes, packages);
+    init(CoreSystem.DATAMANAGER, args, classes, packages);
     listenForInput();
   }
 
