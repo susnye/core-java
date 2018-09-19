@@ -7,11 +7,6 @@ cd "$parent_path"
 echo Starting Core Systems - wait 1 minute
 #More sleep time between core systems might be needed on slower devices like a Raspberry Pi
 
-cd ../datamanager/target
-nohup java -jar datamanager-4.0.jar -d -daemon &> insecure_dm.log &
-echo DataManager started
-sleep 10s
-exit
 cd ../serviceregistry_sql/target
 nohup java -jar serviceregistry_sql-4.0.jar -d -daemon &> insecure_sr.log &
 echo Service Registry started
@@ -30,6 +25,11 @@ sleep 10s
 cd ../../eventhandler/target
 nohup java -jar eventhandler-4.0.jar -d -daemon &> insecure_eventhandler.log &
 echo Event Handler started
+sleep 10s
+
+cd ../../datamanager/target
+nohup java -jar datamanager-4.0.jar -d -daemon &> insecure_dm.log &
+echo DataManager started
 sleep 10s
 
 cd ../../gatekeeper/target
