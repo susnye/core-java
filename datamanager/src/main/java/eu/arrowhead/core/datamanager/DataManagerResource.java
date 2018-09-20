@@ -14,6 +14,7 @@ import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.messages.SenMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -93,9 +94,11 @@ public class DataManagerResource {
     int statusCode = 0;
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
     if (pe == null) {
-      System.out.println("proxyGet returned with NULL data");
+      System.out.println("proxy GET to consumerName: " + consumerName + " not found");
+      //System.out.println("proxyGet returned with NULL data");
       return Response.status(Status.NOT_FOUND).build();
     }
+System.out.println("pe.sml: "+ pe.msg + "\t"+pe.msg.toString());
 
     System.out.println("getData returned with data: " + pe.msg.toString());
     return Response.status(Status.OK).entity(pe.msg).build();
@@ -103,16 +106,21 @@ public class DataManagerResource {
 
   @PUT
   @Path("proxy/{consumerName}")
-  public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SenMLMessage sml) {
+  public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid List<SenMLMessage> sml) {
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
     if (pe == null) {
+      System.out.println("consumerName: " + consumerName + " not found, creating");
       pe = new ProxyElement(consumerName);
       ProxyService.addEndpoint(pe);
     }
-    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
-    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.getBn() + " at: " + sml.getBt());
 
-    return Response.status(Status.OK).build();
+System.out.println("sml: "+ sml + "\t"+sml.toString());
+    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml.get(0));
+    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.get(0).getBn() + " at: " + sml.get(0).getBt());
+
+    String jsonret = "{\"res\": 0}";
+    return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
+    //return Response.status(Status.OK).build();
   }
 
 }
