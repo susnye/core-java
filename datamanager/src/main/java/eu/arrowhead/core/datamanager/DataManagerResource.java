@@ -98,7 +98,7 @@ public class DataManagerResource {
       //System.out.println("proxyGet returned with NULL data");
       return Response.status(Status.NOT_FOUND).build();
     }
-System.out.println("pe.sml: "+ pe.msg + "\t"+pe.msg.toString());
+//System.out.println("pe.sml: "+ pe.msg + "\t"+pe.msg.toString());
 
     System.out.println("getData returned with data: " + pe.msg.toString());
     return Response.status(Status.OK).entity(pe.msg).build();
@@ -114,7 +114,7 @@ System.out.println("pe.sml: "+ pe.msg + "\t"+pe.msg.toString());
       ProxyService.addEndpoint(pe);
     }
 
-System.out.println("sml: "+ sml + "\t"+sml.toString());
+    //System.out.println("sml: "+ sml + "\t"+sml.toString());
     boolean statusCode = ProxyService.updateEndpoint(consumerName, sml.get(0));
     System.out.println("putData returned with status code: " + statusCode + " from: " + sml.get(0).getBn() + " at: " + sml.get(0).getBt());
 
