@@ -92,3 +92,12 @@ this script should only be used for test clouds on a clean installation.
 
 For clouds installed in detached mode, a certificate for a second cloud can be generated with
 `sudo ahcert_cloud ./ CLOUD_NAME`, e.g. `sudo ahcert_cloud ./ testcloud2`.
+
+To switch to insecure mode of all core services, remove `-tls`in the service files and restart them, e.g.:
+
+`cd /etc/systemd/system/; sudo find -name arrowhead-\*.service -exec sed -i 's|^\(ExecStart=.*\) -tls$|\1|' {} \; && sudo systemctl daemon-reload && sudo systemctl restart arrowhead*.service`
+
+To switch back to secure mode add `-tls` again, e.g.:
+
+`cd /etc/systemd/system/; sudo find -name arrowhead-\*.service -exec sed -i 's|^\(ExecStart=.*\)$|\1 -tls|' {} \; && sudo systemctl daemon-reload && sudo systemctl restart arrowhead*.service`
+
