@@ -36,10 +36,7 @@ Check Java version:
 
 Do this on your local Arrowhead development machine.
 
-When/if Debian packages get integrated, you should use <https://github.com/hegeduscs/arrowhead>,
-but until then, get the source from my personal GitHub:
-
-`git clone https://github.com/eudyptula/arrowhead.git -b debian --depth 1`
+`git clone https://github.com/arrowhead-f/core-java.git -b feature/debian`
 
 Build:
 
