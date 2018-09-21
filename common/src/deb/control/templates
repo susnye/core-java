@@ -18,6 +18,11 @@ Type: password
 Default:
 Description: Enter the password for the externally issued cloud cert
 
+Template: arrowhead-common/cloud_alias
+Type: string
+Default:
+Description: Enter the alias for the externally issued cloud cert
+
 Template: arrowhead-common/cloudname
 Type: string
 Default: testcloud
@@ -51,3 +56,8 @@ Description: Password for the certificates and stores (leave empty for random). 
 Template: arrowhead-common/reconf_warning
 Type: note
 Description: You have to manually reconfigure all Arrowhead systems when changing passwords
+
+Template: arrowhead-common/public_mysql
+Type: select
+Choices: Yes, No
+Description: Open MySQL for remote access?

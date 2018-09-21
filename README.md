@@ -92,3 +92,6 @@ If you need to generate a new certificate for an application system, signed with
 For the provider and consumer example in the client skeletons, the script `sudo ah_quickstart_gen` can be used to
 generate the necessary certificates and database entries. It will also output the certificate/keystore password. Note,
 this script should only be used for test clouds on a clean installation.
+
+For clouds installed in detached mode, a certificate for a second cloud can be generated with
+`sudo ahcert_cloud ./ CLOUD_NAME`, e.g. `sudo ahcert_cloud ./ testcloud2`.
