@@ -18,6 +18,11 @@ Type: password
 Default:
 Description: Enter the password for the externally issued cloud cert
 
+Template: arrowhead-common/cloud_alias
+Type: string
+Default:
+Description: Enter the alias for the externally issued cloud cert
+
 Template: arrowhead-common/cloudname
 Type: string
 Default: testcloud
