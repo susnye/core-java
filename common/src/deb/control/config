@@ -58,10 +58,10 @@ if [ "$install_type" = "Authorized" ]; then
         chmod 640 "/etc/arrowhead/cert/master.crt"
 
         subject=$(keytool -list -keystore "/etc/arrowhead/cert/cloud.p12" -storepass ${cloud_password} -v -alias cloud | grep "Owner:" | head -n1 | sed 's|Owner: ||')
-        cloud_name=$(echo "$subject" | sed 's|^.*CN=\([^.]*\)\..*$|\1|')
-        operator=$(echo "$subject" | sed 's|^.*OU=\([^,]*\),.*$|\1|')
-        company=$(echo "$subject" | sed 's|^.*O=\([^,]*\),.*$|\1|')
-        country=$(echo "$subject" | sed 's|^.*C=\([^,]*\)\(,.*\)\{0,1\}$|\1|')
+        cloud_name=$(echo "$subject" | sed 's|^.*CN=\([^.]*\)\.\([^.]*\)\.\([^.]*\)\.\([^,]*\),.*$|\1|')
+        operator=$(echo "$subject" | sed 's|^.*CN=\([^.]*\)\.\([^.]*\)\.\([^.]*\)\.\([^,]*\),.*$|\2|')
+        company=$(echo "$subject" | sed 's|^.*CN=\([^.]*\)\.\([^.]*\)\.\([^.]*\)\.\([^,]*\),.*$|\3|')
+        country=$(echo "$subject" | sed 's|^.*CN=\([^.]*\)\.\([^.]*\)\.\([^.]*\)\.\([^,]*\),.*$|\4|')
 
         db_set arrowhead-common/cloudname ${cloud_name}
         db_set arrowhead-common/operator ${operator}
