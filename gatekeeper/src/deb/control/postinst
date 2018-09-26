@@ -38,8 +38,10 @@ case "$1" in
             mkdir -p /etc/arrowhead/${SERVICE_NAME}
         fi
 
-        ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
-        ah_cert_import "/etc/arrowhead/cert" "master" "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME}
+        if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12" ]; then
+            ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
+            ah_cert_import "/etc/arrowhead/cert" "master" "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME}
+        fi
 
         if [ $(mysql -u root arrowhead -sse "SELECT COUNT(*) FROM arrowhead_cloud;") -eq 0 ]; then
             pubkey64=$(\
