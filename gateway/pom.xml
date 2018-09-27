@@ -169,6 +169,15 @@
                   </mapper>
                 </data>
 
+                <data>
+                  <type>file</type>
+                  <src>${project.build.directory}/lib/amqp-client-3.0.4.jar</src>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/share/arrowhead/lib</prefix>
+                  </mapper>
+                </data>
+
               </dataSet>
             </configuration>
           </execution>
