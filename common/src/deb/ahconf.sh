@@ -163,11 +163,13 @@ EOF
 
 ah_cert_export () {
     if [ ! -f "${3}/${2}.crt" ]; then
-        keytool -export \
+        keytool -exportcert \
+            -rfc \
             -alias ${2} \
             -storepass ${AH_PASS_CERT} \
             -keystore ${1}/${2}.p12 \
-            -file ${3}/${2}.crt
+        | openssl x509 \
+            -out ${3}/${2}.crt
 
         chown :arrowhead ${3}/${2}.crt
         chmod 640 ${3}/${2}.crt

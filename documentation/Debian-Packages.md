@@ -274,8 +274,10 @@ fi
 - Generate a signed system certificate in this dir (use functions in ahconf.sh again)
 
 ```bash
-ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
-ah_cert_import "/etc/arrowhead/cert" "master" "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME}
+if [ ! -f "/etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12" ]; then
+    ah_cert_signed "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME} "${SERVICE_NAME}.${AH_CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" /etc/arrowhead/cert cloud
+    ah_cert_import "/etc/arrowhead/cert" "master" "/etc/arrowhead/${SERVICE_NAME}" ${SERVICE_NAME}
+fi
 ```
 
 - Insert data into MySQL database if required (Gatekeeper currently does this)
@@ -405,8 +407,7 @@ case "$1" in
             /var/log/arrowhead/${SERVICE_NAME}.log \
             /etc/arrowhead/${SERVICE_NAME}/app.properties \
             /etc/arrowhead/${SERVICE_NAME}/log4j.properties \
-            /etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12 \
-            /etc/arrowhead/cert/master.crt
+            /etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12
         rmdir /etc/arrowhead/${SERVICE_NAME} 2>/dev/null || true
         rmdir /var/log/arrowhead 2>/dev/null || true
         echo PURGE | debconf-communicate ${PKG_NAME}
