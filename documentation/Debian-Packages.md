@@ -407,8 +407,7 @@ case "$1" in
             /var/log/arrowhead/${SERVICE_NAME}.log \
             /etc/arrowhead/${SERVICE_NAME}/app.properties \
             /etc/arrowhead/${SERVICE_NAME}/log4j.properties \
-            /etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12 \
-            /etc/arrowhead/cert/master.crt
+            /etc/arrowhead/${SERVICE_NAME}/${SERVICE_NAME}.p12
         rmdir /etc/arrowhead/${SERVICE_NAME} 2>/dev/null || true
         rmdir /var/log/arrowhead 2>/dev/null || true
         echo PURGE | debconf-communicate ${PKG_NAME}
