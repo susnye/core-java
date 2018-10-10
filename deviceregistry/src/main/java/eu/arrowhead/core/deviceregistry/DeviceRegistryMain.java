@@ -31,6 +31,7 @@ import org.glassfish.grizzly.http.server.HttpServer;
 public class DeviceRegistryMain extends ArrowheadMain {
 
   private DeviceRegistryMain(String[] args) {
+
     Set<Class<?>> classes = new HashSet<>(Arrays.asList(
     																	DeviceRegistryResource.class, 
     																	DeviceRegistryApi.class,
@@ -43,6 +44,7 @@ public class DeviceRegistryMain extends ArrowheadMain {
     		"eu.arrowhead.common.filter", 
 				"eu.arrowhead.core.systemregistry"};
     init(CoreSystem.DEVICEREGISTRY, args, classes, packages);
+
 
     listenForInput();
   }
