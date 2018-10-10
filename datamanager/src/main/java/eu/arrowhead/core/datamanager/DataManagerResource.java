@@ -11,6 +11,7 @@ package eu.arrowhead.core.datamanager;
 
 import eu.arrowhead.common.Utility;
 import eu.arrowhead.common.exception.BadPayloadException;
+//import eu.arrowhead.common.messages.SigMLMessage;
 import eu.arrowhead.common.messages.SenMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
@@ -51,16 +52,22 @@ public class DataManagerResource {
 
   /* Historian Service */
   @POST
-  @Path("storage")
+  @Path("historian")
   public Response storeData(@Valid SenMLMessage sml, @Context ContainerRequestContext requestContext) {
     int statusCode = 0;
     log.info("storage returned with status code: " + 0);
     return Response.status(Status.OK).build();
   }
 
+  @GET
+  @Path("historian")
+  public String getInfio(@Context ContainerRequestContext requestContext) {
+    return "Datamanager::Historian";
+  }
+
 
   @GET
-  @Path("storage/{consumerName}")
+  @Path("historian/{consumerName}")
   public Response getData(@PathParam("consumerName") String consumerName) {
     int statusCode = 0;
     System.out.println("getData returned with status code: " + statusCode);
@@ -68,20 +75,26 @@ public class DataManagerResource {
   }
 
   @PUT
-  @Path("storage/{consumerName}")
+  @Path("historian/{consumerName}")
   public Response PutData(@PathParam("consumerName") String consumerName, @Valid SenMLMessage sml) {
     boolean statusCode = DataManagerService.createEndpoint(consumerName);
     statusCode = DataManagerService.updateEndpoint(consumerName, sml);
-    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.getBn() + " at: " + sml.getBt());
+    System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
 
     return Response.status(Status.OK).build();
   }
 
 
   /* Proxy Service */
+  @GET
+  @Path("proxy")
+  public String getInfio() {
+    return "DataManager::Proxy";
+  }
+
   @POST
   @Path("proxy")
-  public Response proxy(@Valid SenMLMessage sml, @Context ContainerRequestContext requestContext) {
+  public Response proxy(@Context ContainerRequestContext requestContext) {
     int statusCode = 0;
     log.info("Proxy returned with status code: " + 0);
     return Response.status(Status.OK).build();
@@ -100,13 +113,17 @@ public class DataManagerResource {
     }
 //System.out.println("pe.sml: "+ pe.msg + "\t"+pe.msg.toString());
 
-    System.out.println("getData returned with data: " + pe.msg.toString());
+    System.out.println("getData returned with data: " /*+ pe.msg.toString()*/);
+    //return Response.status(Status.OK).entity(/*pe.msg*/"{\"p\":0}").build();
+    //return Response.status(Status.OK).build(); //entity(/*pe.msg*/"{\"p\":0}").build();
     return Response.status(Status.OK).entity(pe.msg).build();
   }
+
 
   @PUT
   @Path("proxy/{consumerName}")
   public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid List<SenMLMessage> sml) {
+  //public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sigml) {
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
     if (pe == null) {
       System.out.println("consumerName: " + consumerName + " not found, creating");
@@ -115,8 +132,8 @@ public class DataManagerResource {
     }
 
     //System.out.println("sml: "+ sml + "\t"+sml.toString());
-    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml.get(0));
-    System.out.println("putData returned with status code: " + statusCode + " from: " + sml.get(0).getBn() + " at: " + sml.get(0).getBt());
+    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
+    System.out.println("putData returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
 
     String jsonret = "{\"res\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
