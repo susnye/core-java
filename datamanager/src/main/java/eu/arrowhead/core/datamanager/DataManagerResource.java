@@ -11,8 +11,8 @@ package eu.arrowhead.core.datamanager;
 
 import eu.arrowhead.common.Utility;
 import eu.arrowhead.common.exception.BadPayloadException;
-//import eu.arrowhead.common.messages.SigMLMessage;
 import eu.arrowhead.common.messages.SenMLMessage;
+import eu.arrowhead.common.messages.SigMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
@@ -122,8 +122,24 @@ public class DataManagerResource {
 
   @PUT
   @Path("proxy/{consumerName}")
+  public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sml) {
+    ProxyElement pe = ProxyService.getEndpoint(consumerName);
+    if (pe == null) {
+      System.out.println("consumerName: " + consumerName + " not found, creating");
+      pe = new ProxyElement(consumerName);
+      ProxyService.addEndpoint(pe);
+    }
+
+    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml.msg);
+    System.out.println("putData returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
+
+    String jsonret = "{\"res\": 0}";
+    return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
+  }
+
+  @PUT
+  @Path("proxy/{consumerName}")
   public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid List<SenMLMessage> sml) {
-  //public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sigml) {
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
     if (pe == null) {
       System.out.println("consumerName: " + consumerName + " not found, creating");
