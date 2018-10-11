@@ -27,13 +27,20 @@ public class SenMLMessage{
   private Double bs;
   private Short bver;
   private String n;
+  private String u;
+  private Double v;
+  private String vs;
+  private Boolean vb;
+  private Double s;
+  private Double t;
+  private Double ut;
 
   public SenMLMessage() {
 
   }
 
   public void setBn(String bn) {
-    this.bn = bn;
+    this.bn = new String(bn);
   }
 
   public String getBn() {
@@ -56,7 +63,7 @@ public class SenMLMessage{
     return bu;
   }
 
-  public class Record {
+  /*public class Record {
     private String bn;
     private Double bt;
     private String bu;
@@ -64,6 +71,8 @@ public class SenMLMessage{
     private Double bs;
     private Short bver;
     private String n;
+    private String u;
+    private double v;
 
     public Record() {
       bn = "test";
@@ -78,7 +87,7 @@ public class SenMLMessage{
       this.n = n;
     }
 
-  }
+  }*/
 
 
 }
