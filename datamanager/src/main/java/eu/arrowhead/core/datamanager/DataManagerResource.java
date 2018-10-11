@@ -16,6 +16,7 @@ import eu.arrowhead.common.messages.SigMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
+import java.util.Vector;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -122,6 +123,7 @@ public class DataManagerResource {
 
   @PUT
   @Path("proxy/{consumerName}")
+  @Consumes("application/sigml+json")
   public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sml) {
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
     if (pe == null) {
@@ -130,8 +132,8 @@ public class DataManagerResource {
       ProxyService.addEndpoint(pe);
     }
 
-    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml.msg);
-    System.out.println("putData returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
+    boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
+    System.out.println("putData/SigML returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
 
     String jsonret = "{\"res\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
@@ -139,7 +141,8 @@ public class DataManagerResource {
 
   @PUT
   @Path("proxy/{consumerName}")
-  public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid List<SenMLMessage> sml) {
+  @Consumes("application/senml+json")
+  public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid Vector<SenMLMessage> sml) {
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
     if (pe == null) {
       System.out.println("consumerName: " + consumerName + " not found, creating");
@@ -149,7 +152,7 @@ public class DataManagerResource {
 
     //System.out.println("sml: "+ sml + "\t"+sml.toString());
     boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
-    System.out.println("putData returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
+    System.out.println("putData/SenML returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
 
     String jsonret = "{\"res\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();

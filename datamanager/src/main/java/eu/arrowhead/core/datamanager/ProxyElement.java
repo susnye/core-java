@@ -9,20 +9,21 @@
 
 package eu.arrowhead.core.datamanager;
 
+import java.util.Vector;
 //import eu.arrowhead.common.messages.SigMLMessage;
 import eu.arrowhead.common.messages.SenMLMessage;
 
 public class ProxyElement {
 
   public String name = null;
-  public SenMLMessage msg = null;
+  public Vector<SenMLMessage> msg = null;
 
   public ProxyElement(String name) {
     this.name = name;
     this.msg = null;
   }
 
-  public ProxyElement(String name, SenMLMessage msg) {
+  public ProxyElement(String name, Vector<SenMLMessage> msg) {
     this.name = name;
     this.msg = msg;
   }

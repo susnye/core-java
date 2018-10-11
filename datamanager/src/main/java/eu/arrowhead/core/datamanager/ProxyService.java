@@ -13,13 +13,14 @@ import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.Utility;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.exception.ArrowheadException;
-//import eu.arrowhead.common.messages.SigMLMessage;
+import eu.arrowhead.common.messages.SigMLMessage;
 import eu.arrowhead.common.messages.SenMLMessage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Vector;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -48,14 +49,14 @@ final class ProxyService {
     return null;
   }
 
-  static boolean updateEndpoint(String name, List<SenMLMessage> msg) {
+  static boolean updateEndpoint(String name, Vector<SenMLMessage> msg) {
     Iterator<ProxyElement> epi = endpoints.iterator();
 
     while (epi.hasNext()) {
       ProxyElement pe = epi.next();
       if (name.equals(pe.name)) {
 	System.out.println("Found endpoint: " + pe.name);
-	pe.msg = msg.get(0);
+	pe.msg = msg; //.get(0);
 	System.out.println("Updating with: " + msg.toString());
         return true;
       }
@@ -63,15 +64,15 @@ final class ProxyService {
     return false;
   }
 
-  static boolean updateEndpoint(String name, SenMLMessage msg) {
+  static boolean updateEndpoint(String name, SigMLMessage msg) {
     Iterator<ProxyElement> epi = endpoints.iterator();
 
     while (epi.hasNext()) {
       ProxyElement pe = epi.next();
       if (name.equals(pe.name)) {
 	System.out.println("Found endpoint: " + pe.name);
-	pe.msg = msg;
-	System.out.println("Updating with: " + msg.toString());
+	pe.msg = msg.sml;
+	System.out.println("Updating with: " + msg.sml.toString());
         return true;
       }
     }

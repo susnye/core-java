@@ -19,7 +19,7 @@ public class SigMLMessage{
   @NotNull
   public int p;
 
-  Vector<SenMLMessage> sml = null;
+  public Vector<SenMLMessage> sml = null;
 
   public SigMLMessage() {
   }
