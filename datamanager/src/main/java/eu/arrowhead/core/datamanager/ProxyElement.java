@@ -10,22 +10,41 @@
 package eu.arrowhead.core.datamanager;
 
 import java.util.Vector;
-//import eu.arrowhead.common.messages.SigMLMessage;
+import eu.arrowhead.common.messages.SigMLMessage;
 import eu.arrowhead.common.messages.SenMLMessage;
 
 public class ProxyElement {
 
   public String name = null;
+  public int p = -1;	      // p is valid when using SigmL, set to -1 if data is SenML
   public Vector<SenMLMessage> msg = null;
 
   public ProxyElement(String name) {
-    this.name = name;
+    this.name = new String(name);
+    this.p = -1;
     this.msg = null;
   }
 
-  public ProxyElement(String name, Vector<SenMLMessage> msg) {
-    this.name = name;
-    this.msg = msg;
+
+  /**
+   * @fn public ProxyElement(String name, Vector<SenMLMessage> senml)
+   * @brief creates a new ProxyElement from a SenML message
+   */
+  public ProxyElement(String name, Vector<SenMLMessage> senml) {
+    this.name = new String(name);
+    this.p = -1;
+    this.msg = senml;
+  }
+
+
+  /**
+   * @fn public ProxyElement(String name, SigMLMessage sigml)
+   * @brief creates a new ProxyElement from a SigML message
+   */
+  public ProxyElement(String name, SigMLMessage sigml) {
+    this.name = new String(name);
+    this.p = sigml.getp();
+    this.msg = sigml.getSenML();
   }
 
 }

@@ -33,6 +33,18 @@ public class SigMLMessage{
     this.p = p;
   }
 
+  public int getp() {
+    return p;
+  }
+
+  public void setSenML(Vector<SenMLMessage> msg) {
+    this.sml = msg;
+  }
+
+  public Vector<SenMLMessage> getSenML() {
+    return sml;
+  }
+
   /*public SigMLMessage(short p, Vector<SenMLMessage> sml) {
     this.p = p;
     this.sml = sml;

@@ -135,7 +135,7 @@ public class DataManagerResource {
     boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
     System.out.println("putData/SigML returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
 
-    String jsonret = "{\"res\": 0}";
+    String jsonret = "{\"rc\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
   }
 
@@ -152,11 +152,10 @@ public class DataManagerResource {
 
     //System.out.println("sml: "+ sml + "\t"+sml.toString());
     boolean statusCode = ProxyService.updateEndpoint(consumerName, sml);
-    System.out.println("putData/SenML returned with status code: " + statusCode + " from: "); // + sigml.get(0).getBn() + " at: " + sml.get(0).getBt());
+    System.out.println("putData/SenML returned with status code: " + statusCode + " from: " + sml.get(0).getBn() + " at: " + sml.get(0).getBt());
 
-    String jsonret = "{\"res\": 0}";
+    String jsonret = "{\"rc\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
-    //return Response.status(Status.OK).build();
   }
 
 }
