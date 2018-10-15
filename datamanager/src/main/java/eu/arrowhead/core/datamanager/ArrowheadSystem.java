@@ -19,4 +19,12 @@ public class ArrowheadSystem {
     this.id = id; 
   }
 
+  public String getName() {
+    return this.name;
+  }
+
+  public int getId() {
+    return this.id;
+  }
+
 }

@@ -62,7 +62,7 @@ public class DataManagerResource {
 
   @GET
   @Path("historian")
-  public String getInfio(@Context ContainerRequestContext requestContext) {
+  public String getInfo(@Context ContainerRequestContext requestContext) {
     return "Datamanager::Historian";
   }
 
@@ -77,7 +77,20 @@ public class DataManagerResource {
 
   @PUT
   @Path("historian/{consumerName}")
-  public Response PutData(@PathParam("consumerName") String consumerName, @Valid SenMLMessage sml) {
+  @Consumes("application/sigml+json")
+  public Response PutData(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sml) {
+    boolean statusCode = DataManagerService.createEndpoint(consumerName);
+    statusCode = DataManagerService.updateEndpoint(consumerName, sml);
+    System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
+
+    return Response.status(Status.OK).build();
+  }
+
+ 
+  @PUT
+  @Path("historian/{consumerName}")
+  @Consumes("application/senml+json")
+  public Response PutData(@PathParam("consumerName") String consumerName, @Valid Vector<SenMLMessage> sml) {
     boolean statusCode = DataManagerService.createEndpoint(consumerName);
     statusCode = DataManagerService.updateEndpoint(consumerName, sml);
     System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
