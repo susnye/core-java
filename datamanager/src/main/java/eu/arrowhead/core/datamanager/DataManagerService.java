@@ -42,6 +42,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;*/
 import java.sql.DriverManager;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.SQLException;
 
 final class DataManagerService {
@@ -58,6 +59,7 @@ final class DataManagerService {
 
 
   static boolean Init(TypeSafeProperties props){
+    try {
     try {
       Class.forName("com.mysql.jdbc.Driver");
     } catch (ClassNotFoundException e) {
@@ -77,13 +79,69 @@ final class DataManagerService {
 
     if (connection != null) {
       //System.out.println("You made it, take control your database now!");
-    } else {
-      System.out.println("Failed to make connection!\nDatabase is offline");
-      return false;
-    }  
 
-    return true;
-  }
+      Statement statement = null;
+
+      String sql = "CREATE TABLE IF NOT EXISTS iot_devices(\n"
+	+ "id INT(11) NOT NULL AUTO_INCREMENT,\n"
+	+ "hwaddr VARCHAR(64),\n"
+	+ "name VARCHAR(64) NOT NULL,\n"
+	+ "alias VARCHAR(64),\n"
+	+ "last_update DATETIME, " + "PRIMARY KEY (id)\n"
+	+ ")";
+
+      try {
+	statement = connection.createStatement();
+
+	//System.out.println(sql);
+	statement.execute(sql);
+
+	System.out.println("Table \"dbuser\" is created!");
+
+	sql = "CREATE TABLE IF NOT EXISTS iot_messages(\n"
+	  + "id INT(11) NOT NULL AUTO_INCREMENT,\n"
+	  + "did INT(11) NOT NULL REFERENCES iot_devices(id),\n"
+	  + "ts BIGINT(20) NOT NULL,\n"
+	  + "stored datetime,\n"
+	  + "PRIMARY KEY (id)\n"
+	  + ")";
+
+	//System.out.println(sql);
+	statement.execute(sql);
+
+	sql = "CREATE TABLE IF NOT EXISTS iot_entries(\n"
+	  + "id BIGINT(20) NOT NULL AUTO_INCREMENT,\n"
+	  + "did INT(11) NOT NULL REFERENCES iot_devices(id),\n"
+	  + "mid INT(11) NOT NULL REFERENCES iot_messages(id),\n"
+	  + "PRIMARY KEY (id)\n"
+	  + ")";
+	//System.out.println(sql);
+	statement.execute(sql);
+
+      } catch (SQLException e) {
+	System.out.println(e.getMessage());
+      } finally {
+
+	if (statement != null) {
+	  statement.close();
+	}
+
+	if (connection != null) {
+	  connection.close();
+	}
+      }
+
+      } else {
+	System.out.println("Failed to make connection!\nDatabase is offline");
+	return false;
+      }
+
+      } catch (Exception e) {
+	return false;
+      } 
+
+      return true;
+    }
 
   /**
    * @fn static int lookupEndpoint(String name)
