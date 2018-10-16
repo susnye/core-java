@@ -60,7 +60,6 @@ final class DataManagerService {
 
   static boolean Init(TypeSafeProperties props){
     try {
-    try {
       Class.forName("com.mysql.jdbc.Driver");
     } catch (ClassNotFoundException e) {
       System.out.println("Where is your MySQL JDBC Driver?");
@@ -70,7 +69,7 @@ final class DataManagerService {
 
     System.out.println("MySQL JDBC Driver Registered!");
     try {
-      connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dmhistorian","dmuser", "dmpassword");
+      connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dmhistorian","dmuser", props.getProperty("dm_password"));
     } catch (SQLException e) {
       System.out.println("Connection Failed! Check output console");
       e.printStackTrace();
@@ -79,69 +78,109 @@ final class DataManagerService {
 
     if (connection != null) {
       //System.out.println("You made it, take control your database now!");
-
-      Statement statement = null;
-
-      String sql = "CREATE TABLE IF NOT EXISTS iot_devices(\n"
-	+ "id INT(11) NOT NULL AUTO_INCREMENT,\n"
-	+ "hwaddr VARCHAR(64),\n"
-	+ "name VARCHAR(64) NOT NULL,\n"
-	+ "alias VARCHAR(64),\n"
-	+ "last_update DATETIME, " + "PRIMARY KEY (id)\n"
-	+ ")";
-
-      try {
-	statement = connection.createStatement();
-
-	//System.out.println(sql);
-	statement.execute(sql);
-
-	System.out.println("Table \"dbuser\" is created!");
-
-	sql = "CREATE TABLE IF NOT EXISTS iot_messages(\n"
-	  + "id INT(11) NOT NULL AUTO_INCREMENT,\n"
-	  + "did INT(11) NOT NULL REFERENCES iot_devices(id),\n"
-	  + "ts BIGINT(20) NOT NULL,\n"
-	  + "stored datetime,\n"
-	  + "PRIMARY KEY (id)\n"
-	  + ")";
-
-	//System.out.println(sql);
-	statement.execute(sql);
-
-	sql = "CREATE TABLE IF NOT EXISTS iot_entries(\n"
-	  + "id BIGINT(20) NOT NULL AUTO_INCREMENT,\n"
-	  + "did INT(11) NOT NULL REFERENCES iot_devices(id),\n"
-	  + "mid INT(11) NOT NULL REFERENCES iot_messages(id),\n"
-	  + "PRIMARY KEY (id)\n"
-	  + ")";
-	//System.out.println(sql);
-	statement.execute(sql);
-
-      } catch (SQLException e) {
-	System.out.println(e.getMessage());
-      } finally {
-
-	if (statement != null) {
-	  statement.close();
-	}
-
-	if (connection != null) {
-	  connection.close();
-	}
-      }
-
-      } else {
-	System.out.println("Failed to make connection!\nDatabase is offline");
-	return false;
-      }
-
-      } catch (Exception e) {
-	return false;
-      } 
-
-      return true;
+      checkTables(connection, "dmhistorian");
+      //connection.close();
     }
+
+    return true;
+  }
+
+
+/**
+ * @fn public int checkTables(Connection conn, String database)
+ * @brief Returns the database id of a system
+ *
+ */
+  public static int checkTables(Connection conn, String database) {
+    //if ( enable_database == false)
+    //return -1;
+
+    String sql = "CREATE DATABASE IF NOT EXISTS "+database;
+    try {
+      Statement stmt = conn.createStatement();
+      stmt.execute(sql);
+    } catch(SQLException se){
+      return -1;
+    }
+
+    sql = "CREATE TABLE IF NOT EXISTS iot_devices (\n" 
+      + "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n" 
+      + "hwaddr varchar(64),\n" 
+      + "name varchar(64) NOT NULL UNIQUE,\n" 
+      + "alias varchar(64),\n" 
+      + "last_update datetime" 
+      + ")\n";
+
+    try {
+      Statement stmt = conn.createStatement();
+      stmt.execute(sql);
+    } catch(SQLException se){
+      return -1;
+    }
+
+    sql = "CREATE TABLE IF NOT EXISTS iot_files (\n"
+      + "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n"
+      + "did INT NOT NULL,\n"
+      + "fid INT,\n"
+      + "stored datetime NOT NULL,\n"
+      + "cf int,\n"
+      + "content blob,\n"
+      +" filename varchar(64) NOT NULL,\n"
+      + "len int,\n"
+      + "crc32 int,\n"
+      + "FOREIGN KEY(did) REFERENCES iot_devices(id) ON DELETE CASCADE"
+      + ")\n";
+
+    try {
+      Statement stmt = conn.createStatement();
+      stmt.execute(sql);
+    } catch(SQLException se){
+      return -2;
+    }
+
+    sql = "CREATE TABLE IF NOT EXISTS iot_messages (\n"
+      + "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n"
+      + "did INT(8) NOT NULL,\n"
+      + "ts BIGINT UNSIGNED NOT NULL,\n"
+      + "stored datetime,\n"
+      + "FOREIGN KEY(did) REFERENCES iot_devices(id) ON DELETE CASCADE"
+      + ")\n";
+
+    try {
+      Statement stmt = conn.createStatement();
+      stmt.execute(sql);
+    } catch(SQLException se){
+      se.printStackTrace();
+      return -2;
+    }
+
+    sql = "CREATE TABLE IF NOT EXISTS iot_entries (\n"
+      + "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n"
+      + "did INT NOT NULL,\n"
+      + "mid INT NOT NULL,\n"
+      + "n varchar(32) NOT NULL,\n"
+      + "t BIGINT UNSIGNED NOT NULL,\n"
+      + "u varchar(32) NOT NULL,\n"
+      + "v  DOUBLE,\n"
+      + "sv varchar(32),\n"
+      + "bv BOOLEAN,\n"
+      + "FOREIGN KEY(did) REFERENCES iot_devices(id) ON DELETE CASCADE,\n"
+      + "FOREIGN KEY(mid) REFERENCES iot_messages(id) ON DELETE CASCADE"
+      + ")\n";
+
+    try {
+      Statement stmt = conn.createStatement();
+      stmt.execute(sql);
+      stmt.close();
+    } catch(SQLException se){
+      se.printStackTrace();
+      return -2;
+    }
+
+    return 0;
+  }
+
+
 
   /**
    * @fn static int lookupEndpoint(String name)
