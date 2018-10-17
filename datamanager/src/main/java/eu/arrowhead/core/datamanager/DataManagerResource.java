@@ -83,7 +83,9 @@ public class DataManagerResource {
     statusCode = DataManagerService.updateEndpoint(consumerName, sml);
     System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
 
-    return Response.status(Status.OK).build();
+    //return Response.status(Status.OK).build();
+    String jsonret = "{\"rc\": 0}";
+    return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
   }
 
  
@@ -95,7 +97,9 @@ public class DataManagerResource {
     statusCode = DataManagerService.updateEndpoint(consumerName, sml);
     System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
 
-    return Response.status(Status.OK).build();
+    //return Response.status(Status.OK).build();
+    String jsonret = "{\"rc\": 0}";
+    return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
   }
 
 

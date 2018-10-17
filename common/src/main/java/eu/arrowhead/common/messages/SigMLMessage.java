@@ -9,7 +9,9 @@
 
 package eu.arrowhead.common.messages;
 
+import eu.arrowhead.common.Utility;
 import java.util.Vector;
+import java.util.Iterator;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -22,6 +24,7 @@ public class SigMLMessage{
   public Vector<SenMLMessage> sml = null;
 
   public SigMLMessage() {
+    this.p = 0;
   }
 
   public SigMLMessage(short p) {
@@ -43,6 +46,10 @@ public class SigMLMessage{
 
   public Vector<SenMLMessage> getSenML() {
     return sml;
+  }
+
+  public String toString() {
+    return Utility.toPrettyJson(null, this);
   }
 
   /*public SigMLMessage(short p, Vector<SenMLMessage> sml) {

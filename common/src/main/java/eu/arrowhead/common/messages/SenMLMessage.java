@@ -9,12 +9,12 @@
 
 package eu.arrowhead.common.messages;
 
+import eu.arrowhead.common.Utility;
 import java.util.Vector;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class SenMLMessage{
-
+public class SenMLMessage {
 
   //Vector<Record> e;
   @Valid
@@ -37,6 +37,10 @@ public class SenMLMessage{
 
   public SenMLMessage() {
 
+  }
+
+  public String toString() {
+    return Utility.toPrettyJson(null, this);
   }
 
   public void setBn(String bn) {

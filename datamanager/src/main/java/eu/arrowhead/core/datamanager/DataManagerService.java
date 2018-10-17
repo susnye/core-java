@@ -43,22 +43,24 @@ import org.hibernate.criterion.Restrictions;*/
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 final class DataManagerService {
   private static final Logger log = Logger.getLogger(DataManagerResource.class.getName());
   //private static final DatabaseManager dm = DatabaseManager.getInstance();
   //private static SessionFactory factory;
-  //private static TypeSafeProperties prop;
+  private static TypeSafeProperties props;
   private static Connection connection = null;
   private static String dbAddress;
   private static String dbUser;
   private static String dbPassword;
 
-  private static List<String> endpoints = new ArrayList<>();
+  //private static List<String> endpoints = new ArrayList<>();
 
 
-  static boolean Init(TypeSafeProperties props){
+  static boolean Init(TypeSafeProperties propss){
+    props = propss;
     try {
       Class.forName("com.mysql.jdbc.Driver");
     } catch (ClassNotFoundException e) {
@@ -69,28 +71,30 @@ final class DataManagerService {
 
     System.out.println("MySQL JDBC Driver Registered!");
     try {
-      connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dmhistorian","dmuser", props.getProperty("dm_password"));
+      connection = DriverManager.getConnection(props.getProperty("db_address")+props.getProperty("db_database"),props.getProperty("db_user"), props.getProperty("db_password"));
+      //connection = getConnection();
+      checkTables(connection, props.getProperty("db_database"));
+      connection.close();
     } catch (SQLException e) {
       System.out.println("Connection Failed! Check output console");
       e.printStackTrace();
       return false;
     }
 
-    if (connection != null) {
-      //System.out.println("You made it, take control your database now!");
-      checkTables(connection, "dmhistorian");
-      //connection.close();
-    }
-
     return true;
   }
 
+  private static Connection getConnection() throws SQLException {
+    Connection conn = DriverManager.getConnection(props.getProperty("db_address")+props.getProperty("db_database"), props.getProperty("db_user"), props.getProperty("db_password"));
 
-/**
- * @fn public int checkTables(Connection conn, String database)
- * @brief Returns the database id of a system
- *
- */
+    return conn;
+  }
+
+
+  private static void closeConnection(Connection conn) throws SQLException {
+    conn.close();
+  }
+
   public static int checkTables(Connection conn, String database) {
     //if ( enable_database == false)
     //return -1;
@@ -105,7 +109,6 @@ final class DataManagerService {
 
     sql = "CREATE TABLE IF NOT EXISTS iot_devices (\n" 
       + "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n" 
-      + "hwaddr varchar(64),\n" 
       + "name varchar(64) NOT NULL UNIQUE,\n" 
       + "alias varchar(64),\n" 
       + "last_update datetime" 
@@ -181,73 +184,113 @@ final class DataManagerService {
   }
 
 
-
   /**
-   * @fn static int lookupEndpoint(String name)
-   * @brief Returns the database id of a system
+   * Returns the database ID of a specific system
    *
    */
-  static int lookupEndpoint(String name) {
-    /*Session session = dm.getSessionFactory.openSession();
-    Transaction tx = null;
+  static int macToID(String name, Connection conn) {
+    int id=-1;
+
+    System.out.println("macToID('"+name+"')");
+    Statement stmt = null;
     try {
+      //Class.forName("com.mysql.jdbc.Driver");
 
-      tx = session.beginTransaction();
-      Criteria cr = session.createCriteria(ArrowheadSystem.class);
+      stmt = conn.createStatement();
+      String sql;
+      sql = "SELECT id FROM iot_devices WHERE name='"+name+"';";
+      ResultSet rs = stmt.executeQuery(sql);
 
-      if (name != null) {
-	cr.add(Restrictions.like("name", "%" + name + "%"));
-      }
+      rs.next();
+      id  = rs.getInt("id");
 
-      List<ArrowheadSystem> systems = cr.list();
-      for (Iterator iterator = systems.iterator(); iterator.hasNext(); ) {
-	ArrowheadSystem ahsys = (ArrowheadSystem) iterator.next();
-	if(ahsys.getName().equals(name) == true) {
-	  return ahsys.getId();
-	}
-
-      }
-
-    } catch (HibernateException e) {
-      if (tx != null) {
-	tx.rollback();
-      }
+      rs.close();
+      stmt.close();
+    }catch(SQLException se){
+      id = -1;
+      //se.printStackTrace();
+    }catch(Exception e){
+      id = -1;
       e.printStackTrace();
-    } catch (Exception e) {
-      e.printStackTrace();
-    } 
-*/
-    return -1; //not found
+    }
+
+    //System.out.println("macToID('"+name+"')="+id);
+    return id;
+  }
+
+
+  static boolean updateEndpoint(String name, Vector<SenMLMessage> msg) {
+    boolean ret = false;
+    try {
+      Connection conn = getConnection();
+      int id = macToID(name, conn);
+      if (id != -1) {
+	SigMLMessage m = new SigMLMessage();
+	m.setSenML(msg);
+	ret = updateEndpoint(name, m);
+	closeConnection(conn);
+      } else {
+      }
+    } catch (SQLException e) {
+      ret = false;
+    }
+    return ret;
+  }
+
+  static boolean updateEndpoint(String name, SigMLMessage msg) {
+    boolean ret = false;
+    try {
+      Connection conn = getConnection();
+      int id = macToID(name, conn);
+      System.out.println("Got id of: " + id);
+      if (id != -1) {
+	Statement stmt = conn.createStatement();
+	String sql = "INSERT INTO iot_messages(did, ts, msg, stored) VALUES("+id+", 0, '"+msg.toString()+"',NOW());"; //how to escape "
+	System.out.println(sql);
+	int mid = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+	ResultSet rs = stmt.getGeneratedKeys();
+	rs.next();
+	mid = rs.getInt(1);
+	rs.close();
+
+	closeConnection(conn);
+      } else {
+      }
+    } catch (SQLException e) {
+      System.err.println(e.toString());
+    }
+
+    return false;
   }
 
 
   static boolean createEndpoint(String name) {
-    Iterator<String> epi = endpoints.iterator();
-    boolean found = false;
+    try {
+      Connection conn = getConnection();
+      int id = macToID(name, conn);
+      System.out.println("createEndpoint: found " + id);
+      if (id != -1) {
+	closeConnection(conn);
+	return true; //already exists
+      } else {
+	Statement stmt = conn.createStatement();
+	String sql = "INSERT INTO iot_devices(name) VALUES(\""+name+"\");"; //bug: check name for SQL injection!
+	//System.out.println(sql);
+	int mid = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+	ResultSet rs = stmt.getGeneratedKeys();
+	rs.next();
+	id = rs.getInt(1);
+	rs.close();
+	System.out.println("createEndpoint: created " + id);
 
-    while (epi.hasNext()) {
-      String currentep = epi.next();
-      if (name.equals(currentep)) {
-	System.out.println("Found endpoint: " + currentep);
-	found = true;
-	return false;
+	closeConnection(conn);
       }
+  
+    } catch (SQLException e) {
     }
-
-    endpoints.add(name);
     return true;
   }
 
-  static boolean updateEndpoint(String name, SigMLMessage msg) {
-    return updateEndpoint(name, msg.sml);
-  }
-
-  static boolean updateEndpoint(String name, Vector<SenMLMessage> msg) {
-    int id = lookupEndpoint(name);
-    System.out.println("Got id of: " + id);
-
-    return false;
-  }
 
   static SenMLMessage fetchEndpoint(String name) {
     return null;
