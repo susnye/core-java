@@ -117,6 +117,16 @@ public final class Utility {
     SR_QUERY_URI = UriBuilder.fromUri(uri).path("query").build().toString();
   }
 
+
+  /**
+   * Sends a secure request
+   *
+   * @param uri The endpoint 
+   * @param method The method
+   * @param payload The payload to send
+   * @param givenContext The SSL context
+   * @return A Response
+   */
   public static <T> Response sendRequest(String uri, String method, T payload, SSLContext givenContext) {
     log.info("Sending " + method + " request to: " + uri);
 
@@ -177,11 +187,25 @@ public final class Utility {
   }
 
 
+  /**
+   * Sends a request
+   *
+   * @param uri The endpoint 
+   * @param method The method
+   * @param payload The payload to send
+   * @return A Response
+   */
   public static <T> Response sendRequest(String uri, String method, T payload) {
     return sendRequest(uri, method, payload, null);
   }
 
 
+  /**
+   * Handles a reponse and any errors
+   *
+   * @param response
+   * @param uri
+   */
   private static void handleException(Response response, String uri) {
     //The response body has to be extracted before the stream closes
     String errorMessageBody = toPrettyJson(null, response.getEntity());
