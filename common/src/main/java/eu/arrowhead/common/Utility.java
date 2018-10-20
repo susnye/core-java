@@ -176,9 +176,11 @@ public final class Utility {
     return response;
   }
 
+
   public static <T> Response sendRequest(String uri, String method, T payload) {
     return sendRequest(uri, method, payload, null);
   }
+
 
   private static void handleException(Response response, String uri) {
     //The response body has to be extracted before the stream closes
@@ -238,6 +240,17 @@ public final class Utility {
     }
   }
 
+
+  /**
+   * Creates an URI from individudal parts
+   *
+   * @param address The base address
+   * @param port The port number
+   * @param serviceUri The path
+   * @param isSecure secure on non-secure protol version
+   * @param serverStart True if the URI is used to create a server socket
+   * @return An URI as String
+   */
   public static String getUri(String address, int port, String serviceUri, boolean isSecure, boolean serverStart) {
     if (address == null) {
       log.error("Address can not be null (Utility:getUri throws NPE)");
@@ -312,6 +325,13 @@ public final class Utility {
     return uriList;
   }
 
+
+  /**
+   * Gets the Arrowhead cloud
+   *
+   * @param isSecure True if secure communication must be used
+   * @return An ArrowheadCloud object
+   */
   public static ArrowheadCloud getOwnCloud(boolean isSecure) {
     List<OwnCloud> cloudList = DatabaseManager.getInstance().getAll(OwnCloud.class, null);
     if (cloudList.isEmpty()) {
@@ -341,6 +361,7 @@ public final class Utility {
     }
   }
 
+
   public static String stripEndSlash(String uri) {
     if (uri != null && uri.endsWith("/")) {
       return uri.substring(0, uri.length() - 1);
@@ -348,6 +369,13 @@ public final class Utility {
     return uri;
   }
 
+
+  /**
+   * Gets the data as String from an Inputstream
+   *
+   * @param is The InputStream
+   * @return the stream data as a String
+   */
   public static String getRequestPayload(InputStream is) {
     StringBuilder sb = new StringBuilder();
     String line;
