@@ -371,6 +371,14 @@ public final class Utility {
     }
   }
 
+
+  /**
+   * Converts an Object to JSON (string)
+   *
+   * @param jsonstring
+   * @param obj The Object to convert
+   * @return A JSON-formatted string
+   */
   public static String toPrettyJson(String jsonString, Object obj) {
     try {
       if (jsonString != null) {
