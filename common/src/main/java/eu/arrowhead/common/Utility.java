@@ -90,6 +90,13 @@ public final class Utility {
     throw new AssertionError("Arrowhead Common:Utility is a non-instantiable class");
   }
 
+
+  /**
+   * Creates a new Client object
+   *
+   * @param context Set to null to disable SSL security
+   * @return A new Client object, with SSl enabled if context is not null
+   */
   private static Client createClient(SSLContext context) {
     ClientConfig configuration = new ClientConfig();
     configuration.property(ClientProperties.CONNECT_TIMEOUT, 30000);
