@@ -67,31 +67,5 @@ public class SenMLMessage {
     return bu;
   }
 
-  /*public class Record {
-    private String bn;
-    private Double bt;
-    private String bu;
-    private Double bv;
-    private Double bs;
-    private Short bver;
-    private String n;
-    private String u;
-    private double v;
-
-    public Record() {
-      bn = "test";
-      bt = 0.0;
-      bver = 5;
-    }
-
-    public String getN() {
-      return n;
-    }
-    public void setN(String n) {
-      this.n = n;
-    }
-
-  }*/
-
 
 }
