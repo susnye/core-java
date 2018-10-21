@@ -69,7 +69,7 @@ public class DataManagerResource {
 
   @GET
   @Path("historian/{consumerName}")
-  //@produces("application/sigml+json")
+  //@Produces("application/sigml+json")
   public Response getData(@PathParam("consumerName") String consumerName) {
     int statusCode = 0;
     System.out.println("getData returned with status code: " + statusCode);
@@ -92,7 +92,7 @@ public class DataManagerResource {
   }
 
  
-  @PUT
+  /*@PUT
   @Path("historian/{consumerName}")
   @Consumes("application/senml+json")
   public Response PutData(@PathParam("consumerName") String consumerName, @Valid Vector<SenMLMessage> sml) {
@@ -103,7 +103,7 @@ public class DataManagerResource {
     //return Response.status(Status.OK).build();
     String jsonret = "{\"rc\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
-  }
+  }*/
 
 
   /* Proxy Service */
@@ -132,11 +132,7 @@ public class DataManagerResource {
       //System.out.println("proxyGet returned with NULL data");
       return Response.status(Status.NOT_FOUND).build();
     }
-//System.out.println("pe.sml: "+ pe.msg + "\t"+pe.msg.toString());
 
-    System.out.println("getData returned with data: " /*+ pe.msg.toString()*/);
-    //return Response.status(Status.OK).entity(/*pe.msg*/"{\"p\":0}").build();
-    //return Response.status(Status.OK).build(); //entity(/*pe.msg*/"{\"p\":0}").build();
     return Response.status(Status.OK).entity(pe.msg).build();
   }
 

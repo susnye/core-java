@@ -299,7 +299,7 @@ final class DataManagerService {
       System.out.println("Got id of: " + id);
       if (id != -1) {
 	Statement stmt = conn.createStatement();
-	String sql = "SELECT * FROM iot_messages WHERE did="+id+" LIMIT 1;"; //how to escape "
+	String sql = "SELECT * FROM iot_messages WHERE did="+id+" ORDER BY stored DESC LIMIT 1;"; //how to escape "
 	System.out.println(sql);
 	ResultSet rs = stmt.executeQuery(sql);
 
