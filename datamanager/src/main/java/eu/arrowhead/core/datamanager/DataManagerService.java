@@ -292,7 +292,35 @@ final class DataManagerService {
   }
 
 
-  static SenMLMessage fetchEndpoint(String name) {
+  static SigMLMessage fetchEndpoint(String name) {
+    try {
+      Connection conn = getConnection();
+      int id = macToID(name, conn);
+      System.out.println("Got id of: " + id);
+      if (id != -1) {
+	Statement stmt = conn.createStatement();
+	String sql = "SELECT * FROM iot_messages WHERE did="+id+" LIMIT 1;"; //how to escape "
+	System.out.println(sql);
+	ResultSet rs = stmt.executeQuery(sql);
+
+	rs.next();
+	String sigml = rs.getString("msg");
+	System.out.println("fetch() " + sigml);
+
+	rs.close();
+	stmt.close();
+
+	SigMLMessage ret = Utility.fromJson(sigml, SigMLMessage.class);
+
+	closeConnection(conn);
+	return ret;
+
+      } else {
+      }
+    } catch (SQLException e) {
+      System.err.println(e.toString());
+    }
+
     return null;
   }
 

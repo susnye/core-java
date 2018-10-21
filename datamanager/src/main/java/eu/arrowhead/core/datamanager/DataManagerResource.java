@@ -69,10 +69,13 @@ public class DataManagerResource {
 
   @GET
   @Path("historian/{consumerName}")
+  //@produces("application/sigml+json")
   public Response getData(@PathParam("consumerName") String consumerName) {
     int statusCode = 0;
     System.out.println("getData returned with status code: " + statusCode);
-    return Response.status(Status.OK).build();
+    //return Response.status(Status.OK).build();
+    SigMLMessage ret = DataManagerService.fetchEndpoint(consumerName);
+    return Response.status(Status.CREATED).entity(ret).build();
   }
 
   @PUT
