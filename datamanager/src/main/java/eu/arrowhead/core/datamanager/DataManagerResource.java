@@ -109,7 +109,7 @@ public class DataManagerResource {
   /* Proxy Service */
   @GET
   @Path("proxy")
-  public String getInfio() {
+  public String getInfo() {
     return "DataManager::Proxy";
   }
 
@@ -155,7 +155,7 @@ public class DataManagerResource {
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
   }
 
-  @PUT
+  /*@PUT
   @Path("proxy/{consumerName}")
   @Consumes("application/senml+json")
   public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid Vector<SenMLMessage> sml) {
@@ -172,6 +172,6 @@ public class DataManagerResource {
 
     String jsonret = "{\"rc\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
-  }
+  }*/
 
 }
