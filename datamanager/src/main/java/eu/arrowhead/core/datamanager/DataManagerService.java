@@ -292,25 +292,34 @@ final class DataManagerService {
   }
 
 
-  static SigMLMessage fetchEndpoint(String name) {
+  static SigMLMessage fetchEndpoint(String name, int count) {
     try {
       Connection conn = getConnection();
       int id = macToID(name, conn);
       System.out.println("Got id of: " + id);
       if (id != -1) {
 	Statement stmt = conn.createStatement();
-	String sql = "SELECT * FROM iot_messages WHERE did="+id+" ORDER BY stored DESC LIMIT 1;"; //how to escape "
+	String sql = "SELECT * FROM iot_messages WHERE did="+id+" ORDER BY stored DESC LIMIT "+count+";"; //how to escape "
 	System.out.println(sql);
 	ResultSet rs = stmt.executeQuery(sql);
 
-	rs.next();
-	String sigml = rs.getString("msg");
-	System.out.println("fetch() " + sigml);
+
+	String sigml = "";
+	Vector<SenMLMessage> messages = new Vector<SenMLMessage>(); 
+	while(rs.next() == true) {
+	  sigml = rs.getString("msg");
+	  SigMLMessage sm = Utility.fromJson(sigml, SigMLMessage.class);
+	  System.out.println("fetch() " + sigml);
+	  for (SenMLMessage m : sm.sml) {
+	    messages.add(m);
+	  }
+	}
 
 	rs.close();
 	stmt.close();
 
-	SigMLMessage ret = Utility.fromJson(sigml, SigMLMessage.class);
+	SigMLMessage ret = new SigMLMessage(); //Utility.fromJson(sigml, SigMLMessage.class);
+	ret.setSenML(messages);
 
 	closeConnection(conn);
 	return ret;

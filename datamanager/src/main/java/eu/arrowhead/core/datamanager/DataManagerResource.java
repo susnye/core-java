@@ -16,7 +16,7 @@ import eu.arrowhead.common.messages.SigMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
-import java.util.Vector;
+//import java.util.Vector;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,6 +24,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -70,11 +72,16 @@ public class DataManagerResource {
   @GET
   @Path("historian/{consumerName}")
   //@Produces("application/sigml+json")
-  public Response getData(@PathParam("consumerName") String consumerName) {
+  public Response getData(@PathParam("consumerName") String consumerName, @QueryParam("count") @DefaultValue("1") String count_s) {
     int statusCode = 0;
-    System.out.println("getData returned with status code: " + statusCode);
+    int count = Integer.parseInt(count_s);
+      
+    System.out.println("getData requested with count: " + count);
+
+
+//    System.out.println("getData returned with count: " + );
     //return Response.status(Status.OK).build();
-    SigMLMessage ret = DataManagerService.fetchEndpoint(consumerName);
+    SigMLMessage ret = DataManagerService.fetchEndpoint(consumerName, count);
     return Response.status(Status.CREATED).entity(ret).build();
   }
 
