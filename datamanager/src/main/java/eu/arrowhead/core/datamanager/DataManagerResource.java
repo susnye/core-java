@@ -16,7 +16,7 @@ import eu.arrowhead.common.messages.SigMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
-//import java.util.Vector;
+import java.util.Vector;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -30,6 +30,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -72,16 +74,36 @@ public class DataManagerResource {
   @GET
   @Path("historian/{consumerName}")
   //@Produces("application/sigml+json")
-  public Response getData(@PathParam("consumerName") String consumerName, @QueryParam("count") @DefaultValue("1") String count_s) {
+  public Response getData(@PathParam("consumerName") String consumerName, @QueryParam("count") @DefaultValue("1") String count_s, @Context UriInfo uriInfo) {
     int statusCode = 0;
     int count = Integer.parseInt(count_s);
       
     System.out.println("getData requested with count: " + count);
+    MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters(); 
+    int i=0;
+    String sig;
+    Vector<String> signals = new Vector<String>();
+    do {
+      sig = queryParams.getFirst("sig"+i);
+      if (sig != null) {
+        System.out.println("sig["+i+"]: "+sig+"");
+	signals.add(sig);
+      }
+      i++;
+    } while (sig != null);
+    if (signals.size() == 0)
+      signals = null;
+    
 
 
 //    System.out.println("getData returned with count: " + );
     //return Response.status(Status.OK).build();
-    SigMLMessage ret = DataManagerService.fetchEndpoint(consumerName, count);
+    SigMLMessage ret = null;
+    if(signals == null)
+      ret = DataManagerService.fetchEndpoint(consumerName, count);
+    else
+      ret = DataManagerService.fetchEndpoint(consumerName, count, signals);
+
     return Response.status(Status.CREATED).entity(ret).build();
   }
 
@@ -90,6 +112,13 @@ public class DataManagerResource {
   @Consumes("application/sigml+json")
   public Response PutData(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sml) {
     boolean statusCode = DataManagerService.createEndpoint(consumerName);
+
+
+    if (sml.getBn() == null)
+      sml.setBn(consumerName);
+    if (sml.getBt() == null)
+      sml.setBt((double)System.currentTimeMillis() / 1000.0);
+
     statusCode = DataManagerService.updateEndpoint(consumerName, sml);
     System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
 

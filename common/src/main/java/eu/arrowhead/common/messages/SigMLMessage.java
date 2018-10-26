@@ -21,6 +21,9 @@ public class SigMLMessage{
   @NotNull
   public int p;
 
+  private Double bt;
+  private String bn;
+
   public Vector<SenMLMessage> sml = null;
 
   public SigMLMessage() {
@@ -38,6 +41,22 @@ public class SigMLMessage{
 
   public int getp() {
     return p;
+  }
+
+  public void setBt(Double bt) {
+    this.bt = bt;
+  }
+
+  public Double getBt() {
+    return bt;
+  }
+
+  public void setBn(String bn) {
+    this.bn = bn;
+  }
+
+  public String getBn() {
+    return bn	;
   }
 
   public void setSenML(Vector<SenMLMessage> msg) {

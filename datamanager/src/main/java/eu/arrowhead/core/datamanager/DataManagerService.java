@@ -292,6 +292,10 @@ final class DataManagerService {
   }
 
 
+  static SigMLMessage fetchEndpoint(String name, int count, Vector<String> signals) {
+    return null;
+  }
+
   static SigMLMessage fetchEndpoint(String name, int count) {
     try {
       Connection conn = getConnection();
@@ -318,7 +322,17 @@ final class DataManagerService {
 	rs.close();
 	stmt.close();
 
-	SigMLMessage ret = new SigMLMessage(); //Utility.fromJson(sigml, SigMLMessage.class);
+	//recalculate a bt time and update all relative timestamps
+	SigMLMessage ret = new SigMLMessage();
+	ret.setBn(name);
+	ret.setBt(messages.get(0).getBt());
+	for (SenMLMessage m : messages) {
+	  m.setBn(null);
+	  m.setT(m.getBt()-ret.getBt());
+	  m.setBt(null);
+	}
+
+
 	ret.setSenML(messages);
 
 	closeConnection(conn);
@@ -332,6 +346,7 @@ final class DataManagerService {
 
     return null;
   }
+
 
   static boolean deleteEndpoint(String name) { //XXX: do not support this now right now
     return false;

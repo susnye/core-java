@@ -44,7 +44,7 @@ public class SenMLMessage {
   }
 
   public void setBn(String bn) {
-    this.bn = new String(bn);
+    this.bn = bn;
   }
 
   public String getBn() {
@@ -57,6 +57,14 @@ public class SenMLMessage {
 
   public Double getBt() {
     return bt;
+  }
+
+  public void setT(Double t) {
+    this.t = t;
+  }
+
+  public Double getT() {
+    return t;
   }
 
   public void setBu(String bu) {
