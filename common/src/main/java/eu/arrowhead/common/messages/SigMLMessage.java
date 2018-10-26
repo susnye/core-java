@@ -35,11 +35,11 @@ public class SigMLMessage{
 
   }
 
-  public void setp(short p) {
+  public void setP(short p) {
     this.p = p;
   }
 
-  public int getp() {
+  public int getP() {
     return p;
   }
 

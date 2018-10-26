@@ -43,7 +43,7 @@ public class ProxyElement {
    */
   public ProxyElement(String name, SigMLMessage sigml) {
     this.name = new String(name);
-    this.p = sigml.getp();
+    this.p = sigml.getP();
     this.msg = sigml.getSenML();
   }
 

@@ -21,7 +21,7 @@ public class SenMLMessage {
   @NotNull
   private String bn;
 
-  private Double bt;
+//  private Double bt;
   private String bu;
   private Double bv;
   private Double bs;
@@ -51,13 +51,21 @@ public class SenMLMessage {
     return bn;
   }
 
-  public void setBt(Double bt) {
+  public void setN(String n) {
+    this.n = n;
+  }
+
+  public String getN() {
+    return n;
+  }
+
+  /*public void setBt(Double bt) {
     this.bt = bt;
   }
 
   public Double getBt() {
     return bt;
-  }
+  }*/
 
   public void setT(Double t) {
     this.t = t;

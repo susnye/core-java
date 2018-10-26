@@ -293,6 +293,68 @@ final class DataManagerService {
 
 
   static SigMLMessage fetchEndpoint(String name, int count, Vector<String> signals) {
+    try {
+      Connection conn = getConnection();
+      int id = macToID(name, conn);
+      System.out.println("Got id of: " + id);
+      String signalss = "";
+      for (String sig: signals) {
+	signalss += ("'"+sig + "',");
+      }
+      signalss = signalss.substring(0, signalss.length()-1); //remove last ',' XXX. remove/detect escape characters 
+      System.out.println("Signals: '" + signalss + "'");
+
+      if (id != -1) {
+	Statement stmt = conn.createStatement();
+	String sql = "SELECT * FROM iot_messages WHERE did="+id+" ORDER BY stored DESC LIMIT "+count+";"; //how to escape "
+	System.out.println(sql);
+	ResultSet rs = stmt.executeQuery(sql);
+
+
+	String sigml = "";
+	Vector<SenMLMessage> messages = new Vector<SenMLMessage>(); 
+	while(rs.next() == true) {
+	  sigml = rs.getString("msg");
+	  SigMLMessage sm = Utility.fromJson(sigml, SigMLMessage.class);
+	  System.out.println("fetch() " + sigml);
+	  for (SenMLMessage m : sm.sml) {
+
+	  System.out.println("  got " + m.getN());
+	    // check if m contains a value in signals
+	    if (signals.contains(m.getN())) {
+	      m.setT(sm.getBt()+m.getT());
+	      messages.add(m);
+	    }
+	  }
+	}
+
+	rs.close();
+	stmt.close();
+
+
+	//recalculate a bt time and update all relative timestamps
+	SigMLMessage ret = new SigMLMessage();
+	ret.setBn(name);
+	if (messages.size() != 0) {
+	  ret.setBt(messages.get(0).getT());
+	  for (SenMLMessage m : messages) {
+	    m.setBn(null);
+	    m.setT(m.getT() - ret.getBt());
+	  }
+	} else 
+	  messages = null;
+
+	ret.setSenML(messages);
+
+	closeConnection(conn);
+	return ret;
+
+      } else {
+      }
+    } catch (SQLException e) {
+      System.err.println(e.toString());
+    }
+
     return null;
   }
 
@@ -315,6 +377,10 @@ final class DataManagerService {
 	  SigMLMessage sm = Utility.fromJson(sigml, SigMLMessage.class);
 	  System.out.println("fetch() " + sigml);
 	  for (SenMLMessage m : sm.sml) {
+	    if (m.getT() == null)
+	      m.setT(sm.getBt()); //System.out.println("bT is NULL!!!" );
+	      
+	    m.setT(sm.getBt()+m.getT());
 	    messages.add(m);
 	  }
 	}
@@ -325,11 +391,10 @@ final class DataManagerService {
 	//recalculate a bt time and update all relative timestamps
 	SigMLMessage ret = new SigMLMessage();
 	ret.setBn(name);
-	ret.setBt(messages.get(0).getBt());
+	ret.setBt(messages.get(0).getT());
 	for (SenMLMessage m : messages) {
 	  m.setBn(null);
-	  m.setT(m.getBt()-ret.getBt());
-	  m.setBt(null);
+	  m.setT(m.getT()-ret.getBt());
 	}
 
 

@@ -118,12 +118,15 @@ public class DataManagerResource {
       sml.setBn(consumerName);
     if (sml.getBt() == null)
       sml.setBt((double)System.currentTimeMillis() / 1000.0);
+    for (SenMLMessage m : sml.sml) {
+      if(m.getT() == null)
+	m.setT(0.0);
+    }
 
     statusCode = DataManagerService.updateEndpoint(consumerName, sml);
     System.out.println("putData returned with status code: " + statusCode + " from: "); // + sml.getBn() + " at: " + sml.getBt());
 
-    //return Response.status(Status.OK).build();
-    String jsonret = "{\"rc\": 0}";
+    String jsonret = "{\"p\": "+sml.getP()+",\"x\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
   }
 
