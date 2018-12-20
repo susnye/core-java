@@ -28,7 +28,7 @@ echo "Generating certificate for '${SYSTEM_NAME}'" >&2
 ah_cert_signed_system ${SYSTEM_NAME}
 
 if [ ! -z "${SERVICE}" ]; then
-    ah_cert_export "${AH_SYSTEMS_DIR}/authorization" "authorization" "${SYSTEM_DIR}"
+    ah_cert_export_pub "${AH_SYSTEMS_DIR}/authorization" "authorization" "${SYSTEM_DIR}"
 fi
 
 SYSTEM_64PUB=$(\
@@ -47,7 +47,7 @@ db_cmd="
 "
 
 if [ ! -z "${SERVICE}" ]; then
-    if [ $(mysql -u root arrowhead -sse "SELECT EXISTS(SELECT 1 FROM arrowhead_service WHERE service_definition = '${SERVICE}')") != 1 ]; then
+    if [ $(mysql --defaults-extra-file="${AH_MYSQL_CONF}" -u arrowhead arrowhead -sse "SELECT EXISTS(SELECT 1 FROM arrowhead_service WHERE service_definition = '${SERVICE}')") != 1 ]; then
         echo "Registering service '${SERVICE}' in database" >&2
         db_cmd="${db_cmd}
             INSERT INTO arrowhead_service (id, service_definition)
@@ -61,7 +61,7 @@ fi
 
 db_cmd="${db_cmd} UNLOCK TABLES;"
 
-mysql -u root arrowhead -e "${db_cmd}"
+mysql --defaults-extra-file="${AH_MYSQL_CONF}" -u arrowhead arrowhead -e "${db_cmd}"
 
 if [ -z "${SERVICE}" ]; then
     echo "Generating consumer-only properties file" >&2

@@ -25,10 +25,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
+import eu.arrowhead.common.RegistryResource;
+import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.core.deviceregistry.model.DeviceRegistryEntry;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
-/**
- * @author FHB
- */
 @Path("deviceregistry")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)

@@ -52,7 +52,8 @@ public class DatabaseManager {
       }
 
       try {
-        Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress).setProperty("hibernate.connection.username", dbUser)
+        Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress)
+                                                         .setProperty("hibernate.connection.username", dbUser)
                                                          .setProperty("hibernate.connection.password", dbPassword);
         sessionFactory = configuration.buildSessionFactory();
       } catch (Exception e) {
@@ -79,7 +80,8 @@ public class DatabaseManager {
 
   private synchronized SessionFactory getSessionFactory() {
     if (sessionFactory == null) {
-      Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress).setProperty("hibernate.connection.username", dbUser)
+      Configuration configuration = new Configuration().configure("hibernate.cfg.xml").setProperty("hibernate.connection.url", dbAddress)
+                                                       .setProperty("hibernate.connection.username", dbUser)
                                                        .setProperty("hibernate.connection.password", dbPassword);
       sessionFactory = configuration.buildSessionFactory();
     }
@@ -197,20 +199,23 @@ public class DatabaseManager {
   }
 
 
-  public <T> T save(T object) {
+  public <T> T save(T... objects) {
     Transaction transaction = null;
 
     try (Session session = getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      session.save(object);
+      for (T object : objects) {
+        session.save(object);
+      }
       transaction.commit();
     } catch (PersistenceException e) {
       if (transaction != null) {
         transaction.rollback();
       }
       log.error("DatabaseManager:save throws DuplicateEntryException", e);
-      throw new DuplicateEntryException("There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
-                                        Status.BAD_REQUEST.getStatusCode(), e);
+      throw new DuplicateEntryException(
+          "There is already an entry in the database with these parameters. Please check the unique fields of the " + objects.getClass(),
+          Status.BAD_REQUEST.getStatusCode(), e);
     } catch (Exception e) {
       if (transaction != null) {
         transaction.rollback();
@@ -218,7 +223,7 @@ public class DatabaseManager {
       throw e;
     }
 
-    return object;
+    return objects[0];
   }
 
 
@@ -234,8 +239,9 @@ public class DatabaseManager {
         transaction.rollback();
       }
       log.error("DatabaseManager:merge throws DuplicateEntryException", e);
-      throw new DuplicateEntryException("There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
-                                        Status.BAD_REQUEST.getStatusCode(), e);
+      throw new DuplicateEntryException(
+          "There is already an entry in the database with these parameters. Please check the unique fields of the " + object.getClass(),
+          Status.BAD_REQUEST.getStatusCode(), e);
     } catch (Exception e) {
       if (transaction != null) {
         transaction.rollback();

@@ -11,6 +11,7 @@ import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.database.ArrowheadService;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.exception.DataNotFoundException;
 import eu.arrowhead.common.messages.ServiceQueryByRegex;
 import eu.arrowhead.common.messages.ServiceQueryResult;
@@ -27,7 +28,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -51,7 +51,8 @@ public class ServiceRegistryApi {
   @GET
   @Path("id/{id}")
   public ServiceRegistryEntry getServiceRegEntry(@PathParam("id") long id) {
-    return dm.get(ServiceRegistryEntry.class, id).orElseThrow(() -> new DataNotFoundException("ServiceRegistryEntry not found with id: " + id));
+    return dm.get(ServiceRegistryEntry.class, id)
+             .orElseThrow(() -> new DataNotFoundException("ServiceRegistryEntry not found with id: " + id));
   }
 
   @GET
@@ -92,14 +93,16 @@ public class ServiceRegistryApi {
   public List<ServiceRegistryEntry> getAllByProvider(@PathParam("systemId") long systemId) {
     ArrowheadSystem system = dm.get(ArrowheadSystem.class, systemId).<DataNotFoundException>orElseThrow(() -> {
       log.info("getAllByProvider throws DataNotFoundException");
-      throw new DataNotFoundException("There are no Service Registry entries with the requested ArrowheadSystem in the database.");
+      throw new DataNotFoundException(
+          "There are no Service Registry entries with the requested ArrowheadSystem in the database.");
     });
 
     restrictionMap.put("provider", system);
     List<ServiceRegistryEntry> srList = dm.getAll(ServiceRegistryEntry.class, restrictionMap);
     if (srList.isEmpty()) {
       log.info("getAllByProvider throws DataNotFoundException");
-      throw new DataNotFoundException("There are no Service Registry entries with the requested ArrowheadSystem in the database.");
+      throw new DataNotFoundException(
+          "There are no Service Registry entries with the requested ArrowheadSystem in the database.");
     }
 
     for (ServiceRegistryEntry entry : srList) {
@@ -117,7 +120,8 @@ public class ServiceRegistryApi {
     ArrowheadService service = dm.get(ArrowheadService.class, restrictionMap);
     if (service == null) {
       log.info("getAllByService throws DataNotFoundException");
-      throw new DataNotFoundException("There are no Service Registry entries with the requested ArrowheadService in the database.");
+      throw new DataNotFoundException(
+          "There are no Service Registry entries with the requested ArrowheadService in the database.");
     }
 
     restrictionMap.clear();
@@ -125,7 +129,8 @@ public class ServiceRegistryApi {
     List<ServiceRegistryEntry> srList = dm.getAll(ServiceRegistryEntry.class, restrictionMap);
     if (srList.isEmpty()) {
       log.info("getAllByService throws DataNotFoundException");
-      throw new DataNotFoundException("There are no Service Registry entries with the requested ArrowheadService in the database.");
+      throw new DataNotFoundException(
+          "There are no Service Registry entries with the requested ArrowheadService in the database.");
     }
 
     for (ServiceRegistryEntry entry : srList) {
@@ -138,25 +143,49 @@ public class ServiceRegistryApi {
 
   @PUT
   @Path("query")
-  public List<ServiceRegistryEntry> queryByRegex(ServiceQueryByRegex regex, @QueryParam("partial_match") boolean partialMatch) {
+  public List<ServiceRegistryEntry> queryByRegex(@Valid List<ServiceQueryByRegex> regexFilters) {
     List<ServiceRegistryEntry> retrievedServices = dm.getAll(ServiceRegistryEntry.class, null);
 
-    Pattern pattern = Pattern.compile(regex.getRegularExpression());
-    List<ServiceRegistryEntry> matches = new ArrayList<>();
-    for (ServiceRegistryEntry entry : retrievedServices) {
-      Matcher matcher = pattern.matcher(entry.getProvidedService().getServiceDefinition());
-      if (partialMatch) {
-        if (matcher.find()) {
-          matches.add(entry);
+    for (ServiceQueryByRegex filter : regexFilters) {
+      Pattern pattern = Pattern.compile(filter.getRegularExpression(), Pattern.CASE_INSENSITIVE);
+      List<ServiceRegistryEntry> matches = new ArrayList<>();
+      for (ServiceRegistryEntry entry : retrievedServices) {
+        Matcher matcher = null;
+        switch (filter.getFieldName()) {
+          case systemName:
+            matcher = pattern.matcher(entry.getProvider().getSystemName());
+            break;
+          case serviceDefinition:
+            matcher = pattern.matcher(entry.getProvidedService().getServiceDefinition());
+            break;
+          case interfaces:
+            if (entry.getProvidedService().getInterfaces().stream()
+                     .anyMatch(filter.getRegularExpression()::equalsIgnoreCase)) {
+              matches.add(entry);
+            }
+            break;
+          default:
+            throw new BadPayloadException(
+                "SR entries can only be queried based on systemName, serviceDefinition and interfaces fields with "
+                    + "this method.");
         }
-      } else {
-        if (matcher.matches()) {
-          matches.add(entry);
+
+        if (matcher != null) {
+          if (filter.getPartialMatch()) {
+            if (matcher.find()) {
+              matches.add(entry);
+            }
+          } else {
+            if (matcher.matches()) {
+              matches.add(entry);
+            }
+          }
         }
       }
-    }
 
-    return matches;
+      retrievedServices.retainAll(matches);
+    }
+    return retrievedServices;
   }
 
   @PUT
@@ -195,6 +224,19 @@ public class ServiceRegistryApi {
 
     log.info("updateServiceRegistryEntry successfully returns.");
     return Response.status(Status.ACCEPTED).entity(retreivedEntry).build();
+  }
+
+  @DELETE
+  @Path("{entryId}")
+  public Response deleteServiceRegistryEntry(@PathParam("entryId") long entryId) {
+    return dm.get(ServiceRegistryEntry.class, entryId).map(entry -> {
+      dm.delete(entry);
+      log.info(entry.toString() + " deleted");
+      return Response.ok().build();
+    }).<DataNotFoundException>orElseThrow(() -> {
+      log.info("deleteServiceRegistryEntry had no effect.");
+      throw new DataNotFoundException("ServiceRegistry entry not found with id: " + entryId);
+    });
   }
 
 }

@@ -42,7 +42,6 @@ public class DeviceRegistryService implements RegistryService<DeviceRegistryEntr
 		return returnValue;
 	}
 
-
 	public DeviceRegistryEntry publish(final DeviceRegistryEntry entity) throws ArrowheadException {
 		final DeviceRegistryEntry returnValue;
 

@@ -8,8 +8,8 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.json.constraint.LDTInFuture;
 import eu.arrowhead.common.json.constraint.SENotBlank;
+import eu.arrowhead.common.json.constraint.ZDTInFuture;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +33,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
@@ -43,7 +44,8 @@ import org.hibernate.validator.constraints.NotBlank;
 public class EventFilter {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GenericGenerator(name = "table_generator", strategy = "org.hibernate.id.enhanced.TableGenerator")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
   @NotBlank
@@ -68,7 +70,7 @@ public class EventFilter {
   private ZonedDateTime startDate;
 
   @Column(name = "end_date")
-  @LDTInFuture(message = "Filter end date must be in the future")
+  @ZDTInFuture(message = "Filter end date must be in the future")
   private ZonedDateTime endDate;
 
   @ElementCollection(fetch = FetchType.EAGER)

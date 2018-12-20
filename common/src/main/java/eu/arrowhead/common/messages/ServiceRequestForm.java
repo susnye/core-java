@@ -176,23 +176,24 @@ public class ServiceRequestForm {
         orchestrationFlags.put(key, false);
       }
     }
-    if (requestedService == null && orchestrationFlags.get("overrideStore")) {
+    if (requestedService == null && orchestrationFlags.getOrDefault("overrideStore", false)) {
       throw new BadPayloadException("RequestedService can not be null when overrideStore is TRUE");
     }
 
-    if (orchestrationFlags.get("onlyPreferred")) {
+    if (orchestrationFlags.getOrDefault("onlyPreferred", false)) {
       List<PreferredProvider> tmp = new ArrayList<>();
-      for (PreferredProvider provider : preferredProviders)
+      for (PreferredProvider provider : preferredProviders) {
         if (!provider.isValid()) {
           tmp.add(provider);
         }
+      }
       preferredProviders.removeAll(tmp);
       if (preferredProviders.isEmpty()) {
         throw new BadPayloadException("There is no valid PreferredProvider, but \"onlyPreferred\" is set to true");
       }
     }
 
-    if (orchestrationFlags.get("enableQoS") && (requestedQoS.isEmpty() || commands.isEmpty())) {
+    if (orchestrationFlags.getOrDefault("enableQoS", false) && (requestedQoS.isEmpty() || commands.isEmpty())) {
       throw new BadPayloadException("RequestedQoS or commands hashmap is empty while \"enableQoS\" is set to true");
     }
   }
