@@ -35,6 +35,7 @@
     <module>serviceregistry</module>
     <module>serviceregistry_sql</module>
     <module>systemregistry</module>
+    <module>onboarding</module>
   </modules>
 
   <properties>
