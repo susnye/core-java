@@ -72,7 +72,7 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
-public final class Utility {
+public final class Utils {
 
   private static Client client = createClient(null);
   private static Client sslClient;
@@ -80,7 +80,7 @@ public final class Utility {
   private static String SR_QUERY_URI;
 
   private static final ObjectMapper mapper = JacksonJsonProviderAtRest.getMapper();
-  private static final Logger log = Logger.getLogger(Utility.class.getName());
+  private static final Logger log = Logger.getLogger(Utils.class.getName());
   private static final HostnameVerifier allHostsValid = (hostname, session) -> {
     // Decide whether to allow the connection...
     return true;
@@ -91,8 +91,8 @@ public final class Utility {
   private static final String APP_CONF = "app.conf";
   private static final String APP_CONF_DIR = "config" + File.separator + "app.conf";
 
-  private Utility() throws AssertionError {
-    throw new AssertionError("Arrowhead Common:Utility is a non-instantiable class");
+  private Utils() throws AssertionError {
+    throw new AssertionError("Arrowhead Common:Utils is a non-instantiable class");
   }
 
   private static Client createClient(SSLContext context) {
@@ -117,7 +117,7 @@ public final class Utility {
 
   public static void setServiceRegistryUri(String uri) {
     if (uri == null) {
-      throw new AssertionError("Arrowhead Common:Utility has no Service Registry URL.");
+      throw new AssertionError("Arrowhead Common:Utils has no Service Registry URL.");
     }
     SR_QUERY_URI = UriBuilder.fromUri(uri).path("query").build().toString();
   }
@@ -160,7 +160,7 @@ public final class Utility {
           response = request.delete();
           break;
         default:
-          throw new NotAllowedException("Invalid method type was given to the Utility.sendRequest() method");
+          throw new NotAllowedException("Invalid method type was given to the Utils.sendRequest() method");
       }
     } catch (ProcessingException e) {
       if (e.getCause().getMessage().contains("PKIX path")) {
@@ -247,8 +247,8 @@ public final class Utility {
 
   public static String getUri(String address, int port, String serviceURI, boolean isSecure, boolean serverStart) {
     if (address == null) {
-      log.error("Address can not be null (Utility:getUri throws NPE)");
-      throw new NullPointerException("Address can not be null (Utility:getUri throws NPE)");
+      log.error("Address can not be null (Utils:getUri throws NPE)");
+      throw new NullPointerException("Address can not be null (Utils:getUri throws NPE)");
     }
 
     UriBuilder ub = UriBuilder.fromPath("").host(address);
@@ -276,7 +276,7 @@ public final class Utility {
       }
     }
 
-    log.info("Utility:getUri returning this: " + url);
+    log.info("Utils:getUri returning this: " + url);
     return url;
   }
 
@@ -322,7 +322,7 @@ public final class Utility {
   public static ArrowheadCloud getOwnCloud(boolean isSecure) {
     List<OwnCloud> cloudList = DatabaseManager.getInstance().getAll(OwnCloud.class, null);
     if (cloudList.isEmpty()) {
-      log.error("Utility:getOwnCloud not found in the database.");
+      log.error("Utils:getOwnCloud not found in the database.");
       throw new DataNotFoundException("Own Cloud information not found in the database. This information is needed for the Gatekeeper System.",
                                       Status.NOT_FOUND.getStatusCode());
     }
@@ -335,7 +335,7 @@ public final class Utility {
           return cloud.getCloud();
         }
       }
-      log.error("Utility:getOwnCloud finds no secure own cloud!");
+      log.error("Utils:getOwnCloud finds no secure own cloud!");
       throw new DataNotFoundException("Could not find secure own cloud information in the database!", Status.NOT_FOUND.getStatusCode());
     } else {
       for (OwnCloud cloud : cloudList) {
@@ -343,7 +343,7 @@ public final class Utility {
           return cloud.getCloud();
         }
       }
-      log.error("Utility:getOwnCloud finds no insecure own cloud!");
+      log.error("Utils:getOwnCloud finds no insecure own cloud!");
       throw new DataNotFoundException("Could not find insecure own cloud information in the database!", Status.NOT_FOUND.getStatusCode());
     }
   }

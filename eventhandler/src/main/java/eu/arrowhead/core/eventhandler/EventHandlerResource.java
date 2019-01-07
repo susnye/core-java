@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.eventhandler;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.EventFilter;
 import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.messages.PublishEvent;
@@ -67,11 +67,11 @@ public class EventHandlerResource {
        event without an error. */
     CompletableFuture.supplyAsync(() -> EventHandlerService.propagateEvent(eventPublished)).thenAccept(map -> {
       if (eventPublished.getDeliveryCompleteUri() != null) {
-        String callbackUrl = Utility
+        String callbackUrl = Utils
             .getUri(eventPublished.getSource().getAddress(), eventPublished.getSource().getPort(), eventPublished.getDeliveryCompleteUri(), isSecure,
                     false);
         try {
-          Utility.sendRequest(callbackUrl, "POST", map);
+          Utils.sendRequest(callbackUrl, "POST", map);
         } catch (RuntimeException e) {
           log.error("Callback after event publishing failed at: " + callbackUrl);
           e.printStackTrace();

@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.authorization;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ArrowheadCloud;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.exception.ArrowheadException;
@@ -79,7 +79,7 @@ class TokenGenerationService {
         c = c.concat(".").concat(request.getConsumerCloud().getCloudName()).concat(".").concat(request.getConsumerCloud().getOperator());
       } else {
         boolean secureMode = Boolean.valueOf(System.getProperty("is_secure", "false"));
-        ArrowheadCloud ownCloud = Utility.getOwnCloud(secureMode);
+        ArrowheadCloud ownCloud = Utils.getOwnCloud(secureMode);
         c = c.concat(".").concat(ownCloud.getCloudName()).concat(".").concat(ownCloud.getOperator());
       }
       rawTokenInfo.setC(c);
@@ -102,7 +102,7 @@ class TokenGenerationService {
       }
 
       // There is an upper limit for the size of the token info, skip providers which exceeds this limit
-      String json = Utility.toPrettyJson(null, rawTokenInfo);
+      String json = Utils.toPrettyJson(null, rawTokenInfo);
       if (json == null) {
         log.error("RawTokenInfo serialization failed. Skipped provider.");
         continue;

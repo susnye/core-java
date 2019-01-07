@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.orchestrator;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ArrowheadCloud;
 import eu.arrowhead.common.database.ArrowheadService;
 import eu.arrowhead.common.database.ArrowheadSystem;
@@ -75,13 +75,13 @@ final class OrchestratorDriver {
     ServiceQueryForm queryForm = new ServiceQueryForm(service, pingProviders, metadataSearch);
 
     // Sending the request, parsing the returned result
-    Response srResponse = Utility.sendRequest(srUri, "PUT", queryForm);
+    Response srResponse = Utils.sendRequest(srUri, "PUT", queryForm);
     ServiceQueryResult serviceQueryResult = srResponse.readEntity(ServiceQueryResult.class);
 
     // If there are non-valid entries in the Service Registry response, we filter those out
     List<ServiceRegistryEntry> temp = new ArrayList<>();
     for (ServiceRegistryEntry entry : serviceQueryResult.getServiceQueryData()) {
-      if (!Utility.isBeanValid(entry)) {
+      if (!Utils.isBeanValid(entry)) {
         temp.add(entry);
       }
       //NOTE this should be done on the SR side I think
@@ -121,7 +121,7 @@ final class OrchestratorDriver {
     IntraCloudAuthRequest request = new IntraCloudAuthRequest(consumer, providerSet, service);
 
     // Sending the request, parsing the returned result
-    Response response = Utility.sendRequest(uri, "PUT", request);
+    Response response = Utils.sendRequest(uri, "PUT", request);
     IntraCloudAuthResponse authResponse = response.readEntity(IntraCloudAuthResponse.class);
     Set<ArrowheadSystem> authorizedSystems = new HashSet<>();
     // Set view of HashMap ensures there are no duplicates between the keys (systems)
@@ -251,7 +251,7 @@ final class OrchestratorDriver {
       // Removing non-valid Store entries from the results
       List<OrchestrationStore> temp = new ArrayList<>();
       for (OrchestrationStore entry : retrievedList) {
-        if (!Utility.isBeanValid(entry)) {
+        if (!Utils.isBeanValid(entry)) {
           temp.add(entry);
         }
       }
@@ -388,7 +388,7 @@ final class OrchestratorDriver {
     GSDRequestForm requestForm = new GSDRequestForm(requestedService, preferredClouds, registryFlags);
 
     // Sending the request, sanity check on the returned result
-    Response response = Utility.sendRequest(OrchestratorMain.getGsdServiceUri(), "PUT", requestForm);
+    Response response = Utils.sendRequest(OrchestratorMain.getGsdServiceUri(), "PUT", requestForm);
     GSDResult result = response.readEntity(GSDResult.class);
     if (!result.isValid()) {
       log.error("doGlobalServiceDiscovery DataNotFoundException");
@@ -476,7 +476,7 @@ final class OrchestratorDriver {
                                                     negotiationFlags);
 
     // Sending the request, doing sanity check on the returned result
-    Response response = Utility.sendRequest(OrchestratorMain.getIcnServiceUri(), "PUT", requestForm);
+    Response response = Utils.sendRequest(OrchestratorMain.getIcnServiceUri(), "PUT", requestForm);
     ICNResult result = response.readEntity(ICNResult.class);
     if (!result.isValid()) {
       log.error("doInterCloudNegotiations DataNotFoundException");
@@ -541,7 +541,7 @@ final class OrchestratorDriver {
       TokenGenerationRequest tokenRequest = new TokenGenerationRequest(srf.getRequesterSystem(), srf.getRequesterCloud(), helper.getProviders(),
                                                                        helper.getService(), 0);
       // Sending the token generation request, parsing the response
-      Response authResponse = Utility.sendRequest(OrchestratorMain.getTokenGenUri(), "PUT", tokenRequest);
+      Response authResponse = Utils.sendRequest(OrchestratorMain.getTokenGenUri(), "PUT", tokenRequest);
       TokenGenerationResponse tokenResponse = authResponse.readEntity(TokenGenerationResponse.class);
 
       if (tokenResponse != null && tokenResponse.getTokenData() != null && tokenResponse.getTokenData().size() > 0) {

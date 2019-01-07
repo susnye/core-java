@@ -53,7 +53,7 @@ public abstract class ArrowheadMain {
   public static final Map<String, String> secureServerMetadata = Collections.singletonMap("security", "certificate");
 
   protected String srBaseUri;
-  protected final TypeSafeProperties props = Utility.getProp();
+  protected final TypeSafeProperties props = Utils.getProp();
 
   private boolean daemon = false;
   private CoreSystem coreSystem;
@@ -97,16 +97,16 @@ public abstract class ArrowheadMain {
     String address = props.getProperty("address", "0.0.0.0");
     int port = isSecure ? props.getIntProperty("secure_port", coreSystem.getSecurePort())
                         : props.getIntProperty("insecure_port", coreSystem.getInsecurePort());
-    baseUri = Utility.getUri(address, port, null, isSecure, true);
+    baseUri = Utils.getUri(address, port, null, isSecure, true);
 
     //Start the web-server
     if (isSecure) {
       List<String> allMandatoryProperties = new ArrayList<>(coreSystem.getAlwaysMandatoryFields());
       allMandatoryProperties.addAll(coreSystem.getSecureMandatoryFields());
-      Utility.checkProperties(props.stringPropertyNames(), allMandatoryProperties);
+      Utils.checkProperties(props.stringPropertyNames(), allMandatoryProperties);
       startSecureServer(classes, packages);
     } else {
-      Utility.checkProperties(props.stringPropertyNames(), coreSystem.getAlwaysMandatoryFields());
+      Utils.checkProperties(props.stringPropertyNames(), coreSystem.getAlwaysMandatoryFields());
       startServer(classes, packages);
     }
 
@@ -115,8 +115,8 @@ public abstract class ArrowheadMain {
       String srAddress = props.getProperty("sr_address", "0.0.0.0");
       int srPort = isSecure ? props.getIntProperty("sr_secure_port", CoreSystem.SERVICE_REGISTRY_SQL.getSecurePort())
                             : props.getIntProperty("sr_insecure_port", CoreSystem.SERVICE_REGISTRY_SQL.getInsecurePort());
-      srBaseUri = Utility.getUri(srAddress, srPort, "serviceregistry", isSecure, true);
-      Utility.setServiceRegistryUri(srBaseUri);
+      srBaseUri = Utils.getUri(srAddress, srPort, "serviceregistry", isSecure, true);
+      Utils.setServiceRegistryUri(srBaseUri);
       useSRService(true);
     }
   }
@@ -187,7 +187,7 @@ public abstract class ArrowheadMain {
       log.fatal("SSL Context is not valid, check the certificate or the config files!");
       throw new AuthException("SSL Context is not valid, check the certificate or the config files!", e);
     }
-    Utility.setSSLContext(sslContext);
+    Utils.setSSLContext(sslContext);
 
     KeyStore keyStore = SecurityUtils.loadKeyStore(keystorePath, keystorePass);
     X509Certificate serverCert = SecurityUtils.getFirstCertFromKeyStore(keyStore);
@@ -243,7 +243,8 @@ public abstract class ArrowheadMain {
     ArrowheadSystem provider = new ArrowheadSystem(coreSystem.name(), uri.getHost(), uri.getPort(), base64PublicKey);
 
     for (CoreSystemService service : coreSystem.getServices()) {
-      ArrowheadService providedService = new ArrowheadService(Utility.createSD(service.getServiceDef(), isSecure), Collections.singleton("JSON"),
+      ArrowheadService providedService = new ArrowheadService(Utils.createSD(service.getServiceDef(), isSecure),
+                                                              Collections.singleton("JSON"),
                                                               null);
       if (isSecure) {
         providedService.setServiceMetadata(ArrowheadMain.secureServerMetadata);
@@ -252,11 +253,11 @@ public abstract class ArrowheadMain {
 
       if (registering) {
         try {
-          Utility.sendRequest(UriBuilder.fromUri(srBaseUri).path("register").build().toString(), "POST", srEntry);
+          Utils.sendRequest(UriBuilder.fromUri(srBaseUri).path("register").build().toString(), "POST", srEntry);
         } catch (ArrowheadException e) {
           if (e.getExceptionType() == ExceptionType.DUPLICATE_ENTRY) {
-            Utility.sendRequest(UriBuilder.fromUri(srBaseUri).path("remove").build().toString(), "PUT", srEntry);
-            Utility.sendRequest(UriBuilder.fromUri(srBaseUri).path("register").build().toString(), "POST", srEntry);
+            Utils.sendRequest(UriBuilder.fromUri(srBaseUri).path("remove").build().toString(), "PUT", srEntry);
+            Utils.sendRequest(UriBuilder.fromUri(srBaseUri).path("register").build().toString(), "POST", srEntry);
           } else if (e.getExceptionType() == ExceptionType.UNAVAILABLE) {
             System.out.println("Service Registry is unavailable at the moment, retrying in 15 seconds...");
             try {
@@ -277,7 +278,7 @@ public abstract class ArrowheadMain {
         }
         registeringTries = 1;
       } else {
-        Utility.sendRequest(UriBuilder.fromUri(srBaseUri).path("remove").build().toString(), "PUT", srEntry);
+        Utils.sendRequest(UriBuilder.fromUri(srBaseUri).path("remove").build().toString(), "PUT", srEntry);
       }
     }
   }

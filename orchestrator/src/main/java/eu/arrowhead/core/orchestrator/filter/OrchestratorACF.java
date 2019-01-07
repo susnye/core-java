@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.orchestrator.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.filter.AccessControlFilter;
 import eu.arrowhead.common.messages.ServiceRequestForm;
@@ -38,7 +38,7 @@ public class OrchestratorACF extends AccessControlFilter {
       // Only requests from the local cloud are allowed
       return serverFields[1].equalsIgnoreCase(clientFields[1]);
     } else {
-      ServiceRequestForm srf = Utility.fromJson(requestJson, ServiceRequestForm.class);
+      ServiceRequestForm srf = Utils.fromJson(requestJson, ServiceRequestForm.class);
 
       // If this is an external service request, only the local Gatekeeper can send this method
       if (srf.getOrchestrationFlags().getOrDefault("externalServiceRequest", false)) {

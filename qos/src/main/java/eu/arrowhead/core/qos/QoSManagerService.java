@@ -8,7 +8,7 @@
 package eu.arrowhead.core.qos;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.database.qos.DeployedSystem;
 import eu.arrowhead.common.database.qos.MessageStream;
@@ -167,7 +167,7 @@ final class QoSManagerService {
     Map<String, String> parameters = message.getRequestedQoS();
     parameters.putAll(network.getNetworkConfigurations());
     MonitorRule rule = new MonitorRule(network.getNetworkType().toUpperCase(), provider, consumer, parameters, false);
-    Response response = Utility.sendRequest(QoSMain.MONITOR_URL, "POST", rule);
+    Response response = Utils.sendRequest(QoSMain.MONITOR_URL, "POST", rule);
     boolean ruleApplied = response.getStatusInfo().getFamily() == Family.SUCCESSFUL;
 
     return new QoSReservationResponse(ruleApplied,

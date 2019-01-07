@@ -33,7 +33,7 @@ public class DatabaseManager {
 
   private static volatile DatabaseManager instance;
   private static SessionFactory sessionFactory;
-  private static TypeSafeProperties prop = Utility.getProp();
+  private static TypeSafeProperties prop = Utils.getProp();
   private static String dbAddress;
   private static String dbUser;
   private static String dbPassword;

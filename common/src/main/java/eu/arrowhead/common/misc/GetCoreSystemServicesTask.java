@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.misc;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +34,7 @@ public class GetCoreSystemServicesTask extends TimerTask {
   @Override
   public void run() {
     for (String serviceDef : serviceDefs) {
-      Optional<String[]> optionalUri = Utility.getServiceInfo(serviceDef);
+      Optional<String[]> optionalUri = Utils.getServiceInfo(serviceDef);
       optionalUri.ifPresent(uri -> uriMap.put(serviceDef, uri));
     }
 

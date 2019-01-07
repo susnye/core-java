@@ -8,7 +8,7 @@
 package eu.arrowhead.core.eventhandler;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.database.EventFilter;
 import eu.arrowhead.common.exception.ArrowheadException;
@@ -48,7 +48,7 @@ final class EventHandlerService {
 
   private static boolean sendRequest(String url, Event event) {
     try {
-      Utility.sendRequest(url, "POST", event);
+      Utils.sendRequest(url, "POST", event);
     } catch (Exception e) {
       log.error("Publishing event to " + url + " failed.");
       e.printStackTrace();
@@ -66,7 +66,9 @@ final class EventHandlerService {
       String url;
       try {
         boolean isSecure = filter.getConsumer().getAuthenticationInfo() != null;
-        url = Utility.getUri(filter.getConsumer().getAddress(), filter.getConsumer().getPort(), filter.getNotifyUri(), isSecure, false);
+        url = Utils
+            .getUri(filter.getConsumer().getAddress(), filter.getConsumer().getPort(), filter.getNotifyUri(), isSecure,
+                    false);
       } catch (ArrowheadException | NullPointerException e) {
         e.printStackTrace();
         continue;

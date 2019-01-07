@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.misc.SecurityUtils;
 import java.io.ByteArrayInputStream;
@@ -30,8 +30,8 @@ public abstract class AccessControlFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext requestContext) {
     SecurityContext sc = requestContext.getSecurityContext();
     if (sc.isSecure()) {
-      String requestTarget = Utility.stripEndSlash(requestContext.getUriInfo().getRequestUri().toString());
-      String requestJson = Utility.getRequestPayload(requestContext.getEntityStream());
+      String requestTarget = Utils.stripEndSlash(requestContext.getUriInfo().getRequestUri().toString());
+      String requestJson = Utils.getRequestPayload(requestContext.getEntityStream());
       String commonName = SecurityUtils.getCertCNFromSubject(sc.getUserPrincipal().getName());
       if (!isClientAuthorized(commonName, requestContext.getMethod(), requestTarget, requestJson)) {
         log.error(commonName + " is unauthorized to access " + requestTarget);

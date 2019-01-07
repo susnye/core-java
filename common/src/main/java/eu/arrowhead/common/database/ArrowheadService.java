@@ -7,41 +7,26 @@
 
 package eu.arrowhead.common.database;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.Utility;
-import eu.arrowhead.common.json.constraint.SENotBlank;
-import eu.arrowhead.common.json.support.ArrowheadServiceSupport;
-import java.util.HashMap;
+import eu.arrowhead.common.messages.ArrowheadServiceDTO;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.validator.constraints.NotBlank;
 
-/**
- * Representation of a service within Arrowhead.
- *
- * @author uzoltan
- * @since 4.2
- */
 @Entity
-@Table(name = "arrowhead_service", uniqueConstraints = {@UniqueConstraint(columnNames = {"service_definition"})})
+@Table(name = "arrowhead_service", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"service_definition", "interface"})})
 public class ArrowheadService {
 
   @Id
@@ -49,42 +34,18 @@ public class ArrowheadService {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @NotBlank
-  @Size(max = 255, message = "Service serviceDefinition must be 255 character at max")
   @Column(name = "service_definition")
   private String serviceDefinition;
 
-  @Size(max = 100, message = "Service can only have 100 interfaces at max")
-  @ElementCollection(fetch = FetchType.EAGER)
-  @CollectionTable(name = "arrowhead_service_interfaces", joinColumns = @JoinColumn(name = "arrowhead_service_id"))
-  private Set<@SENotBlank String> interfaces = new HashSet<>();
-
-  @Transient
-  @JsonInclude(Include.NON_EMPTY)
-  @Size(max = 100, message = "Service can only have 100 serviceMetadata key-value pairs at max")
-  private Map<@SENotBlank String, @SENotBlank String> serviceMetadata = new HashMap<>();
+  @Column(name = "interface")
+  private String serviceInterface;
 
   public ArrowheadService() {
   }
 
-  /**
-   * Constructor with all the fields of the ArrowheadService class.
-   *
-   * @param serviceDefinition A descriptive name for the service
-   * @param interfaces The set of interfaces that can be used to consume this service (helps interoperability between
-   *     ArrowheadSystems). Concrete meaning of what is an interface is service specific (e.g. JSON, I2C)
-   * @param serviceMetadata Arbitrary additional serviceMetadata belonging to the service, stored as key-value pairs.
-   */
-  public ArrowheadService(String serviceDefinition, Set<String> interfaces, Map<String, String> serviceMetadata) {
+  public ArrowheadService(String serviceDefinition, String serviceInterface) {
     this.serviceDefinition = serviceDefinition;
-    this.interfaces = interfaces;
-    this.serviceMetadata = serviceMetadata;
-  }
-
-  public ArrowheadService(ArrowheadServiceSupport service) {
-    this.serviceDefinition = service.getServiceGroup() + "_" + service.getServiceDefinition();
-    this.interfaces = new HashSet<>(service.getInterfaces());
-    this.serviceMetadata = service.getServiceMetadata();
+    this.serviceInterface = serviceInterface;
   }
 
   public Long getId() {
@@ -103,20 +64,12 @@ public class ArrowheadService {
     this.serviceDefinition = serviceDefinition;
   }
 
-  public Set<String> getInterfaces() {
-    return interfaces;
+  public String getServiceInterface() {
+    return serviceInterface;
   }
 
-  public void setInterfaces(Set<String> interfaces) {
-    this.interfaces = interfaces;
-  }
-
-  public Map<String, String> getServiceMetadata() {
-    return serviceMetadata;
-  }
-
-  public void setServiceMetadata(Map<String, String> serviceMetadata) {
-    this.serviceMetadata = serviceMetadata;
+  public void setServiceInterface(String serviceInterface) {
+    this.serviceInterface = serviceInterface;
   }
 
   @Override
@@ -128,37 +81,43 @@ public class ArrowheadService {
       return false;
     }
     ArrowheadService that = (ArrowheadService) o;
-
-    if (!Objects.equals(serviceDefinition, that.serviceDefinition)) {
-      return false;
-    }
-
-    //2 services can be equal if they have at least 1 common interface
-    if (interfaces == null || that.interfaces == null) {
-      return true;
-    } else {
-      Set<String> intersection = new HashSet<>(interfaces);
-      intersection.retainAll(that.interfaces);
-      return !intersection.isEmpty();
-    }
+    return Objects.equals(serviceDefinition, that.serviceDefinition) && Objects
+        .equals(serviceInterface, that.serviceInterface);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(serviceDefinition);
+    return Objects.hash(serviceDefinition, serviceInterface);
   }
 
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(this).add("serviceDefinition", serviceDefinition).toString();
+  public static Optional<ArrowheadServiceDTO> convertToDTO(List<ArrowheadService> services,
+                                                           Map<String, String> serviceMetadata) {
+    if (services.isEmpty()) {
+      return Optional.empty();
+    }
+
+    String serviceDef = services.get(0).getServiceDefinition();
+    Set<String> interfaces = new HashSet<>();
+    for (ArrowheadService service : services) {
+      if (!service.getServiceDefinition().equals(serviceDef)) {
+        throw new AssertionError(
+            "ArrowheadService entity to DTO conversion failed because of serviceDefinition differences!");
+      }
+      interfaces.add(service.getServiceInterface());
+    }
+
+    return Optional.of(new ArrowheadServiceDTO(serviceDef, interfaces, serviceMetadata));
   }
 
-  public void partialUpdate(ArrowheadService other) {
-    this.serviceDefinition = other.getServiceDefinition() != null ? other.getServiceDefinition() : this.serviceDefinition;
-    //Making deep copies of the collections with the help of JSON (de)serialization
-    this.interfaces =
-        other.getInterfaces().isEmpty() ? this.interfaces : Utility.fromJson(Utility.toPrettyJson(null, other.getInterfaces()), Set.class);
-    this.serviceMetadata = other.getServiceMetadata().isEmpty() ? this.serviceMetadata
-                                                                : Utility.fromJson(Utility.toPrettyJson(null, other.getServiceMetadata()), Map.class);
+  public static List<ArrowheadService> convertToEntity(ArrowheadServiceDTO service) {
+    List<ArrowheadService> services = new ArrayList<>();
+    for (String serviceInterface : service.getInterfaces()) {
+      services.add(new ArrowheadService(service.getServiceDefinition(), serviceInterface));
+    }
+    if (services.isEmpty()) {
+      services.add(new ArrowheadService(service.getServiceDefinition(), null));
+    }
+    return services;
   }
+
 }

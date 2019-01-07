@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.gatekeeper.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.exception.UnavailableServerException;
 import eu.arrowhead.core.gatekeeper.GatekeeperMain;
 import javax.annotation.Priority;
@@ -25,7 +25,7 @@ public class UnavailableFilter implements ContainerResponseFilter {
   @Override
   public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
     if (responseContext.getStatus() == Status.SERVICE_UNAVAILABLE.getStatusCode()) {
-      String response = Utility.toPrettyJson(null, responseContext.getEntity());
+      String response = Utils.toPrettyJson(null, responseContext.getEntity());
       if (response != null && response.contains(UnavailableServerException.class.getName())) {
         Thread querySR = new Thread(() -> GatekeeperMain.getServicesTask.run());
 

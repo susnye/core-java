@@ -8,7 +8,7 @@
 package eu.arrowhead.core.serviceregistry;
 
 import eu.arrowhead.common.ArrowheadMain;
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.misc.CoreSystem;
 import eu.arrowhead.common.misc.TypeSafeProperties;
 import java.util.Timer;
@@ -26,7 +26,7 @@ public class ServiceRegistryMain extends ArrowheadMain {
   static final int DNS_PORT;
   static String DNS_REGISTRATOR_DOMAIN;
 
-  private static final TypeSafeProperties dnsProp = Utility.getProp("dns.properties");
+  private static final TypeSafeProperties dnsProp = Utils.getProp("dns.properties");
 
   static {
     TSIG_NAME = dnsProp.getProperty("tsig_name");

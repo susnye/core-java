@@ -9,7 +9,7 @@ package eu.arrowhead.core.gatekeeper;
 
 import eu.arrowhead.common.ArrowheadMain;
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ArrowheadCloud;
 import eu.arrowhead.common.database.ArrowheadService;
 import eu.arrowhead.common.database.ArrowheadSystem;
@@ -85,7 +85,7 @@ public class GatekeeperMain implements NeedsCoreSystemService {
       + "Authorization, Orchestrator and Gateway core systems yet from the Service Registry. Wait 15 seconds and retry your request";
 
   static {
-    props = Utility.getProp();
+    props = Utils.getProp();
     DatabaseManager.init();
     PropertyConfigurator.configure(props);
     USE_GATEWAY = props.getBooleanProperty("use_gateway", false);
@@ -137,7 +137,7 @@ public class GatekeeperMain implements NeedsCoreSystemService {
 
     final DatabaseManager dm = DatabaseManager.getInstance();
     try {
-      Utility.getOwnCloud(IS_SECURE);
+      Utils.getOwnCloud(IS_SECURE);
     } catch (DataNotFoundException e) {
       System.out.println("Own cloud not found, creating it...");
       String gatekeeperKeystorePath = props.getProperty("gatekeeper_keystore");
@@ -163,23 +163,23 @@ public class GatekeeperMain implements NeedsCoreSystemService {
       List<String> allMandatoryProperties = new ArrayList<>(alwaysMandatoryProperties);
       allMandatoryProperties.addAll(Arrays.asList("gatekeeper_keystore", "gatekeeper_keystore_pass", "gatekeeper_keypass", "cloud_keystore",
                                                   "cloud_keystore_pass", "cloud_keypass", "master_arrowhead_cert"));
-      Utility.checkProperties(props.stringPropertyNames(), allMandatoryProperties);
-      INBOUND_BASE_URI = Utility.getUri(internalAddress, internalSecurePort, null, IS_SECURE, true);
-      OUTBOUND_BASE_URI = Utility.getUri(externalAddress, externalSecurePort, null, IS_SECURE, true);
-      SERVICE_REGISTRY_URI = Utility.getUri(srAddress, srSecurePort, "serviceregistry", IS_SECURE, true);
+      Utils.checkProperties(props.stringPropertyNames(), allMandatoryProperties);
+      INBOUND_BASE_URI = Utils.getUri(internalAddress, internalSecurePort, null, IS_SECURE, true);
+      OUTBOUND_BASE_URI = Utils.getUri(externalAddress, externalSecurePort, null, IS_SECURE, true);
+      SERVICE_REGISTRY_URI = Utils.getUri(srAddress, srSecurePort, "serviceregistry", IS_SECURE, true);
       inboundServer = startSecureServer(INBOUND_BASE_URI, true);
       outboundServer = startSecureServer(OUTBOUND_BASE_URI, false);
       useSRService(true);
     } else {
-      Utility.checkProperties(props.stringPropertyNames(), alwaysMandatoryProperties);
-      INBOUND_BASE_URI = Utility.getUri(internalAddress, internalInsecurePort, null, IS_SECURE, true);
-      OUTBOUND_BASE_URI = Utility.getUri(externalAddress, externalInsecurePort, null, IS_SECURE, true);
-      SERVICE_REGISTRY_URI = Utility.getUri(srAddress, srInsecurePort, "serviceregistry", IS_SECURE, true);
+      Utils.checkProperties(props.stringPropertyNames(), alwaysMandatoryProperties);
+      INBOUND_BASE_URI = Utils.getUri(internalAddress, internalInsecurePort, null, IS_SECURE, true);
+      OUTBOUND_BASE_URI = Utils.getUri(externalAddress, externalInsecurePort, null, IS_SECURE, true);
+      SERVICE_REGISTRY_URI = Utils.getUri(srAddress, srInsecurePort, "serviceregistry", IS_SECURE, true);
       inboundServer = startServer(INBOUND_BASE_URI, true);
       outboundServer = startServer(OUTBOUND_BASE_URI, false);
       useSRService(true);
     }
-    Utility.setServiceRegistryUri(SERVICE_REGISTRY_URI);
+    Utils.setServiceRegistryUri(SERVICE_REGISTRY_URI);
     new GatekeeperMain();
 
     if (daemon) {
@@ -271,7 +271,7 @@ public class GatekeeperMain implements NeedsCoreSystemService {
         log.fatal("Internal client SSL Context is not valid, check the certificate or the config files!");
         throw new AuthException("Internal client SSL Context is not valid, check the certificate or the config files!", e);
       }
-      Utility.setSSLContext(clientContext);
+      Utils.setSSLContext(clientContext);
     } else {
       SSLContextConfigurator serverConfig = new SSLContextConfigurator();
       serverConfig.setKeyStoreFile(gatekeeperKeystorePath);
@@ -323,10 +323,10 @@ public class GatekeeperMain implements NeedsCoreSystemService {
     URI uri = UriBuilder.fromUri(OUTBOUND_BASE_URI).build();
     boolean isSecure = uri.getScheme().equals("https");
     ArrowheadSystem gkSystem = new ArrowheadSystem("gatekeeper", uri.getHost(), uri.getPort(), BASE64_PUBLIC_KEY);
-    ArrowheadService gsdService = new ArrowheadService(Utility.createSD(CoreSystemService.GSD_SERVICE.getServiceDef(), isSecure),
-                                                       Collections.singleton("JSON"), null);
-    ArrowheadService icnService = new ArrowheadService(Utility.createSD(CoreSystemService.ICN_SERVICE.getServiceDef(), isSecure),
-                                                       Collections.singleton("JSON"), null);
+    ArrowheadService gsdService = new ArrowheadService(
+        Utils.createSD(CoreSystemService.GSD_SERVICE.getServiceDef(), isSecure), Collections.singleton("JSON"), null);
+    ArrowheadService icnService = new ArrowheadService(
+        Utils.createSD(CoreSystemService.ICN_SERVICE.getServiceDef(), isSecure), Collections.singleton("JSON"), null);
     if (isSecure) {
       gsdService.setServiceMetadata(ArrowheadMain.secureServerMetadata);
       icnService.setServiceMetadata(ArrowheadMain.secureServerMetadata);
@@ -338,28 +338,34 @@ public class GatekeeperMain implements NeedsCoreSystemService {
 
     if (registering) {
       try {
-        Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST", gsdEntry);
+        Utils.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST",
+                          gsdEntry);
       } catch (ArrowheadException e) {
         if (e.getExceptionType() == ExceptionType.DUPLICATE_ENTRY) {
-          Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", gsdEntry);
-          Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST", gsdEntry);
+          Utils
+              .sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", gsdEntry);
+          Utils.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST",
+                            gsdEntry);
         } else {
           throw new ArrowheadException("GSD service registration failed.", e);
         }
       }
       try {
-        Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST", icnEntry);
+        Utils.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST",
+                          icnEntry);
       } catch (ArrowheadException e) {
         if (e.getExceptionType() == ExceptionType.DUPLICATE_ENTRY) {
-          Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", icnEntry);
-          Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST", icnEntry);
+          Utils
+              .sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", icnEntry);
+          Utils.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("register").build().toString(), "POST",
+                            icnEntry);
         } else {
           throw new ArrowheadException("ICN service registration failed.", e);
         }
       }
     } else {
-      Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", gsdEntry);
-      Utility.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", icnEntry);
+      Utils.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", gsdEntry);
+      Utils.sendRequest(UriBuilder.fromUri(SERVICE_REGISTRY_URI).path("remove").build().toString(), "PUT", icnEntry);
       System.out.println("Gatekeeper services deregistered.");
     }
   }

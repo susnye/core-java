@@ -8,7 +8,7 @@
 package eu.arrowhead.core.gatekeeper;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.database.Broker;
 import eu.arrowhead.common.exception.ArrowheadException;
@@ -70,7 +70,7 @@ public class GatekeeperInboundResource {
     // Polling the Authorization System about the consumer Cloud
     InterCloudAuthRequest authRequest = new InterCloudAuthRequest(gsdPoll.getRequesterCloud(), gsdPoll.getRequestedService());
     String authUri = UriBuilder.fromPath(GatekeeperMain.getAuthControlUri()).path("intercloud").toString();
-    Response authResponse = Utility.sendRequest(authUri, "PUT", authRequest);
+    Response authResponse = Utils.sendRequest(authUri, "PUT", authRequest);
 
     // If the consumer Cloud is not authorized an error is returned
     if (!authResponse.readEntity(InterCloudAuthResponse.class).isAuthorized()) {
@@ -86,7 +86,7 @@ public class GatekeeperInboundResource {
                                                         registryFlags.get("metadataSearch"));
 
       // Sending back provider Cloud information if the SR poll has results
-      Response srResponse = Utility.sendRequest(srUri, "PUT", queryForm);
+      Response srResponse = Utils.sendRequest(srUri, "PUT", queryForm);
       ServiceQueryResult result = srResponse.readEntity(ServiceQueryResult.class);
       if (!result.isValid()) {
         log.info("GSD poll: SR query came back empty, sending back error");
@@ -94,7 +94,7 @@ public class GatekeeperInboundResource {
       }
 
       log.info("GSDPoll successful, sending back GSDAnswer");
-      GSDAnswer answer = new GSDAnswer(gsdPoll.getRequestedService(), Utility.getOwnCloud(GatekeeperMain.IS_SECURE));
+      GSDAnswer answer = new GSDAnswer(gsdPoll.getRequestedService(), Utils.getOwnCloud(GatekeeperMain.IS_SECURE));
       return Response.status(Status.OK).entity(answer).build();
     }
   }
@@ -111,7 +111,7 @@ public class GatekeeperInboundResource {
     // Polling the Authorization System about the consumer Cloud
     InterCloudAuthRequest authRequest = new InterCloudAuthRequest(icnProposal.getRequesterCloud(), icnProposal.getRequestedService());
     String authUri = UriBuilder.fromPath(GatekeeperMain.getAuthControlUri()).path("intercloud").toString();
-    Response authResponse = Utility.sendRequest(authUri, "PUT", authRequest);
+    Response authResponse = Utils.sendRequest(authUri, "PUT", authRequest);
 
     // If the consumer Cloud is not authorized an error is returned
     if (!authResponse.readEntity(InterCloudAuthResponse.class).isAuthorized()) {
@@ -137,7 +137,7 @@ public class GatekeeperInboundResource {
         .requesterCloud(icnProposal.getRequesterCloud()).requestedService(icnProposal.getRequestedService()).orchestrationFlags(orchestrationFlags)
         .preferredProviders(preferredProviders).build();
 
-    Response response = Utility.sendRequest(GatekeeperMain.getOrchestratorUri(), "POST", serviceRequestForm);
+    Response response = Utils.sendRequest(GatekeeperMain.getOrchestratorUri(), "POST", serviceRequestForm);
     OrchestrationResponse orchResponse = response.readEntity(OrchestrationResponse.class);
     // If the gateway service is not requested, then return the full orchestration response
     if (!icnProposal.getNegotiationFlags().get("useGateway")) {
@@ -166,13 +166,14 @@ public class GatekeeperInboundResource {
 
       ArrowheadSystem consumer = new ArrowheadSystem(icnProposal.getRequesterSystem());
       ConnectToProviderRequest connectionRequest = new ConnectToProviderRequest(chosenBroker.getAddress(), chosenBroker.getPort(), consumer, provider,
-                                                                                icnProposal.getRequesterCloud(),
-                                                                                Utility.getOwnCloud(GatekeeperMain.IS_SECURE),
+                                                                                icnProposal.getRequesterCloud(), Utils
+                                                                                    .getOwnCloud(
+                                                                                        GatekeeperMain.IS_SECURE),
                                                                                 icnProposal.getRequestedService(), GatekeeperMain.IS_SECURE, timeout,
                                                                                 icnProposal.getGatewayPublicKey());
 
       // Sending request, parsing response
-      Response gatewayResponse = Utility.sendRequest(GatekeeperMain.getGatewayProviderUri()[0], "PUT", connectionRequest);
+      Response gatewayResponse = Utils.sendRequest(GatekeeperMain.getGatewayProviderUri()[0], "PUT", connectionRequest);
       ConnectToProviderResponse connectToProviderResponse = gatewayResponse.readEntity(ConnectToProviderResponse.class);
 
       GatewayConnectionInfo gatewayConnectionInfo = new GatewayConnectionInfo(chosenBroker.getAddress(), chosenBroker.getPort(),

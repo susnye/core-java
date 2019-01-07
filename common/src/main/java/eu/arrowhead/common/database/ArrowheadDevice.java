@@ -8,6 +8,7 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.messages.ArrowheadDeviceDTO;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,9 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
 @Table(name = "arrowhead_device")
@@ -28,9 +27,7 @@ public class ArrowheadDevice {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @NotBlank
   @Column(name = "device_name")
-  @Size(max = 255, message = "System name must be 255 character at max")
   private String deviceName;
 
   public ArrowheadDevice() {
@@ -76,5 +73,21 @@ public class ArrowheadDevice {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("deviceName", deviceName).toString();
+  }
+
+  public static ArrowheadDeviceDTO convertToDTO(ArrowheadDevice device, boolean includeId) {
+    ArrowheadDeviceDTO converted = new ArrowheadDeviceDTO(device.getDeviceName());
+    if (includeId) {
+      converted.setId(device.getId());
+    }
+    return converted;
+  }
+
+  public static ArrowheadDevice convertToEntity(ArrowheadDeviceDTO device) {
+    ArrowheadDevice converted = new ArrowheadDevice(device.getDeviceName());
+    if (device.getId() != null) {
+      converted.setId(device.getId());
+    }
+    return converted;
   }
 }

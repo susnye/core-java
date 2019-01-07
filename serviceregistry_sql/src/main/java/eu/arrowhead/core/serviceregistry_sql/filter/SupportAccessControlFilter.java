@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.serviceregistry_sql.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.misc.SecurityUtils;
 import javax.annotation.Priority;
@@ -32,7 +32,7 @@ public class SupportAccessControlFilter implements ContainerRequestFilter {
   @Override
   public void filter(ContainerRequestContext requestContext) {
     SecurityContext sc = requestContext.getSecurityContext();
-    String requestTarget = Utility.stripEndSlash(requestContext.getUriInfo().getRequestUri().toString());
+    String requestTarget = Utils.stripEndSlash(requestContext.getUriInfo().getRequestUri().toString());
     if (sc.isSecure() && !isGetItCalled(requestContext.getMethod(), requestTarget)) {
       String commonName = SecurityUtils.getCertCNFromSubject(sc.getUserPrincipal().getName());
       if (isClientAuthorized(commonName, requestTarget)) {

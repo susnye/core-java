@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.serviceregistry.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.ServiceRegistryEntry;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.filter.AccessControlFilter;
@@ -33,7 +33,7 @@ public class ServiceRegACF extends AccessControlFilter {
     String[] clientFields = clientCN.split("\\.", 2);
     if (requestTarget.endsWith("register") || requestTarget.endsWith("remove")) {
       // All requests from the local cloud are allowed
-      ServiceRegistryEntry entry = Utility.fromJson(requestJson, ServiceRegistryEntry.class);
+      ServiceRegistryEntry entry = Utils.fromJson(requestJson, ServiceRegistryEntry.class);
 
       String providerName = entry.getProvider().getSystemName().replaceAll("_", "");
       if (!providerName.equalsIgnoreCase(clientFields[0])) {

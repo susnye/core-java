@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +25,7 @@ public class InboundDebugFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext requestContext) {
     if (Boolean.valueOf(System.getProperty("debug_mode", "false"))) {
       System.out.println("New " + requestContext.getMethod() + " request at: " + requestContext.getUriInfo().getRequestUri().toString());
-      String prettyJson = Utility.getRequestPayload(requestContext.getEntityStream());
+      String prettyJson = Utils.getRequestPayload(requestContext.getEntityStream());
       System.out.println(prettyJson);
 
       InputStream in = new ByteArrayInputStream(prettyJson.getBytes(StandardCharsets.UTF_8));

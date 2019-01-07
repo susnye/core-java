@@ -5,54 +5,58 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.messages;
 
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.messages.ArrowheadCloudDTO;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 
-@Entity
-@Table(name = "arrowhead_cloud", uniqueConstraints = {@UniqueConstraint(columnNames = {"operator", "cloud_name"})})
-public class ArrowheadCloud {
+public class ArrowheadCloudDTO {
 
-  @Id
-  @GenericGenerator(name = "table_generator", strategy = "org.hibernate.id.enhanced.TableGenerator")
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
+  @NotBlank
+  @Length(max = 255, message = "Cloud operator must be 255 character at max")
+  @Pattern(regexp = "[A-Za-z0-9-_:]+", message =
+      "Cloud operator can only contain alphanumerical characters and some special characters (dash, "
+          + "underscore and colon)")
   private String operator;
 
-  @Column(name = "cloud_name")
+  @NotBlank
+  @Size(max = 255, message = "Cloud name must be 255 character at max")
+  @Pattern(regexp = "[A-Za-z0-9-_:]+", message =
+      "Cloud name can only contain alphanumerical characters and some special characters (dash, "
+          + "underscore and colon)")
   private String cloudName;
 
+  @NotBlank
+  @Size(min = 3, max = 255, message = "Cloud address must be between 3 and 255 characters")
   private String address;
 
+  @NotNull
+  @Min(value = 1, message = "Port can not be less than 1")
+  @Max(value = 65535, message = "Port can not be greater than 65535")
   private Integer port;
 
-  @Column(name = "gatekeeper_service_uri")
+  @NotBlank
   private String gatekeeperServiceURI;
 
-  @Column(name = "authentication_info")
+  @Size(max = 2047, message = "Authentication information must be 2047 character at max")
   private String authenticationInfo;
 
-  @Column(name = "is_secure")
-  @Type(type = "yes_no")
   private Boolean secure = false;
 
-  public ArrowheadCloud() {
+  public ArrowheadCloudDTO() {
   }
 
-  public ArrowheadCloud(String operator, String cloudName, String address, Integer port, String gatekeeperServiceURI,
-                        String authenticationInfo, Boolean secure) {
+  public ArrowheadCloudDTO(String operator, String cloudName, String address, Integer port, String gatekeeperServiceURI,
+                           String authenticationInfo, Boolean secure) {
     this.operator = operator;
     this.cloudName = cloudName;
     this.address = address;
@@ -131,10 +135,10 @@ public class ArrowheadCloud {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ArrowheadCloud)) {
+    if (!(o instanceof ArrowheadCloudDTO)) {
       return false;
     }
-    ArrowheadCloud that = (ArrowheadCloud) o;
+    ArrowheadCloudDTO that = (ArrowheadCloudDTO) o;
     return Objects.equals(operator, that.operator) && Objects.equals(cloudName, that.cloudName) && Objects
         .equals(address, that.address) && Objects.equals(port, that.port) && Objects
         .equals(gatekeeperServiceURI, that.gatekeeperServiceURI) && Objects.equals(secure, that.secure);
@@ -152,7 +156,7 @@ public class ArrowheadCloud {
                       .add("secure", secure).toString();
   }
 
-  public void partialUpdate(ArrowheadCloud other) {
+  public void partialUpdate(ArrowheadCloudDTO other) {
     this.operator = other.getOperator() != null ? other.getOperator() : this.operator;
     this.cloudName = other.getCloudName() != null ? other.getCloudName() : this.cloudName;
     this.address = other.getAddress() != null ? other.getAddress() : this.address;
@@ -162,25 +166,5 @@ public class ArrowheadCloud {
     this.authenticationInfo =
         other.getAuthenticationInfo() != null ? other.getAuthenticationInfo() : this.authenticationInfo;
     this.secure = other.isSecure() != null ? other.isSecure() : this.secure;
-  }
-
-  public static ArrowheadCloudDTO convertToDTO(ArrowheadCloud cloud, boolean includeId) {
-    ArrowheadCloudDTO converted = new ArrowheadCloudDTO(cloud.getOperator(), cloud.getCloudName(), cloud.getAddress(),
-                                                        cloud.getPort(), cloud.getGatekeeperServiceURI(),
-                                                        cloud.getAuthenticationInfo(), cloud.isSecure());
-    if (includeId) {
-      converted.setId(cloud.getId());
-    }
-    return converted;
-  }
-
-  public static ArrowheadCloud convertToEntity(ArrowheadCloudDTO cloud) {
-    ArrowheadCloud converted = new ArrowheadCloud(cloud.getOperator(), cloud.getCloudName(), cloud.getAddress(),
-                                                  cloud.getPort(), cloud.getGatekeeperServiceURI(),
-                                                  cloud.getAuthenticationInfo(), cloud.isSecure());
-    if (cloud.getId() != null) {
-      converted.setId(cloud.getId());
-    }
-    return converted;
   }
 }

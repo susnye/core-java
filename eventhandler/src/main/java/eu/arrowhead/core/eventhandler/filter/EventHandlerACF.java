@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.eventhandler.filter;
 
-import eu.arrowhead.common.Utility;
+import eu.arrowhead.common.Utils;
 import eu.arrowhead.common.database.EventFilter;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.filter.AccessControlFilter;
@@ -33,13 +33,13 @@ public class EventHandlerACF extends AccessControlFilter {
 
     String[] clientFields = clientCN.split("\\.", 2);
     if (requestTarget.contains("publish")) {
-      PublishEvent event = Utility.fromJson(requestJson, PublishEvent.class);
+      PublishEvent event = Utils.fromJson(requestJson, PublishEvent.class);
       if (!clientFields[0].equalsIgnoreCase(event.getSource().getSystemName())) {
         log.error("Source system name and cert common name do not match! Event publishing denied!");
         throw new AuthException("Source system " + event.getSource().getSystemName() + " and cert common name (" + clientCN + ") do not match!");
       }
     } else if (requestTarget.endsWith("subscription")) {
-      EventFilter filter = Utility.fromJson(requestJson, EventFilter.class);
+      EventFilter filter = Utils.fromJson(requestJson, EventFilter.class);
       if (!clientFields[0].equalsIgnoreCase(filter.getConsumer().getSystemName())) {
         log.error("Consumer system name and cert common name do not match! Event subscription/unsubscribe denied!");
         throw new AuthException("Consumer system " + filter.getConsumer().getSystemName() + " and cert common name (" + clientCN + ") do not match!");
