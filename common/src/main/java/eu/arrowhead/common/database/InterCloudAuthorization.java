@@ -8,6 +8,8 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.messages.ArrowheadDeviceDTO;
+import eu.arrowhead.common.messages.InterCloudAuthorizationDTO;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -19,8 +21,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -42,15 +42,11 @@ public class InterCloudAuthorization {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "consumer_cloud_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadCloud cloud;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "arrowhead_service_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -108,5 +104,27 @@ public class InterCloudAuthorization {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("cloud", cloud).add("service", service).toString();
+  }
+
+  //TODO to be continued
+  public static InterCloudAuthorizationDTO convertToDTO(InterCloudAuthorization entry, boolean includeId) {
+    ArrowheadDeviceDTO convertedDevice = ArrowheadDevice.convertToDTO(entry.getProvidedDevice(), includeId);
+    InterCloudAuthorizationDTO converted = new InterCloudAuthorizationDTO(convertedDevice, entry.getMacAddress(),
+                                                                          entry.getEndOfValidity());
+    if (includeId) {
+      converted.setId(entry.getId());
+    }
+    return converted;
+  }
+
+  public static InterCloudAuthorization convertToEntity(InterCloudAuthorizationDTO entry) {
+    ArrowheadCloud cloud = ArrowheadCloud.convertToEntity(entry.getCloud());
+    ArrowheadService service = ArrowheadService.convertToEntity(entry.getService());
+    InterCloudAuthorization converted = new InterCloudAuthorization(convertedDevice, entry.getMacAddress(),
+                                                                    entry.getEndOfValidity());
+    if (entry.getId() != null) {
+      converted.setId(entry.getId());
+    }
+    return converted;
   }
 }

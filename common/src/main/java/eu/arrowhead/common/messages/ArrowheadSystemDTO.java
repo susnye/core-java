@@ -28,9 +28,8 @@ public class ArrowheadSystemDTO {
 
   @NotBlank
   @Size(max = 255, message = "System name must be 255 character at max")
-  @Pattern(regexp = "[A-Za-z0-9-_:]+", message =
-      "System name can only contain alphanumerical characters and some special characters (dash, "
-          + "underscore and colon)")
+  @Pattern(regexp = "[A-Za-z0-9-_:]+", message = "System name can only contain alphanumerical characters and some "
+      + "special characters (dash, underscore and colon)")
   private String systemName;
 
   @NotBlank

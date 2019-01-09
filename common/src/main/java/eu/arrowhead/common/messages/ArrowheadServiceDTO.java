@@ -9,9 +9,10 @@ package eu.arrowhead.common.messages;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.json.constraint.SENotBlank;
+import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.json.support.ArrowheadServiceSupport;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,11 +30,11 @@ public class ArrowheadServiceDTO {
 
   @JsonInclude(Include.NON_EMPTY)
   @Size(max = 100, message = "Service can only have 100 interfaces at max")
-  private Set<@SENotBlank String> interfaces = new HashSet<>();
+  private Set<String> interfaces = new HashSet<>();
 
   @JsonInclude(Include.NON_EMPTY)
   @Size(max = 100, message = "Service can only have 100 serviceMetadata key-value pairs at max")
-  private Map<@SENotBlank String, @SENotBlank String> serviceMetadata = new HashMap<>();
+  private Map<String, String> serviceMetadata = new HashMap<>();
 
   public ArrowheadServiceDTO() {
   }
@@ -70,7 +71,13 @@ public class ArrowheadServiceDTO {
     return interfaces;
   }
 
+  @JsonSetter
   public void setInterfaces(Set<String> interfaces) {
+    for (String serviceInterface : interfaces) {
+      if (serviceInterface == null || serviceInterface.trim().isEmpty()) {
+        throw new BadPayloadException("ArrowheadService interface can not be blank!");
+      }
+    }
     this.interfaces = interfaces;
   }
 
@@ -78,7 +85,18 @@ public class ArrowheadServiceDTO {
     return serviceMetadata;
   }
 
+  @JsonSetter
   public void setServiceMetadata(Map<String, String> serviceMetadata) {
+    for (Map.Entry<String, String> entry : serviceMetadata.entrySet()) {
+      String key = entry.getKey();
+      if (key == null || key.trim().isEmpty()) {
+        throw new BadPayloadException("ArrowheadService metadata key can not be blank!");
+      }
+      String value = entry.getValue();
+      if (value == null || value.trim().isEmpty()) {
+        throw new BadPayloadException("ArrowheadService metadata value can not be blank!");
+      }
+    }
     this.serviceMetadata = serviceMetadata;
   }
 

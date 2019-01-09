@@ -8,6 +8,7 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.messages.BrokerDTO;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,13 +16,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
 @Table(name = "broker")
@@ -32,13 +28,8 @@ public class Broker {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @NotBlank
-  @Size(min = 3, max = 255, message = "Address must be between 3 and 255 characters")
   private String address;
 
-  @NotNull
-  @Min(value = 1, message = "Port can not be less than 1")
-  @Max(value = 65535, message = "Port can not be greater than 65535")
   private Integer port;
 
   @Column(name = "is_secure")
@@ -56,6 +47,10 @@ public class Broker {
 
   public Long getId() {
     return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
   }
 
   public String getAddress() {
@@ -102,5 +97,21 @@ public class Broker {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("address", address).add("port", port).add("secure", secure).toString();
+  }
+
+  public static BrokerDTO convertToDTO(Broker broker, boolean includeId) {
+    BrokerDTO converted = new BrokerDTO(broker.getAddress(), broker.getPort(), broker.isSecure());
+    if (includeId) {
+      converted.setId(broker.getId());
+    }
+    return converted;
+  }
+
+  public static Broker convertToEntity(BrokerDTO broker) {
+    Broker converted = new Broker(broker.getAddress(), broker.getPort(), broker.isSecure());
+    if (broker.getId() != null) {
+      converted.setId(broker.getId());
+    }
+    return converted;
   }
 }

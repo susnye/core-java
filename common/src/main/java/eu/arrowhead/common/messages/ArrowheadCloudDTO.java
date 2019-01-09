@@ -23,16 +23,14 @@ public class ArrowheadCloudDTO {
 
   @NotBlank
   @Length(max = 255, message = "Cloud operator must be 255 character at max")
-  @Pattern(regexp = "[A-Za-z0-9-_:]+", message =
-      "Cloud operator can only contain alphanumerical characters and some special characters (dash, "
-          + "underscore and colon)")
+  @Pattern(regexp = "[A-Za-z0-9-_:]+", message = "Cloud operator can only contain alphanumerical characters and some "
+      + "special characters (dash, underscore and colon)")
   private String operator;
 
   @NotBlank
   @Size(max = 255, message = "Cloud name must be 255 character at max")
-  @Pattern(regexp = "[A-Za-z0-9-_:]+", message =
-      "Cloud name can only contain alphanumerical characters and some special characters (dash, "
-          + "underscore and colon)")
+  @Pattern(regexp = "[A-Za-z0-9-_:]+", message = "Cloud name can only contain alphanumerical characters and some "
+      + "special characters (dash, underscore and colon)")
   private String cloudName;
 
   @NotBlank

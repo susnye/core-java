@@ -8,8 +8,8 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.json.constraint.SENotBlank;
-import eu.arrowhead.common.json.constraint.ZDTInFuture;
+import eu.arrowhead.common.messages.ArrowheadSystemDTO;
+import eu.arrowhead.common.messages.EventFilterDTO;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,17 +30,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
-@Table(name = "event_filter", uniqueConstraints = {@UniqueConstraint(columnNames = {"event_type", "consumer_system_id"})})
+@Table(name = "event_filter", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"event_type", "consumer_system_id"})})
 public class EventFilter {
 
   @Id
@@ -48,20 +45,14 @@ public class EventFilter {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @NotBlank
   @Column(name = "event_type")
-  @Size(max = 255, message = "Event type must be 255 character at max")
   private String eventType;
 
-  @Valid
-  @NotNull(message = "Consumer ArrowheadSystem cannot be null")
   @JoinColumn(name = "consumer_system_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadSystem consumer;
 
-  @Valid
-  @Size(max = 100, message = "Event filter can only have 100 sources at max")
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "event_filter_sources_list", joinColumns = @JoinColumn(name = "filter_id"))
   private Set<ArrowheadSystem> sources = new HashSet<>();
@@ -70,19 +61,17 @@ public class EventFilter {
   private ZonedDateTime startDate;
 
   @Column(name = "end_date")
-  @ZDTInFuture(message = "Filter end date must be in the future")
   private ZonedDateTime endDate;
 
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "metadata_key")
   @Column(name = "metadata_value", length = 2047)
   @CollectionTable(name = "event_filter_metadata", joinColumns = @JoinColumn(name = "filter_id"))
-  private Map<@SENotBlank String, @SENotBlank String> filterMetadata = new HashMap<>();
+  private Map<String, String> filterMetadata = new HashMap<>();
 
   @Column(name = "notify_uri")
   private String notifyUri;
 
-  //TODO provide a REST interface to easily switch this
   @Column(name = "match_metadata")
   @Type(type = "yes_no")
   private Boolean matchMetadata = false;
@@ -90,8 +79,9 @@ public class EventFilter {
   public EventFilter() {
   }
 
-  public EventFilter(String eventType, ArrowheadSystem consumer, Set<ArrowheadSystem> sources, ZonedDateTime startDate, ZonedDateTime endDate,
-                     Map<String, String> filterMetadata, String notifyUri, boolean matchMetadata) {
+  public EventFilter(String eventType, ArrowheadSystem consumer, Set<ArrowheadSystem> sources, ZonedDateTime startDate,
+                     ZonedDateTime endDate, Map<String, String> filterMetadata, String notifyUri,
+                     boolean matchMetadata) {
     this.eventType = eventType;
     this.consumer = consumer;
     this.sources = sources;
@@ -194,5 +184,38 @@ public class EventFilter {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("eventType", eventType).add("consumer", consumer).toString();
+  }
+
+  public static EventFilterDTO convertToDTO(EventFilter filter, boolean includeId) {
+    ArrowheadSystemDTO consumer = ArrowheadSystem.convertToDTO(filter.getConsumer(), includeId);
+    Set<ArrowheadSystemDTO> sources = new HashSet<>();
+    for (ArrowheadSystem system : filter.getSources()) {
+      sources.add(ArrowheadSystem.convertToDTO(system, includeId));
+    }
+
+    EventFilterDTO converted = new EventFilterDTO(filter.getEventType(), consumer, sources, filter.getStartDate(),
+                                                  filter.getEndDate(), filter.getFilterMetadata(),
+                                                  filter.getNotifyUri(), filter.isMatchMetadata());
+    if (includeId) {
+      converted.setId(filter.getId());
+    }
+    return converted;
+  }
+
+  public static EventFilter convertToEntity(EventFilterDTO filter) {
+    ArrowheadSystem consumer = ArrowheadSystem.convertToEntity(filter.getConsumer());
+    Set<ArrowheadSystem> sources = new HashSet<>();
+    for (ArrowheadSystemDTO system : filter.getSources()) {
+      sources.add(ArrowheadSystem.convertToEntity(system));
+    }
+
+    EventFilter converted = new EventFilter(filter.getEventType(), consumer, sources, filter.getStartDate(),
+                                            filter.getEndDate(), filter.getFilterMetadata(), filter.getNotifyUri(),
+                                            filter.isMatchMetadata());
+
+    if (filter.getId() != null) {
+      converted.setId(filter.getId());
+    }
+    return converted;
   }
 }

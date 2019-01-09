@@ -7,7 +7,9 @@
 
 package eu.arrowhead.common.database;
 
-import eu.arrowhead.common.json.constraint.LDTInFuture;
+import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.messages.ArrowheadDeviceDTO;
+import eu.arrowhead.common.messages.DeviceRegistryEntryDTO;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -21,9 +23,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -37,30 +36,22 @@ public class DeviceRegistryEntry {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @Valid
-  @NotNull(message = "Provided ArrowheadDevice cannot be null")
   @JoinColumn(name = "arrowhead_device_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadDevice providedDevice;
 
   @Column(name = "mac_address")
-  @Size(max = 255, message = "macAddress must be 255 character at max")
   private String macAddress;
 
   @Column(name = "end_of_validity")
-  @LDTInFuture(message = "End of validity date cannot be in the past")
   private LocalDateTime endOfValidity;
 
   public DeviceRegistryEntry() {
     super();
   }
 
-  public DeviceRegistryEntry(final Long id, @Valid @NotNull(message = "Provided ArrowheadDevice cannot be null") final ArrowheadDevice providedDevice,
-                             @Size(max = 255, message = "macAddress must be 255 character at max") final String macAddress,
-                             @LDTInFuture(message = "End of validity date cannot be in the past") final LocalDateTime endOfValidity) {
-    super();
-    this.id = id;
+  public DeviceRegistryEntry(ArrowheadDevice providedDevice, String macAddress, LocalDateTime endOfValidity) {
     this.providedDevice = providedDevice;
     this.macAddress = macAddress;
     this.endOfValidity = endOfValidity;
@@ -98,21 +89,10 @@ public class DeviceRegistryEntry {
     this.endOfValidity = endOfValidity;
   }
 
-  protected void append(final StringBuilder builder) {
-    builder.append("id=").append(id);
-    builder.append(", providedDevice=").append(providedDevice);
-    builder.append(", macAddress=").append(macAddress);
-    builder.append(", endOfValidity=").append(endOfValidity);
-  }
-
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass().getSimpleName());
-    builder.append(" [");
-    append(builder);
-    builder.append("]");
-    return builder.toString();
+    return MoreObjects.toStringHelper(this).add("id", id).add("providedDevice", providedDevice)
+                      .add("macAddress", macAddress).add("endOfValidity", endOfValidity).toString();
   }
 
   @Override
@@ -128,12 +108,32 @@ public class DeviceRegistryEntry {
     }
     DeviceRegistryEntry other = (DeviceRegistryEntry) obj;
 
-    return Objects.equals(this.providedDevice, other.providedDevice) && Objects.equals(this.macAddress, other.macAddress) && Objects
-        .equals(this.endOfValidity, other.endOfValidity);
+    return Objects.equals(this.providedDevice, other.providedDevice) && Objects
+        .equals(this.macAddress, other.macAddress) && Objects.equals(this.endOfValidity, other.endOfValidity);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(providedDevice, macAddress, endOfValidity);
+  }
+
+  public static DeviceRegistryEntryDTO convertToDTO(DeviceRegistryEntry entry, boolean includeId) {
+    ArrowheadDeviceDTO convertedDevice = ArrowheadDevice.convertToDTO(entry.getProvidedDevice(), includeId);
+    DeviceRegistryEntryDTO converted = new DeviceRegistryEntryDTO(convertedDevice, entry.getMacAddress(),
+                                                                  entry.getEndOfValidity());
+    if (includeId) {
+      converted.setId(entry.getId());
+    }
+    return converted;
+  }
+
+  public static DeviceRegistryEntry convertToEntity(DeviceRegistryEntryDTO entry) {
+    ArrowheadDevice convertedDevice = ArrowheadDevice.convertToEntity(entry.getProvidedDevice());
+    DeviceRegistryEntry converted = new DeviceRegistryEntry(convertedDevice, entry.getMacAddress(),
+                                                            entry.getEndOfValidity());
+    if (entry.getId() != null) {
+      converted.setId(entry.getId());
+    }
+    return converted;
   }
 }
