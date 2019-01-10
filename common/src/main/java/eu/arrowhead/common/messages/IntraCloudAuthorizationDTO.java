@@ -8,73 +8,31 @@
 package eu.arrowhead.common.messages;
 
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
-/**
- * JPA entity class for storing intra-cloud (within the cloud) authorization rights in the database. The
- * <i>consumer_system_id</i>,
- * <i>provider_system_id</i> and <i>arrowhead_service_id</i> columns must be unique together. <p> The table contains
- * foreign keys to {@link
- * ArrowheadSystem} and {@link ArrowheadService}. A particular Consumer System/Provider System/Arrowhead Service trio
- * is authorized if there is a
- * database entry for it in this table. The existence of the database entry means the given Consumer System is
- * authorized to consume the given
- * Arrowhead Serice from the given Provider System inside the Local Cloud. The reverse of it is not authorized.
- *
- * @author Umlauf Zoltán
- */
-@Entity
-@Table(name = "intra_cloud_authorization", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"consumer_system_id", "provider_system_id", "arrowhead_service_id"})})
 public class IntraCloudAuthorizationDTO {
 
-  @Id
-  @GenericGenerator(name = "table_generator", strategy = "org.hibernate.id.enhanced.TableGenerator")
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
   @Valid
   @NotNull
-  @JoinColumn(name = "consumer_system_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadSystem consumer;
+  private ArrowheadSystemDTO consumer;
 
   @Valid
   @NotNull
-  @JoinColumn(name = "provider_system_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadSystem provider;
+  private ArrowheadSystemDTO provider;
 
   @Valid
   @NotNull
-  @JoinColumn(name = "arrowhead_service_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadService service;
+  private ArrowheadServiceDTO service;
 
   public IntraCloudAuthorizationDTO() {
   }
 
-  public IntraCloudAuthorizationDTO(ArrowheadSystem consumer, ArrowheadSystem provider, ArrowheadService service) {
+  public IntraCloudAuthorizationDTO(ArrowheadSystemDTO consumer, ArrowheadSystemDTO provider,
+                                    ArrowheadServiceDTO service) {
     this.consumer = consumer;
     this.provider = provider;
     this.service = service;
@@ -88,27 +46,27 @@ public class IntraCloudAuthorizationDTO {
     this.id = id;
   }
 
-  public ArrowheadSystem getConsumer() {
+  public ArrowheadSystemDTO getConsumer() {
     return consumer;
   }
 
-  public void setConsumer(ArrowheadSystem consumer) {
+  public void setConsumer(ArrowheadSystemDTO consumer) {
     this.consumer = consumer;
   }
 
-  public ArrowheadSystem getProvider() {
+  public ArrowheadSystemDTO getProvider() {
     return provider;
   }
 
-  public void setProvider(ArrowheadSystem providers) {
+  public void setProvider(ArrowheadSystemDTO providers) {
     this.provider = providers;
   }
 
-  public ArrowheadService getService() {
+  public ArrowheadServiceDTO getService() {
     return service;
   }
 
-  public void setService(ArrowheadService service) {
+  public void setService(ArrowheadServiceDTO service) {
     this.service = service;
   }
 

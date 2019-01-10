@@ -8,8 +8,12 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.messages.ArrowheadDeviceDTO;
+import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.messages.ArrowheadCloudDTO;
+import eu.arrowhead.common.messages.ArrowheadServiceDTO;
 import eu.arrowhead.common.messages.InterCloudAuthorizationDTO;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -26,15 +30,20 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 /**
- * JPA entity class for storing inter-cloud authorization rights in the database. The <i>consumer_cloud_id</i> and <i>arrowhead_service_id</i> columns
- * must be unique together. <p> The table contains foreign keys to {@link ArrowheadCloud} and {@link ArrowheadService}. A particular
- * <tt>ArrowheadCloud</tt> - <tt>ArrowheadService</tt> pair is authorized if there is a database entry for it in this table. The existence of the
- * database entry means the given cloud can consume the given service from an {@link ArrowheadSystem} inside the Local Cloud.
+ * JPA entity class for storing inter-cloud authorization rights in the database. The <i>consumer_cloud_id</i> and
+ * <i>arrowhead_service_id</i> columns
+ * must be unique together. <p> The table contains foreign keys to {@link ArrowheadCloud} and
+ * {@link ArrowheadService}. A particular
+ * <tt>ArrowheadCloud</tt> - <tt>ArrowheadService</tt> pair is authorized if there is a database entry for it in this
+ * table. The existence of the
+ * database entry means the given cloud can consume the given service from an {@link ArrowheadSystem} inside the
+ * Local Cloud.
  *
  * @author Umlauf Zoltán
  */
 @Entity
-@Table(name = "inter_cloud_authorization", uniqueConstraints = {@UniqueConstraint(columnNames = {"consumer_cloud_id", "arrowhead_service_id"})})
+@Table(name = "inter_cloud_authorization", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"consumer_cloud_id", "arrowhead_service_id"})})
 public class InterCloudAuthorization {
 
   @Id
@@ -106,25 +115,37 @@ public class InterCloudAuthorization {
     return MoreObjects.toStringHelper(this).add("cloud", cloud).add("service", service).toString();
   }
 
-  //TODO to be continued
-  public static InterCloudAuthorizationDTO convertToDTO(InterCloudAuthorization entry, boolean includeId) {
-    ArrowheadDeviceDTO convertedDevice = ArrowheadDevice.convertToDTO(entry.getProvidedDevice(), includeId);
-    InterCloudAuthorizationDTO converted = new InterCloudAuthorizationDTO(convertedDevice, entry.getMacAddress(),
-                                                                          entry.getEndOfValidity());
-    if (includeId) {
-      converted.setId(entry.getId());
+  public static InterCloudAuthorizationDTO convertToDTO(List<InterCloudAuthorization> entries, boolean includeId) {
+    if (entries.get(0).getCloud() == null) {
+      throw new ArrowheadException(
+          "InterCloudAuthorization conversion to DTO received entry with null object for ArrowheadCloud");
     }
-    return converted;
+
+    List<ArrowheadService> services = new ArrayList<>();
+    for (InterCloudAuthorization entry : entries) {
+      if (!entries.get(0).getCloud().equals(entry.getCloud())) {
+        throw new ArrowheadException("Logical error during conversion (Entity->DTO) of InterCloudAuthorization rules");
+      }
+      services.add(entry.getService());
+    }
+
+    ArrowheadCloudDTO convertedCloud = ArrowheadCloud.convertToDTO(entries.get(0).getCloud(), includeId);
+    ArrowheadServiceDTO convertedService = ArrowheadService.convertToDTO(services, null).orElseThrow(
+        () -> new ArrowheadException("ArrowheadService conversion returned empty object."));
+    return new InterCloudAuthorizationDTO(convertedCloud, convertedService);
   }
 
-  public static InterCloudAuthorization convertToEntity(InterCloudAuthorizationDTO entry) {
+  public static List<InterCloudAuthorization> convertToEntity(InterCloudAuthorizationDTO entry) {
     ArrowheadCloud cloud = ArrowheadCloud.convertToEntity(entry.getCloud());
-    ArrowheadService service = ArrowheadService.convertToEntity(entry.getService());
-    InterCloudAuthorization converted = new InterCloudAuthorization(convertedDevice, entry.getMacAddress(),
-                                                                    entry.getEndOfValidity());
-    if (entry.getId() != null) {
-      converted.setId(entry.getId());
+    List<ArrowheadService> services = ArrowheadService.convertToEntity(entry.getService());
+    List<InterCloudAuthorization> convertedEntries = new ArrayList<>();
+    for (ArrowheadService service : services) {
+      InterCloudAuthorization convertedEntry = new InterCloudAuthorization(cloud, service);
+      if (entry.getId() != null) {
+        convertedEntry.setId(entry.getId());
+      }
+      convertedEntries.add(convertedEntry);
     }
-    return converted;
+    return convertedEntries;
   }
 }

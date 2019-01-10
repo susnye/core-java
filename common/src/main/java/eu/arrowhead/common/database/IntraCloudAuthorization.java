@@ -8,6 +8,12 @@
 package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.messages.ArrowheadCloudDTO;
+import eu.arrowhead.common.messages.ArrowheadServiceDTO;
+import eu.arrowhead.common.messages.IntraCloudAuthorizationDTO;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -19,8 +25,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -44,22 +48,16 @@ public class IntraCloudAuthorization {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "consumer_system_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadSystem consumer;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "provider_system_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadSystem provider;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "arrowhead_service_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -126,5 +124,40 @@ public class IntraCloudAuthorization {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("consumer", consumer).add("provider", provider).add("service", service).toString();
+  }
+
+  //TODO continue
+  public static IntraCloudAuthorizationDTO convertToDTO(List<IntraCloudAuthorization> entries, boolean includeId) {
+    if (entries.get(0).getCloud() == null) {
+      throw new ArrowheadException(
+          "InterCloudAuthorization conversion to DTO received entry with null object for ArrowheadCloud");
+    }
+
+    List<ArrowheadService> services = new ArrayList<>();
+    for (IntraCloudAuthorization entry : entries) {
+      if (!entries.get(0).getCloud().equals(entry.getCloud())) {
+        throw new ArrowheadException("Logical error during conversion (Entity->DTO) of InterCloudAuthorization rules");
+      }
+      services.add(entry.getService());
+    }
+
+    ArrowheadCloudDTO convertedCloud = ArrowheadCloud.convertToDTO(entries.get(0).getCloud(), includeId);
+    ArrowheadServiceDTO convertedService = ArrowheadService.convertToDTO(services, null).orElseThrow(
+        () -> new ArrowheadException("ArrowheadService conversion returned empty object."));
+    return new IntraCloudAuthorizationDTO(convertedCloud, convertedService);
+  }
+
+  public static List<IntraCloudAuthorization> convertToEntity(IntraCloudAuthorizationDTO entry) {
+    ArrowheadCloud cloud = ArrowheadCloud.convertToEntity(entry.getCloud());
+    List<ArrowheadService> services = ArrowheadService.convertToEntity(entry.getService());
+    List<IntraCloudAuthorization> convertedEntries = new ArrayList<>();
+    for (ArrowheadService service : services) {
+      IntraCloudAuthorization convertedEntry = new IntraCloudAuthorization(cloud, service);
+      if (entry.getId() != null) {
+        convertedEntry.setId(entry.getId());
+      }
+      convertedEntries.add(convertedEntry);
+    }
+    return convertedEntries;
   }
 }

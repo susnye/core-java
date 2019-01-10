@@ -110,14 +110,14 @@ public class ArrowheadService {
   }
 
   public static List<ArrowheadService> convertToEntity(ArrowheadServiceDTO service) {
-    List<ArrowheadService> services = new ArrayList<>();
+    Set<ArrowheadService> services = new HashSet<>();
     for (String serviceInterface : service.getInterfaces()) {
       services.add(new ArrowheadService(service.getServiceDefinition(), serviceInterface));
     }
     if (services.isEmpty()) {
       services.add(new ArrowheadService(service.getServiceDefinition(), null));
     }
-    return services;
+    return new ArrayList<>(services);
   }
 
 }
