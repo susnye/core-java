@@ -13,7 +13,7 @@
   <parent>
     <groupId>eu.arrowhead</groupId>
     <artifactId>core</artifactId>
-    <version>${revision}</version>
+    <version>4.1.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>arrowhead-authorization</artifactId>
@@ -34,12 +34,6 @@
     <dependency>
       <groupId>eu.arrowhead</groupId>
       <artifactId>arrowhead-core-common</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>${bouncy.castle.version}</version>
     </dependency>
 
   </dependencies>
@@ -141,7 +135,7 @@
             <configuration>
               <snapshotExpand>true</snapshotExpand>
               <snapshotTemplate>[YYMMddHHmm].${git.commit.id.abbrev}</snapshotTemplate>
-              <deb>target/${project.artifactId}_${revision}.deb</deb>
+              <deb>target/${project.artifactId}_${project.version}.deb</deb>
               <verbose>true</verbose>
               <controlDir>${basedir}/src/deb/control</controlDir>
               <dataSet>
@@ -170,15 +164,6 @@
                     <type>perm</type>
                     <prefix>/etc/systemd/system</prefix>
                     <filemode>664</filemode>
-                  </mapper>
-                </data>
-
-                <data>
-                  <type>file</type>
-                  <src>${project.build.directory}/lib/bcprov-jdk15on-${bouncy.castle.version}.jar</src>
-                  <mapper>
-                    <type>perm</type>
-                    <prefix>/usr/share/arrowhead/lib</prefix>
                   </mapper>
                 </data>
 
