@@ -9,8 +9,8 @@ package eu.arrowhead.common.database;
 
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.exception.ArrowheadException;
-import eu.arrowhead.common.messages.ArrowheadCloudDTO;
 import eu.arrowhead.common.messages.ArrowheadServiceDTO;
+import eu.arrowhead.common.messages.ArrowheadSystemDTO;
 import eu.arrowhead.common.messages.IntraCloudAuthorizationDTO;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,33 +126,27 @@ public class IntraCloudAuthorization {
     return MoreObjects.toStringHelper(this).add("consumer", consumer).add("provider", provider).add("service", service).toString();
   }
 
-  //TODO continue
   public static IntraCloudAuthorizationDTO convertToDTO(List<IntraCloudAuthorization> entries, boolean includeId) {
-    if (entries.get(0).getCloud() == null) {
-      throw new ArrowheadException(
-          "InterCloudAuthorization conversion to DTO received entry with null object for ArrowheadCloud");
-    }
-
     List<ArrowheadService> services = new ArrayList<>();
     for (IntraCloudAuthorization entry : entries) {
-      if (!entries.get(0).getCloud().equals(entry.getCloud())) {
-        throw new ArrowheadException("Logical error during conversion (Entity->DTO) of InterCloudAuthorization rules");
-      }
       services.add(entry.getService());
     }
 
-    ArrowheadCloudDTO convertedCloud = ArrowheadCloud.convertToDTO(entries.get(0).getCloud(), includeId);
+    ArrowheadSystemDTO convertedConsumer = ArrowheadSystem.convertToDTO(entries.get(0).getConsumer(), includeId);
+    ArrowheadSystemDTO convertedProvider = ArrowheadSystem.convertToDTO(entries.get(0).getProvider(), includeId);
     ArrowheadServiceDTO convertedService = ArrowheadService.convertToDTO(services, null).orElseThrow(
         () -> new ArrowheadException("ArrowheadService conversion returned empty object."));
-    return new IntraCloudAuthorizationDTO(convertedCloud, convertedService);
+    return new IntraCloudAuthorizationDTO(convertedConsumer, convertedProvider, convertedService);
   }
 
   public static List<IntraCloudAuthorization> convertToEntity(IntraCloudAuthorizationDTO entry) {
-    ArrowheadCloud cloud = ArrowheadCloud.convertToEntity(entry.getCloud());
+    ArrowheadSystem convertedConsumer = ArrowheadSystem.convertToEntity(entry.getConsumer());
+    ArrowheadSystem convertedProvider = ArrowheadSystem.convertToEntity(entry.getProvider());
     List<ArrowheadService> services = ArrowheadService.convertToEntity(entry.getService());
     List<IntraCloudAuthorization> convertedEntries = new ArrayList<>();
     for (ArrowheadService service : services) {
-      IntraCloudAuthorization convertedEntry = new IntraCloudAuthorization(cloud, service);
+      IntraCloudAuthorization convertedEntry = new IntraCloudAuthorization(convertedConsumer, convertedProvider,
+                                                                           service);
       if (entry.getId() != null) {
         convertedEntry.setId(entry.getId());
       }
