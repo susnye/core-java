@@ -7,9 +7,9 @@
 
 package eu.arrowhead.core.serviceregistry_sql.support;
 
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import eu.arrowhead.common.json.support.ServiceRegistryEntrySupport;
 import eu.arrowhead.core.serviceregistry_sql.ServiceRegistryResource;
 import javax.ws.rs.Consumes;

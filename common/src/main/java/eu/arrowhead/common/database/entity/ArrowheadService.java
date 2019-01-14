@@ -5,7 +5,9 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
+
+import static java.util.stream.Collectors.groupingBy;
 
 import eu.arrowhead.common.messages.ArrowheadServiceDTO;
 import java.util.ArrayList;
@@ -90,8 +92,7 @@ public class ArrowheadService {
     return Objects.hash(serviceDefinition, serviceInterface);
   }
 
-  public static Optional<ArrowheadServiceDTO> convertToDTO(List<ArrowheadService> services,
-                                                           Map<String, String> serviceMetadata) {
+  public static Optional<ArrowheadServiceDTO> convertToDTO(List<ArrowheadService> services) {
     if (services.isEmpty()) {
       return Optional.empty();
     }
@@ -106,7 +107,7 @@ public class ArrowheadService {
       interfaces.add(service.getServiceInterface());
     }
 
-    return Optional.of(new ArrowheadServiceDTO(serviceDef, interfaces, serviceMetadata));
+    return Optional.of(new ArrowheadServiceDTO(serviceDef, interfaces, null));
   }
 
   public static List<ArrowheadService> convertToEntity(ArrowheadServiceDTO service) {
@@ -118,6 +119,18 @@ public class ArrowheadService {
       services.add(new ArrowheadService(service.getServiceDefinition(), null));
     }
     return new ArrayList<>(services);
+  }
+
+  public static List<ArrowheadServiceDTO> convertListToDTO(List<ArrowheadService> services) {
+    Map<String, List<ArrowheadService>> servicesByName = services.stream().collect(
+        groupingBy(ArrowheadService::getServiceDefinition));
+
+    List<ArrowheadServiceDTO> convertedServices = new ArrayList<>();
+    for (List<ArrowheadService> serviceGroup : servicesByName.values()) {
+      Optional<ArrowheadServiceDTO> serviceDTO = convertToDTO(serviceGroup);
+      serviceDTO.ifPresent(convertedServices::add);
+    }
+    return convertedServices;
   }
 
 }

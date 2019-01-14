@@ -7,10 +7,10 @@
 
 package eu.arrowhead.core.orchestrator;
 
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.OrchestrationStore;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.OrchestrationStore;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.DataNotFoundException;
 import eu.arrowhead.common.messages.GSDResult;

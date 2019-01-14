@@ -8,7 +8,7 @@
 package eu.arrowhead.core.eventhandler;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.database.EventFilter;
+import eu.arrowhead.common.database.entity.EventFilter;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.TimerTask;

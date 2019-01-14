@@ -8,7 +8,7 @@
 package eu.arrowhead.core.eventhandler;
 
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.EventFilter;
+import eu.arrowhead.common.database.entity.EventFilter;
 import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.messages.PublishEvent;
 import java.time.ZonedDateTime;

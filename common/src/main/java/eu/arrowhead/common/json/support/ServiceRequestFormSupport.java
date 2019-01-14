@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.json.support;
 
-import eu.arrowhead.common.database.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
 import eu.arrowhead.common.messages.PreferredProvider;
 import eu.arrowhead.common.messages.ServiceRequestForm;
 import java.util.ArrayList;

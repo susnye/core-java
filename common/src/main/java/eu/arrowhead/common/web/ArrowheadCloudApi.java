@@ -8,7 +8,7 @@
 package eu.arrowhead.common.web;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.database.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
 import eu.arrowhead.common.exception.DataNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;

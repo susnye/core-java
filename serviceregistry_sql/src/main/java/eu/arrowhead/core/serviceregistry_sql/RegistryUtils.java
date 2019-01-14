@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.serviceregistry_sql;
 
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;

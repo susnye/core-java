@@ -5,11 +5,13 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.messages.ArrowheadCloudDTO;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -182,5 +184,13 @@ public class ArrowheadCloud {
       converted.setId(cloud.getId());
     }
     return converted;
+  }
+
+  public static List<ArrowheadCloudDTO> convertListToDTO(List<ArrowheadCloud> clouds, boolean includeId) {
+    return clouds.stream().map(cloud -> convertToDTO(cloud, includeId)).collect(Collectors.toList());
+  }
+
+  public static List<ArrowheadCloud> convertListToEntity(List<ArrowheadCloudDTO> clouds) {
+    return clouds.stream().map(ArrowheadCloud::convertToEntity).collect(Collectors.toList());
   }
 }

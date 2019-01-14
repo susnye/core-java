@@ -5,12 +5,16 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.json.constraint.LDTInFuture;
+import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.messages.ArrowheadServiceDTO;
+import eu.arrowhead.common.messages.ArrowheadSystemDTO;
+import eu.arrowhead.common.messages.ServiceRegistryEntryDTO;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -24,16 +28,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 
 @Entity
-@Table(name = "service_registry", uniqueConstraints = {@UniqueConstraint(columnNames = {"arrowhead_service_id", "provider_system_id"})})
+@Table(name = "service_registry", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"arrowhead_service_id", "provider_system_id"})})
 public class ServiceRegistryEntry {
 
   @Id
@@ -41,35 +43,28 @@ public class ServiceRegistryEntry {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @Valid
-  @NotNull(message = "Provided ArrowheadService cannot be null")
   @JoinColumn(name = "arrowhead_service_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadService providedService;
 
-  @Valid
-  @NotNull(message = "Provider ArrowheadSystem cannot be null")
   @JoinColumn(name = "provider_system_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadSystem provider;
 
   @Column(name = "service_uri")
-  @Size(max = 255, message = "Service URI must be 255 character at max")
   private String serviceURI;
 
   @Type(type = "yes_no")
   private Boolean udp = false;
 
   @Column(name = "end_of_validity")
-  @LDTInFuture(message = "End of validity date must be in the future")
   private LocalDateTime endOfValidity;
 
   private Integer version = 1;
 
-  //Takes the providedService metadata map
-  @JsonIgnore
+  //Takes the providedService (DTO) metadata map
   private String metadata;
 
   public ServiceRegistryEntry() {
@@ -81,8 +76,8 @@ public class ServiceRegistryEntry {
     this.serviceURI = serviceURI;
   }
 
-  public ServiceRegistryEntry(ArrowheadService providedService, ArrowheadSystem provider, String serviceURI, boolean udp, LocalDateTime endOfValidity,
-                              int version) {
+  public ServiceRegistryEntry(ArrowheadService providedService, ArrowheadSystem provider, String serviceURI,
+                              boolean udp, LocalDateTime endOfValidity, int version) {
     this.providedService = providedService;
     this.provider = provider;
     this.serviceURI = serviceURI;
@@ -91,8 +86,8 @@ public class ServiceRegistryEntry {
     this.version = version;
   }
 
-  public ServiceRegistryEntry(ArrowheadService providedService, ArrowheadSystem provider, String serviceURI, Boolean udp, LocalDateTime endOfValidity,
-                              Integer version, String metadata) {
+  public ServiceRegistryEntry(ArrowheadService providedService, ArrowheadSystem provider, String serviceURI,
+                              Boolean udp, LocalDateTime endOfValidity, Integer version, String metadata) {
     this.providedService = providedService;
     this.provider = provider;
     this.serviceURI = serviceURI;
@@ -158,6 +153,14 @@ public class ServiceRegistryEntry {
     this.version = version;
   }
 
+  public String getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(String metadata) {
+    this.metadata = metadata;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -178,34 +181,55 @@ public class ServiceRegistryEntry {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("providedService", providedService).add("provider", provider).add("serviceURI", serviceURI)
-                      .add("version", version).toString();
+    return MoreObjects.toStringHelper(this).add("providedService", providedService).add("provider", provider)
+                      .add("serviceURI", serviceURI).add("version", version).toString();
   }
 
-  public void toDatabase() {
-    if (providedService.getServiceMetadata() != null && !providedService.getServiceMetadata().isEmpty()) {
+  public static ServiceRegistryEntryDTO convertToDTO(List<ServiceRegistryEntry> entries, boolean includeId) {
+    List<ArrowheadService> services = new ArrayList<>();
+    for (ServiceRegistryEntry entry : entries) {
+      services.add(entry.getProvidedService());
+    }
+
+    ServiceRegistryEntry firstEntry = entries.get(0);
+    ArrowheadSystemDTO convertedProvider = ArrowheadSystem.convertToDTO(firstEntry.getProvider(), includeId);
+    ArrowheadServiceDTO convertedService = ArrowheadService.convertToDTO(services).orElseThrow(
+        () -> new ArrowheadException("ArrowheadService conversion returned empty object."));
+
+    String metadata = firstEntry.getMetadata();
+    if (metadata != null && metadata.trim().length() > 0) {
+      String[] parts = metadata.split(",");
+      convertedService.getServiceMetadata().clear();
+      for (String part : parts) {
+        String[] pair = part.split("=");
+        convertedService.getServiceMetadata().put(pair[0], pair[1]);
+      }
+    }
+
+    return new ServiceRegistryEntryDTO(convertedService, convertedProvider, firstEntry.getServiceURI(),
+                                       firstEntry.isUdp(), firstEntry.getEndOfValidity(), firstEntry.getVersion());
+  }
+
+  public static List<ServiceRegistryEntry> convertToEntity(ServiceRegistryEntryDTO entry) {
+    ArrowheadSystem convertedProvider = ArrowheadSystem.convertToEntity(entry.getProvider());
+    List<ArrowheadService> services = ArrowheadService.convertToEntity(entry.getProvidedService());
+    String metadata = null;
+    if (entry.getProvidedService().getServiceMetadata() != null && !entry.getProvidedService().getServiceMetadata()
+                                                                         .isEmpty()) {
       StringBuilder sb = new StringBuilder();
-      for (Map.Entry<String, String> entry : providedService.getServiceMetadata().entrySet()) {
-        sb.append(entry.getKey()).append("=").append(entry.getValue()).append(",");
+      for (Map.Entry<String, String> metadataEntry : entry.getProvidedService().getServiceMetadata().entrySet()) {
+        sb.append(metadataEntry.getKey()).append("=").append(metadataEntry.getValue()).append(",");
       }
       metadata = sb.toString().substring(0, sb.length() - 1);
     }
-  }
 
-  public void fromDatabase() {
-    ArrowheadService temp = providedService;
-    providedService = new ArrowheadService();
-    providedService.setServiceDefinition(temp.getServiceDefinition());
-    providedService.setInterfaces(temp.getInterfaces());
-
-    if (metadata != null && metadata.trim().length() > 0) {
-      String[] parts = metadata.split(",");
-      providedService.getServiceMetadata().clear();
-      for (String part : parts) {
-        String[] pair = part.split("=");
-        providedService.getServiceMetadata().put(pair[0], pair[1]);
-      }
+    List<ServiceRegistryEntry> convertedEntries = new ArrayList<>();
+    for (ArrowheadService service : services) {
+      ServiceRegistryEntry convertedEntry = new ServiceRegistryEntry(service, convertedProvider, entry.getServiceURI(),
+                                                                     entry.isUdp(), entry.getEndOfValidity(),
+                                                                     entry.getVersion(), metadata);
+      convertedEntries.add(convertedEntry);
     }
+    return convertedEntries;
   }
-
 }

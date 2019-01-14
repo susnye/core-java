@@ -9,9 +9,9 @@ package eu.arrowhead.core.gatekeeper;
 
 import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.Broker;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.Broker;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.messages.ConnectToConsumerRequest;
 import eu.arrowhead.common.messages.ConnectToConsumerResponse;

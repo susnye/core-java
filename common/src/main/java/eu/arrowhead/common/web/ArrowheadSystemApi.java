@@ -8,8 +8,9 @@
 package eu.arrowhead.common.web;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.exception.DataNotFoundException;
+import eu.arrowhead.common.messages.ArrowheadSystemDTO;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,10 +61,14 @@ public class ArrowheadSystemApi {
   }
 
   @POST
-  public Response addSystems(@Valid List<ArrowheadSystem> systemList) {
+  public Response addSystems(@Valid List<ArrowheadSystemDTO> systemList) {
+    List<ArrowheadSystem> convertedSystems = new ArrayList<>();
+    for (ArrowheadSystemDTO system : systemList) {
+      convertedSystems.add(ArrowheadSystem.convertToEntity(system));
+    }
 
     List<ArrowheadSystem> savedSystems = new ArrayList<>();
-    for (ArrowheadSystem system : systemList) {
+    for (ArrowheadSystem system : convertedSystems) {
       restrictionMap.clear();
       restrictionMap.put("systemName", system.getSystemName());
       ArrowheadSystem retrievedSystem = dm.get(ArrowheadSystem.class, restrictionMap);
@@ -76,21 +81,23 @@ public class ArrowheadSystemApi {
     if (savedSystems.isEmpty()) {
       return Response.status(Status.NO_CONTENT).build();
     } else {
+      List<ArrowheadSystem> savedD
       return Response.status(Status.CREATED).entity(savedSystems).build();
     }
   }
 
   @PUT
-  public Response updateSystem(@Valid ArrowheadSystem system) {
-    restrictionMap.put("systemName", system.getSystemName());
+  public Response updateSystem(@Valid ArrowheadSystemDTO system) {
+    ArrowheadSystem updatedSystem = ArrowheadSystem.convertToEntity(system);
+    restrictionMap.put("systemName", updatedSystem.getSystemName());
 
     ArrowheadSystem retrievedSystem = dm.get(ArrowheadSystem.class, restrictionMap);
     if (retrievedSystem != null) {
-      retrievedSystem.setAddress(system.getAddress());
-      retrievedSystem.setPort(system.getPort());
-      retrievedSystem.setAuthenticationInfo(system.getAuthenticationInfo());
+      retrievedSystem.setAddress(updatedSystem.getAddress());
+      retrievedSystem.setPort(updatedSystem.getPort());
+      retrievedSystem.setAuthenticationInfo(updatedSystem.getAuthenticationInfo());
       retrievedSystem = dm.merge(retrievedSystem);
-      return Response.status(Status.ACCEPTED).entity(retrievedSystem).build();
+      return Response.accepted().entity(ArrowheadSystem.convertToDTO(retrievedSystem, true)).build();
     } else {
       return Response.noContent().build();
     }
@@ -98,12 +105,14 @@ public class ArrowheadSystemApi {
 
   @PUT
   @Path("{systemId}")
-  public Response updateSystem(@PathParam("systemId") long systemId, @Valid ArrowheadSystem system) {
-    ArrowheadSystem retrievedSystem = dm.get(ArrowheadSystem.class, systemId)
-                                        .orElseThrow(() -> new DataNotFoundException("ArrowheadSystem entry not found with id: " + systemId));
-    retrievedSystem.partialUpdate(system);
+  public Response updateSystem(@PathParam("systemId") long systemId, @Valid ArrowheadSystemDTO system) {
+    ArrowheadSystem retrievedSystem = dm.get(ArrowheadSystem.class, systemId).orElseThrow(
+        () -> new DataNotFoundException("ArrowheadSystem entry not found with id: " + systemId));
+
+    ArrowheadSystem updatedSystem = ArrowheadSystem.convertToEntity(system);
+    retrievedSystem.partialUpdate(updatedSystem);
     retrievedSystem = dm.merge(retrievedSystem);
-    return Response.status(Status.ACCEPTED).entity(retrievedSystem).build();
+    return Response.accepted().entity(ArrowheadSystem.convertToDTO(retrievedSystem, true)).build();
   }
 
   @DELETE

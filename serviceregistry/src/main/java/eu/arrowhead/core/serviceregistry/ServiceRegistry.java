@@ -15,7 +15,7 @@ import com.github.danieln.dnssdjava.DnsSDRegistrator;
 import com.github.danieln.dnssdjava.ServiceData;
 import com.github.danieln.dnssdjava.ServiceName;
 import com.github.danieln.dnssdjava.ServiceType;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import eu.arrowhead.common.exception.DnsException;
 import eu.arrowhead.common.messages.ServiceQueryForm;
 import eu.arrowhead.common.messages.ServiceQueryResult;

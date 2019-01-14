@@ -5,14 +5,19 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.BadPayloadException;
+import eu.arrowhead.common.messages.ArrowheadCloudDTO;
+import eu.arrowhead.common.messages.ArrowheadServiceDTO;
+import eu.arrowhead.common.messages.ArrowheadSystemDTO;
+import eu.arrowhead.common.messages.OrchestrationStoreDTO;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -28,26 +33,21 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.Check;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 
 /**
- * JPA entity class for storing <tt>OrchestrationStore</tt> information in the database. The <i>arrowhead_service_id</i>, <i>consumer_system_id</i>,
- * <i>priority</i> and <i>is_default</i> columns must be unique together. The <i>priority</i> integer can not be negative. <p> The class implements
+ * JPA entity class for storing <tt>OrchestrationStore</tt> information in the database. The
+ * <i>arrowhead_service_id</i>, <i>consumer_system_id</i>, <i>priority</i> and <i>is_default</i> columns must be
+ * unique together. The <i>priority</i> integer can not be negative. <p> The class implements
  * the <tt>Comparable</tt> interface based on the priority field (but does not override the equals() method).
  */
 @Entity
 @Table(name = "orchestration_store", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"arrowhead_service_id", "consumer_system_id", "priority", "is_default"})})
-@Check(constraints = "provider_cloud_id IS NULL OR is_default = false")
 public class OrchestrationStore implements Comparable<OrchestrationStore> {
 
   @Id
@@ -55,34 +55,26 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "arrowhead_service_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadService service;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "consumer_system_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadSystem consumer;
 
-  @Valid
-  @NotNull
   @JoinColumn(name = "provider_system_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadSystem providerSystem;
 
-  @Valid
   @JoinColumn(name = "provider_cloud_id")
   @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ArrowheadCloud providerCloud;
 
-  @Min(1)
   private Integer priority = 0;
 
   @Column(name = "is_default")
@@ -96,22 +88,17 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
 
   private String instruction;
 
-  @JsonInclude(Include.NON_EMPTY)
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyColumn(name = "attribute_key")
   @Column(name = "attribute_value", length = 2047)
   @CollectionTable(name = "orchestration_store_attributes", joinColumns = @JoinColumn(name = "store_entry_id"))
   private Map<String, String> attributes = new HashMap<>();
 
-  //Only to convert ServiceRegistryEntries to Store entries without data loss
-  @Transient
-  private String serviceURI;
-
   public OrchestrationStore() {
   }
 
-  public OrchestrationStore(ArrowheadService service, ArrowheadSystem consumer, ArrowheadSystem providerSystem, ArrowheadCloud providerCloud,
-                            int priority) {
+  public OrchestrationStore(ArrowheadService service, ArrowheadSystem consumer, ArrowheadSystem providerSystem,
+                            ArrowheadCloud providerCloud, int priority) {
     this.service = service;
     this.consumer = consumer;
     this.providerSystem = providerSystem;
@@ -119,9 +106,9 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
     this.priority = priority;
   }
 
-  public OrchestrationStore(ArrowheadService service, ArrowheadSystem consumer, ArrowheadSystem providerSystem, ArrowheadCloud providerCloud,
-                            int priority, boolean defaultEntry, String name, LocalDateTime lastUpdated, String instruction,
-                            Map<String, String> attributes, String serviceURI) {
+  public OrchestrationStore(ArrowheadService service, ArrowheadSystem consumer, ArrowheadSystem providerSystem,
+                            ArrowheadCloud providerCloud, int priority, boolean defaultEntry, String name,
+                            LocalDateTime lastUpdated, String instruction, Map<String, String> attributes) {
     this.service = service;
     this.consumer = consumer;
     this.providerSystem = providerSystem;
@@ -132,7 +119,6 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
     this.lastUpdated = lastUpdated;
     this.instruction = instruction;
     this.attributes = attributes;
-    this.serviceURI = serviceURI;
   }
 
   public Long getId() {
@@ -223,18 +209,11 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
     this.attributes = attributes;
   }
 
-  public String getServiceURI() {
-    return serviceURI;
-  }
-
-  public void setServiceURI(String serviceURI) {
-    this.serviceURI = serviceURI;
-  }
-
   /**
-   * Note: This class has a natural ordering that is inconsistent with equals(). <p> The field <i>priority</i> is used to sort instances of this class
-   * in a collection. Priority is non-negative. If this.priority < other.priority that means <i>this</i> is more ahead in a collection than
-   * <i>other</i> and therefore has a higher priority. This means priority = 0 is the highest priority for a Store entry.
+   * Note: This class has a natural ordering that is inconsistent with equals(). <p> The field <i>priority</i> is
+   * used to sort instances of this class in a collection. Priority is non-negative. If this.priority < other.priority
+   * that means <i>this</i> is more ahead in a collection than <i>other</i> and therefore has a higher priority. This
+   * means priority = 0 is the highest priority for a Store entry.
    */
   @Override
   public int compareTo(OrchestrationStore other) {
@@ -250,9 +229,9 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
       return false;
     }
     OrchestrationStore that = (OrchestrationStore) o;
-    return Objects.equals(service, that.service) && Objects.equals(consumer, that.consumer) && Objects.equals(providerSystem, that.providerSystem)
-        && Objects.equals(providerCloud, that.providerCloud) && Objects.equals(priority, that.priority) && Objects
-        .equals(defaultEntry, that.defaultEntry);
+    return Objects.equals(service, that.service) && Objects.equals(consumer, that.consumer) && Objects
+        .equals(providerSystem, that.providerSystem) && Objects.equals(providerCloud, that.providerCloud) && Objects
+        .equals(priority, that.priority) && Objects.equals(defaultEntry, that.defaultEntry);
   }
 
   @Override
@@ -262,13 +241,51 @@ public class OrchestrationStore implements Comparable<OrchestrationStore> {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("service", service).add("consumer", consumer).add("providerSystem", providerSystem)
-                      .add("providerCloud", providerCloud).add("priority", priority).add("defaultEntry", defaultEntry).toString();
+    return MoreObjects.toStringHelper(this).add("service", service).add("consumer", consumer)
+                      .add("providerSystem", providerSystem).add("providerCloud", providerCloud)
+                      .add("priority", priority).add("defaultEntry", defaultEntry).toString();
   }
 
   public void validateCrossParameterConstraints() {
     if (defaultEntry && providerCloud != null) {
       throw new BadPayloadException("Default store entries can only have intra-cloud providers!");
     }
+  }
+
+  public static OrchestrationStoreDTO convertToDTO(List<OrchestrationStore> entries, boolean includeId) {
+    List<ArrowheadService> services = new ArrayList<>();
+    for (OrchestrationStore entry : entries) {
+      services.add(entry.getService());
+    }
+
+    OrchestrationStore firstEntry = entries.get(0);
+    ArrowheadServiceDTO convertedService = ArrowheadService.convertToDTO(services, null).orElseThrow(
+        () -> new ArrowheadException("ArrowheadService conversion returned empty object."));
+    ArrowheadSystemDTO convertedConsumer = ArrowheadSystem.convertToDTO(firstEntry.getConsumer(), includeId);
+    ArrowheadSystemDTO convertedProvider = ArrowheadSystem.convertToDTO(firstEntry.getProviderSystem(), includeId);
+    ArrowheadCloudDTO convertedCloud = ArrowheadCloud.convertToDTO(firstEntry.getProviderCloud(), includeId);
+
+    return new OrchestrationStoreDTO(convertedService, convertedConsumer, convertedProvider, convertedCloud,
+                                     firstEntry.getPriority(), firstEntry.isDefaultEntry(), firstEntry.getName(),
+                                     firstEntry.getLastUpdated(), firstEntry.getInstruction(),
+                                     firstEntry.getAttributes());
+  }
+
+  public static List<OrchestrationStore> convertToEntity(OrchestrationStoreDTO entry) {
+    List<ArrowheadService> services = ArrowheadService.convertToEntity(entry.getService());
+    ArrowheadSystem convertedConsumer = ArrowheadSystem.convertToEntity(entry.getConsumer());
+    ArrowheadSystem convertedProvider = ArrowheadSystem.convertToEntity(entry.getProviderSystem());
+    ArrowheadCloud convertedCloud = ArrowheadCloud.convertToEntity(entry.getProviderCloud());
+
+    List<OrchestrationStore> convertedEntries = new ArrayList<>();
+    for (ArrowheadService service : services) {
+      OrchestrationStore convertedEntry = new OrchestrationStore(service, convertedConsumer, convertedProvider,
+                                                                 convertedCloud, entry.getPriority(),
+                                                                 entry.isDefaultEntry(), entry.getName(),
+                                                                 entry.getLastUpdated(), entry.getInstruction(),
+                                                                 entry.getAttributes());
+      convertedEntries.add(convertedEntry);
+    }
+    return convertedEntries;
   }
 }

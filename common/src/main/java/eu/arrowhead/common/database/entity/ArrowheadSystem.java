@@ -5,11 +5,13 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.messages.ArrowheadSystemDTO;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -121,6 +123,14 @@ public class ArrowheadSystem {
                       .add("port", port).add("authenticationInfo", authenticationInfo).toString();
   }
 
+  public void partialUpdate(ArrowheadSystem other) {
+    this.systemName = other.getSystemName() != null ? other.getSystemName() : this.systemName;
+    this.address = other.getAddress() != null ? other.getAddress() : this.address;
+    this.port = other.getPort() != null ? other.getPort() : this.port;
+    this.authenticationInfo =
+        other.getAuthenticationInfo() != null ? other.getAuthenticationInfo() : this.authenticationInfo;
+  }
+
   public static ArrowheadSystemDTO convertToDTO(ArrowheadSystem system, boolean includeId) {
     ArrowheadSystemDTO converted = new ArrowheadSystemDTO(system.getSystemName(), system.getAddress(), system.getPort(),
                                                           system.getAuthenticationInfo());
@@ -137,5 +147,13 @@ public class ArrowheadSystem {
       converted.setId(system.getId());
     }
     return converted;
+  }
+
+  public static List<ArrowheadSystemDTO> convertListToDTO(List<ArrowheadSystem> systems, boolean includeId) {
+    return systems.stream().map(system -> convertToDTO(system, includeId)).collect(Collectors.toList());
+  }
+
+  public static List<ArrowheadSystem> convertListToEntity(List<ArrowheadSystemDTO> systems) {
+    return systems.stream().map(ArrowheadSystem::convertToEntity).collect(Collectors.toList());
   }
 }

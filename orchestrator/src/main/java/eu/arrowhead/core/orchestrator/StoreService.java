@@ -8,9 +8,9 @@
 package eu.arrowhead.core.orchestrator;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.OrchestrationStore;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.OrchestrationStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

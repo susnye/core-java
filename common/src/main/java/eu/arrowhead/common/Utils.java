@@ -8,12 +8,12 @@
 package eu.arrowhead.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.NeighborCloud;
-import eu.arrowhead.common.database.OwnCloud;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.NeighborCloud;
+import eu.arrowhead.common.database.entity.OwnCloud;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.exception.BadPayloadException;

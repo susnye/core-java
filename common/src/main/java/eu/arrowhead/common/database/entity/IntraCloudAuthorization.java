@@ -5,7 +5,7 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.exception.ArrowheadException;
@@ -30,11 +30,15 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 /**
- * JPA entity class for storing intra-cloud (within the cloud) authorization rights in the database. The <i>consumer_system_id</i>,
- * <i>provider_system_id</i> and <i>arrowhead_service_id</i> columns must be unique together. <p> The table contains foreign keys to {@link
- * ArrowheadSystem} and {@link ArrowheadService}. A particular Consumer System/Provider System/Arrowhead Service trio is authorized if there is a
- * database entry for it in this table. The existence of the database entry means the given Consumer System is authorized to consume the given
- * Arrowhead Serice from the given Provider System inside the Local Cloud. The reverse of it is not authorized.
+ * JPA entity class for storing intra-cloud (within the cloud) authorization rights in the database. The
+ * <i>consumer_system_id</i>,
+ * <i>provider_system_id</i> and <i>arrowhead_service_id</i> columns must be unique together. <p> The table contains
+ * foreign keys to {@link
+ * ArrowheadSystem} and {@link ArrowheadService}. A particular Consumer System/Provider System/Arrowhead Service trio
+ * is authorized if there is a
+ * database entry for it in this table. The existence of the database entry means the given Consumer System is
+ * authorized to consume the given
+ * Arrowhead Service from the given Provider System inside the Local Cloud. The reverse of it is not authorized.
  *
  * @author Umlauf Zoltán
  */
@@ -113,7 +117,8 @@ public class IntraCloudAuthorization {
       return false;
     }
     IntraCloudAuthorization that = (IntraCloudAuthorization) o;
-    return Objects.equals(consumer, that.consumer) && Objects.equals(provider, that.provider) && Objects.equals(service, that.service);
+    return Objects.equals(consumer, that.consumer) && Objects.equals(provider, that.provider) && Objects
+        .equals(service, that.service);
   }
 
   @Override
@@ -123,7 +128,8 @@ public class IntraCloudAuthorization {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("consumer", consumer).add("provider", provider).add("service", service).toString();
+    return MoreObjects.toStringHelper(this).add("consumer", consumer).add("provider", provider).add("service", service)
+                      .toString();
   }
 
   public static IntraCloudAuthorizationDTO convertToDTO(List<IntraCloudAuthorization> entries, boolean includeId) {
@@ -147,9 +153,6 @@ public class IntraCloudAuthorization {
     for (ArrowheadService service : services) {
       IntraCloudAuthorization convertedEntry = new IntraCloudAuthorization(convertedConsumer, convertedProvider,
                                                                            service);
-      if (entry.getId() != null) {
-        convertedEntry.setId(entry.getId());
-      }
       convertedEntries.add(convertedEntry);
     }
     return convertedEntries;

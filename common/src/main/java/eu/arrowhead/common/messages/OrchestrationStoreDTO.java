@@ -10,113 +10,56 @@ package eu.arrowhead.common.messages;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
 import eu.arrowhead.common.exception.BadPayloadException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.Check;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 
-/**
- * JPA entity class for storing <tt>OrchestrationStore</tt> information in the database. The
- * <i>arrowhead_service_id</i>, <i>consumer_system_id</i>,
- * <i>priority</i> and <i>is_default</i> columns must be unique together. The <i>priority</i> integer can not be
- * negative. <p> The class implements
- * the <tt>Comparable</tt> interface based on the priority field (but does not override the equals() method).
- */
-@Entity
-@Table(name = "orchestration_store", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"arrowhead_service_id", "consumer_system_id", "priority", "is_default"})})
-@Check(constraints = "provider_cloud_id IS NULL OR is_default = false")
 public class OrchestrationStoreDTO implements Comparable<OrchestrationStoreDTO> {
 
-  @Id
-  @GenericGenerator(name = "table_generator", strategy = "org.hibernate.id.enhanced.TableGenerator")
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
   @Valid
   @NotNull
-  @JoinColumn(name = "arrowhead_service_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadService service;
+  private ArrowheadServiceDTO service;
 
   @Valid
   @NotNull
-  @JoinColumn(name = "consumer_system_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadSystem consumer;
+  private ArrowheadSystemDTO consumer;
 
   @Valid
   @NotNull
-  @JoinColumn(name = "provider_system_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadSystem providerSystem;
+  private ArrowheadSystemDTO providerSystem;
 
   @Valid
-  @JoinColumn(name = "provider_cloud_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadCloud providerCloud;
+  private ArrowheadCloudDTO providerCloud;
 
   @Min(1)
   private Integer priority = 0;
 
-  @Column(name = "is_default")
-  @Type(type = "yes_no")
   private Boolean defaultEntry = false;
 
   private String name;
 
-  @Column(name = "last_updated")
   private LocalDateTime lastUpdated;
 
   private String instruction;
 
   @JsonInclude(Include.NON_EMPTY)
-  @ElementCollection(fetch = FetchType.EAGER)
-  @MapKeyColumn(name = "attribute_key")
-  @Column(name = "attribute_value", length = 2047)
-  @CollectionTable(name = "orchestration_store_attributes", joinColumns = @JoinColumn(name = "store_entry_id"))
   private Map<String, String> attributes = new HashMap<>();
 
   //Only to convert ServiceRegistryEntries to Store entries without data loss
-  @Transient
   private String serviceURI;
 
   public OrchestrationStoreDTO() {
   }
 
-  public OrchestrationStoreDTO(ArrowheadService service, ArrowheadSystem consumer, ArrowheadSystem providerSystem,
-                               ArrowheadCloud providerCloud, int priority) {
+  public OrchestrationStoreDTO(ArrowheadServiceDTO service, ArrowheadSystemDTO consumer,
+                               ArrowheadSystemDTO providerSystem, ArrowheadCloudDTO providerCloud, int priority) {
     this.service = service;
     this.consumer = consumer;
     this.providerSystem = providerSystem;
@@ -124,10 +67,26 @@ public class OrchestrationStoreDTO implements Comparable<OrchestrationStoreDTO> 
     this.priority = priority;
   }
 
-  public OrchestrationStoreDTO(ArrowheadService service, ArrowheadSystem consumer, ArrowheadSystem providerSystem,
-                               ArrowheadCloud providerCloud, int priority, boolean defaultEntry, String name,
-                               LocalDateTime lastUpdated, String instruction, Map<String, String> attributes,
-                               String serviceURI) {
+  public OrchestrationStoreDTO(ArrowheadServiceDTO service, ArrowheadSystemDTO consumer,
+                               ArrowheadSystemDTO providerSystem, ArrowheadCloudDTO providerCloud, Integer priority,
+                               Boolean defaultEntry, String name, LocalDateTime lastUpdated, String instruction,
+                               Map<String, String> attributes) {
+    this.service = service;
+    this.consumer = consumer;
+    this.providerSystem = providerSystem;
+    this.providerCloud = providerCloud;
+    this.priority = priority;
+    this.defaultEntry = defaultEntry;
+    this.name = name;
+    this.lastUpdated = lastUpdated;
+    this.instruction = instruction;
+    this.attributes = attributes;
+  }
+
+  public OrchestrationStoreDTO(ArrowheadServiceDTO service, ArrowheadSystemDTO consumer,
+                               ArrowheadSystemDTO providerSystem, ArrowheadCloudDTO providerCloud, int priority,
+                               boolean defaultEntry, String name, LocalDateTime lastUpdated, String instruction,
+                               Map<String, String> attributes, String serviceURI) {
     this.service = service;
     this.consumer = consumer;
     this.providerSystem = providerSystem;
@@ -149,35 +108,35 @@ public class OrchestrationStoreDTO implements Comparable<OrchestrationStoreDTO> 
     this.id = id;
   }
 
-  public ArrowheadService getService() {
+  public ArrowheadServiceDTO getService() {
     return service;
   }
 
-  public void setService(ArrowheadService service) {
+  public void setService(ArrowheadServiceDTO service) {
     this.service = service;
   }
 
-  public ArrowheadSystem getConsumer() {
+  public ArrowheadSystemDTO getConsumer() {
     return consumer;
   }
 
-  public void setConsumer(ArrowheadSystem consumer) {
+  public void setConsumer(ArrowheadSystemDTO consumer) {
     this.consumer = consumer;
   }
 
-  public ArrowheadSystem getProviderSystem() {
+  public ArrowheadSystemDTO getProviderSystem() {
     return providerSystem;
   }
 
-  public void setProviderSystem(ArrowheadSystem providerSystem) {
+  public void setProviderSystem(ArrowheadSystemDTO providerSystem) {
     this.providerSystem = providerSystem;
   }
 
-  public ArrowheadCloud getProviderCloud() {
+  public ArrowheadCloudDTO getProviderCloud() {
     return providerCloud;
   }
 
-  public void setProviderCloud(ArrowheadCloud providerCloud) {
+  public void setProviderCloud(ArrowheadCloudDTO providerCloud) {
     this.providerCloud = providerCloud;
   }
 
@@ -239,9 +198,8 @@ public class OrchestrationStoreDTO implements Comparable<OrchestrationStoreDTO> 
 
   /**
    * Note: This class has a natural ordering that is inconsistent with equals(). <p> The field <i>priority</i> is
-   * used to sort instances of this class
-   * in a collection. Priority is non-negative. If this.priority < other.priority that means <i>this</i> is more
-   * ahead in a collection than
+   * used to sort instances of this class in a collection. Priority is non-negative.
+   * If this.priority < other.priority that means <i>this</i> is more ahead in a collection than
    * <i>other</i> and therefore has a higher priority. This means priority = 0 is the highest priority for a Store
    * entry.
    */

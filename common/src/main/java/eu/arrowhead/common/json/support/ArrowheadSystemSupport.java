@@ -8,7 +8,7 @@
 package eu.arrowhead.common.json.support;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 
 public class ArrowheadSystemSupport {
 

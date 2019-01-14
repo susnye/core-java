@@ -7,8 +7,8 @@
 
 package eu.arrowhead.core.qos.drivers.implementations;
 
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.messages.QoSReservationCommand;
 import eu.arrowhead.core.qos.drivers.IQoSDriver;
 import eu.arrowhead.core.qos.drivers.ReservationInfo;

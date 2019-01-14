@@ -30,10 +30,10 @@
     <property name="hikari.poolName">Orchestrator</property>
     <property name="hikari.registerMbeans">true</property>
 
-    <mapping class="eu.arrowhead.common.database.Logs"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadCloud"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadSystem"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadService"/>
-    <mapping class="eu.arrowhead.common.database.OrchestrationStore"/>
+    <mapping class="eu.arrowhead.common.database.entity.Logs"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadCloud"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadSystem"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadService"/>
+    <mapping class="eu.arrowhead.common.database.entity.OrchestrationStore"/>
   </session-factory>
 </hibernate-configuration>

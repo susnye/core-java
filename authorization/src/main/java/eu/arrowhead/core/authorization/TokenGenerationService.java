@@ -8,8 +8,8 @@
 package eu.arrowhead.core.authorization;
 
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.messages.ArrowheadToken;

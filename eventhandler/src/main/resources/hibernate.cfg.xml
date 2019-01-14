@@ -30,8 +30,8 @@
     <property name="hikari.poolName">EventHandler</property>
     <property name="hikari.registerMbeans">true</property>
 
-    <mapping class="eu.arrowhead.common.database.Logs"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadSystem"/>
-    <mapping class="eu.arrowhead.common.database.EventFilter"/>
+    <mapping class="eu.arrowhead.common.database.entity.Logs"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadSystem"/>
+    <mapping class="eu.arrowhead.common.database.entity.EventFilter"/>
   </session-factory>
 </hibernate-configuration>

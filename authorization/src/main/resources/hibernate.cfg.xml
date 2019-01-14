@@ -30,12 +30,12 @@
     <property name="hikari.poolName">Authorization</property>
     <property name="hikari.registerMbeans">true</property>
 
-    <mapping class="eu.arrowhead.common.database.Logs"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadCloud"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadSystem"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadService"/>
-    <mapping class="eu.arrowhead.common.database.InterCloudAuthorization"/>
-    <mapping class="eu.arrowhead.common.database.IntraCloudAuthorization"/>
-    <mapping class="eu.arrowhead.common.database.OwnCloud"/>
+    <mapping class="eu.arrowhead.common.database.entity.Logs"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadCloud"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadSystem"/>
+    <mapping class="eu.arrowhead.common.database.entity.ArrowheadService"/>
+    <mapping class="eu.arrowhead.common.database.entity.InterCloudAuthorization"/>
+    <mapping class="eu.arrowhead.common.database.entity.IntraCloudAuthorization"/>
+    <mapping class="eu.arrowhead.common.database.entity.OwnCloud"/>
   </session-factory>
 </hibernate-configuration>

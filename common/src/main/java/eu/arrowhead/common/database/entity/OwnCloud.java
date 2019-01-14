@@ -5,11 +5,13 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.messages.ArrowheadCloudDTO;
 import eu.arrowhead.common.messages.GSDPoll;
 import eu.arrowhead.common.messages.ICNProposal;
+import eu.arrowhead.common.messages.OwnCloudDTO;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -20,7 +22,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -39,7 +40,6 @@ import org.hibernate.annotations.OnDeleteAction;
 public class OwnCloud implements Serializable {
 
   @Id
-  @Valid
   @JoinColumn(name = "cloud_id")
   @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -80,5 +80,15 @@ public class OwnCloud implements Serializable {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("cloud", cloud).toString();
+  }
+
+  public static OwnCloudDTO convertToDTO(OwnCloud cloud, boolean includeId) {
+    ArrowheadCloudDTO convertedCloud = ArrowheadCloud.convertToDTO(cloud.getCloud(), includeId);
+    return new OwnCloudDTO(convertedCloud);
+  }
+
+  public static OwnCloud convertToEntity(OwnCloudDTO cloud) {
+    ArrowheadCloud convertedCloud = ArrowheadCloud.convertToEntity(cloud.getCloud());
+    return new OwnCloud(convertedCloud);
   }
 }

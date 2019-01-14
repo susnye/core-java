@@ -8,7 +8,7 @@
 package eu.arrowhead.common.messages;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.json.ArrowheadSystemKeyDeserializer;
 import java.util.HashMap;
 import javax.validation.Valid;

@@ -4,7 +4,7 @@ import eu.arrowhead.common.exception.ArrowheadException;
 import javax.validation.Valid;
 
 /**
- * A RegistryResource offers methods to publish, unpublish and lookup entities
+ * A RegistryResource offers methods to publish, unpublish and lookup entity
  * of type <code>T</code>
  *
  * @param <T> The generic type of the entity which is handled by this registry

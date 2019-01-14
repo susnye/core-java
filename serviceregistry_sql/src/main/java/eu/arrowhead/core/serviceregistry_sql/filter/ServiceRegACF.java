@@ -8,7 +8,7 @@
 package eu.arrowhead.core.serviceregistry_sql.filter;
 
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.filter.AccessControlFilter;
 import eu.arrowhead.common.misc.SecurityUtils;

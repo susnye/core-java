@@ -9,12 +9,12 @@ package eu.arrowhead.core.qos;
 
 import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.qos.DeployedSystem;
-import eu.arrowhead.common.database.qos.MessageStream;
-import eu.arrowhead.common.database.qos.Network;
-import eu.arrowhead.common.database.qos.NetworkDevice;
-import eu.arrowhead.common.database.qos.ResourceReservation;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.qos.DeployedSystem;
+import eu.arrowhead.common.database.entity.qos.MessageStream;
+import eu.arrowhead.common.database.entity.qos.Network;
+import eu.arrowhead.common.database.entity.qos.NetworkDevice;
+import eu.arrowhead.common.database.entity.qos.ResourceReservation;
 import eu.arrowhead.common.exception.DriverNotFoundException;
 import eu.arrowhead.common.exception.ReservationException;
 import eu.arrowhead.common.messages.MonitorRule;

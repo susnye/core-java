@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.messages;
 
-import eu.arrowhead.common.database.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 

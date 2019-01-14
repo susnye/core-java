@@ -5,11 +5,13 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import com.google.common.base.MoreObjects;
+import eu.arrowhead.common.messages.ArrowheadCloudDTO;
 import eu.arrowhead.common.messages.GSDPoll;
 import eu.arrowhead.common.messages.ICNProposal;
+import eu.arrowhead.common.messages.NeighborCloudDTO;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -20,14 +22,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 /**
- * JPA entity class for storing <tt>NeighborCloud</tt> information in the database. The <i>cloud_id</i> column must be unique. <p> The database table
- * belonging to this class is a subset of the {@link ArrowheadCloud} table. If an <tt>ArrowheadCloud</tt> can also be found in the
- * <tt>NeighborCloud</tt> table, that means it is a trusted <tt>ArrowheadCloud</tt>, which can be queried during a Global Service Discovery,
+ * JPA entity class for storing <tt>NeighborCloud</tt> information in the database. The <i>cloud_id</i> column must
+ * be unique. <p> The database table belonging to this class is a subset of the {@link ArrowheadCloud} table. If an
+ * <tt>ArrowheadCloud</tt> can also be found in the <tt>NeighborCloud</tt> table, that means it is a trusted
+ * <tt>ArrowheadCloud</tt>, which can be queried during a Global Service Discovery,
  * Inter-Cloud Negotiations (by the Gatekeeper) and token generation (by the Authorization).
  *
  * @author Umlauf Zoltán
@@ -40,10 +42,10 @@ import org.hibernate.annotations.OnDeleteAction;
 public class NeighborCloud implements Serializable {
 
   @Id
-  @Valid
   @JoinColumn(name = "cloud_id")
   @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE) //NOTE this still does not have the expected effect, maybe orphanRemoval = true on OneToX annotations?
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  //NOTE this still does not have the expected effect, maybe orphanRemoval = true on OneToX annotations?
   private ArrowheadCloud cloud;
 
   public NeighborCloud() {
@@ -81,5 +83,15 @@ public class NeighborCloud implements Serializable {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("cloud", cloud).toString();
+  }
+
+  public static NeighborCloudDTO convertToDTO(NeighborCloud cloud, boolean includeId) {
+    ArrowheadCloudDTO convertedCloud = ArrowheadCloud.convertToDTO(cloud.getCloud(), includeId);
+    return new NeighborCloudDTO(convertedCloud);
+  }
+
+  public static NeighborCloud convertToEntity(NeighborCloudDTO cloud) {
+    ArrowheadCloud convertedCloud = ArrowheadCloud.convertToEntity(cloud.getCloud());
+    return new NeighborCloud(convertedCloud);
   }
 }

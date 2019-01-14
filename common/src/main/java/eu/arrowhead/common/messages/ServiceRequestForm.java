@@ -8,9 +8,9 @@
 package eu.arrowhead.common.messages;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.exception.BadPayloadException;
 import java.util.ArrayList;
 import java.util.Arrays;

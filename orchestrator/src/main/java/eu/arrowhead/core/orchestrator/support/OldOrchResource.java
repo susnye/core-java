@@ -7,8 +7,8 @@
 
 package eu.arrowhead.core.orchestrator.support;
 
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.json.support.OrchestrationResponseSupport;
 import eu.arrowhead.common.json.support.PreferredProviderSupport;
 import eu.arrowhead.common.json.support.ServiceRequestFormSupport;

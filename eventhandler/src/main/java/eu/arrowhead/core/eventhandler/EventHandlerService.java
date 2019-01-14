@@ -9,8 +9,8 @@ package eu.arrowhead.core.eventhandler;
 
 import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.EventFilter;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.EventFilter;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.messages.Event;
 import eu.arrowhead.common.messages.PublishEvent;

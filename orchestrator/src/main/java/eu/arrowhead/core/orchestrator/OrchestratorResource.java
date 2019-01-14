@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.orchestrator;
 
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.messages.OrchestrationResponse;
 import eu.arrowhead.common.messages.ServiceRequestForm;
 import eu.arrowhead.common.web.ArrowheadSystemApi;

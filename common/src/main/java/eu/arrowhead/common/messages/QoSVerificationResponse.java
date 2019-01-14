@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.messages;
 
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.messages.QoSVerifierResponse.RejectMotivationTypes;
 import java.util.HashMap;
 import java.util.Map;

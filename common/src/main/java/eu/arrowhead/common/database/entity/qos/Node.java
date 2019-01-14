@@ -5,7 +5,7 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database.qos;
+package eu.arrowhead.common.database.entity.qos;
 
 import java.util.ArrayList;
 import java.util.HashMap;

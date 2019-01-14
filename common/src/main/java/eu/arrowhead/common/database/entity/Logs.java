@@ -1,4 +1,4 @@
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import java.sql.Timestamp;
 import javax.persistence.Basic;

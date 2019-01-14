@@ -1,3 +1,5 @@
+/* TODO update this after refactoring is done */
+
 CREATE DATABASE  IF NOT EXISTS `arrowhead_test_cloud_1` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `arrowhead_test_cloud_1`;
 -- MySQL dump 10.13  Distrib 5.7.22, for Win64 (x86_64)

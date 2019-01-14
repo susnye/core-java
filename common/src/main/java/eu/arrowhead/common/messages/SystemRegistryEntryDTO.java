@@ -7,74 +7,39 @@
 
 package eu.arrowhead.common.messages;
 
-import eu.arrowhead.common.database.ArrowheadDevice;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.json.constraint.LDTInFuture;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
-@Entity
-@Table(name = "system_registry", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"arrowhead_system_id", "provider_device_id"})})
 public class SystemRegistryEntryDTO {
 
-  @Id
-  @GenericGenerator(name = "table_generator", strategy = "org.hibernate.id.enhanced.TableGenerator")
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "table_generator")
   private Long id;
 
   @Valid
   @NotNull(message = "Provided ArrowheadSystem cannot be null")
-  @JoinColumn(name = "arrowhead_system_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadSystem providedSystem;
+  private ArrowheadSystemDTO providedSystem;
 
   @Valid
   @NotNull(message = "Provider ArrowheadDevice cannot be null")
-  @JoinColumn(name = "provider_device_id")
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private ArrowheadDevice provider;
+  private ArrowheadDeviceDTO providerDevice;
 
-  @Column(name = "service_uri")
   @Size(max = 255, message = "Service URI must be 255 character at max")
   private String serviceURI;
 
-  @Column(name = "end_of_validity")
   @LDTInFuture(message = "End of validity date cannot be in the past")
   private LocalDateTime endOfValidity;
 
   public SystemRegistryEntryDTO() {
   }
 
-  public SystemRegistryEntryDTO(Long id, @Valid @NotNull(message = "Provided ArrowheadSystem cannot be null")
-      ArrowheadSystem providedSystem, @Valid @NotNull(message = "Provider ArrowheadDevice cannot be null")
-                                    ArrowheadDevice provider,
-                                @Size(max = 255, message = "Service URI must be 255 character at max")
-                                    String serviceURI,
-                                @LDTInFuture(message = "End of validity date cannot be in the past")
-                                    LocalDateTime endOfValidity) {
-    this.id = id;
+  public SystemRegistryEntryDTO(ArrowheadSystemDTO providedSystem, ArrowheadDeviceDTO providerDevice, String serviceURI,
+                                LocalDateTime endOfValidity) {
     this.providedSystem = providedSystem;
-    this.provider = provider;
+    this.providerDevice = providerDevice;
     this.serviceURI = serviceURI;
     this.endOfValidity = endOfValidity;
   }
@@ -87,20 +52,20 @@ public class SystemRegistryEntryDTO {
     this.id = id;
   }
 
-  public ArrowheadSystem getProvidedSystem() {
+  public ArrowheadSystemDTO getProvidedSystem() {
     return providedSystem;
   }
 
-  public void setProvidedSystem(ArrowheadSystem providedSystem) {
+  public void setProvidedSystem(ArrowheadSystemDTO providedSystem) {
     this.providedSystem = providedSystem;
   }
 
-  public ArrowheadDevice getProvider() {
-    return provider;
+  public ArrowheadDeviceDTO getProviderDevice() {
+    return providerDevice;
   }
 
-  public void setProvider(ArrowheadDevice provider) {
-    this.provider = provider;
+  public void setProviderDevice(ArrowheadDeviceDTO providerDevice) {
+    this.providerDevice = providerDevice;
   }
 
   public String getServiceURI() {
@@ -121,7 +86,7 @@ public class SystemRegistryEntryDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(provider, providedSystem, serviceURI, endOfValidity);
+    return Objects.hash(providerDevice, providedSystem, serviceURI, endOfValidity);
   }
 
   @Override
@@ -137,25 +102,15 @@ public class SystemRegistryEntryDTO {
     }
     SystemRegistryEntryDTO other = (SystemRegistryEntryDTO) obj;
 
-    return Objects.equals(this.provider, other.provider) && Objects.equals(this.providedSystem, other.providedSystem)
+    return Objects.equals(this.providerDevice, other.providerDevice) && Objects
+        .equals(this.providedSystem, other.providedSystem)
         && Objects.equals(this.serviceURI, other.serviceURI) && Objects.equals(this.endOfValidity, other.endOfValidity);
-  }
-
-  protected void append(final StringBuilder builder) {
-    builder.append("id=").append(id);
-    builder.append(", providedSystem=").append(providedSystem);
-    builder.append(", provider=").append(provider);
-    builder.append(", serviceURI=").append(serviceURI);
-    builder.append(", endOfValidity=").append(endOfValidity);
   }
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass().getSimpleName());
-    builder.append(" [");
-    append(builder);
-    builder.append("]");
-    return builder.toString();
+    return MoreObjects.toStringHelper(this).add("id", id).add("providedSystem", providedSystem)
+                      .add("providerDevice", providerDevice).add("serviceURI", serviceURI)
+                      .add("endOfValidity", endOfValidity).toString();
   }
 }

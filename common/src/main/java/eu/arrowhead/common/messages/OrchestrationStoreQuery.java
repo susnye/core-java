@@ -8,8 +8,8 @@
 package eu.arrowhead.common.messages;
 
 
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 

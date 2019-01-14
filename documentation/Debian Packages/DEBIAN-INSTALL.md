@@ -142,7 +142,7 @@ database entries for a new application system:
 
 ```sudo ah_gen_system SYSTEM_NAME HOST PORT SERVICE_NAME```
 
-If there is no service parameter only a consumer system will be generated, specify a service to generate a full provider
+If there is no service parameter only a consumer system will be generated, specify a service to generate a full providerDevice
 system. Examples:
 
 ```sudo ah_gen_system client1 127.0.0.1 8080```
@@ -195,7 +195,7 @@ and password you need to use.
 `apt purge` can be used to remove configuration files, database, log files, etc. Use `sudo apt purge arrowhead-\*` to
 remove everything arrowhead related.
 
-For the provider and consumer example in the client skeletons, the script `sudo ah_gen_quickstart HOST` can be used to
+For the providerDevice and consumer example in the client skeletons, the script `sudo ah_gen_quickstart HOST` can be used to
 generate the necessary certificates and database entries. `HOST` should be the IP address of where you intend to run
 the systems. It will also output the certificate/keystore password. Note,
 this script should only be used for test clouds on a clean installation.

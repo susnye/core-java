@@ -7,7 +7,7 @@
 
 package eu.arrowhead.common.messages;
 
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;

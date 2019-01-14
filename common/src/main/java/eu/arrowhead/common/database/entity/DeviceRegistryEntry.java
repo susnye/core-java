@@ -5,7 +5,7 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database;
+package eu.arrowhead.common.database.entity;
 
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.messages.ArrowheadDeviceDTO;

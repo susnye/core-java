@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.qos.algorithms;
 
-import eu.arrowhead.common.database.qos.ResourceReservation;
+import eu.arrowhead.common.database.entity.qos.ResourceReservation;
 import eu.arrowhead.common.messages.QoSVerifierResponse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

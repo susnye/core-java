@@ -7,7 +7,7 @@
 
 package eu.arrowhead.core.qos.algorithms;
 
-import eu.arrowhead.common.database.qos.ResourceReservation;
+import eu.arrowhead.common.database.entity.qos.ResourceReservation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

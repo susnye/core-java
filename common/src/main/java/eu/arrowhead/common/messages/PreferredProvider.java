@@ -7,8 +7,8 @@
 
 package eu.arrowhead.common.messages;
 
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.json.support.PreferredProviderSupport;
 import javax.validation.Valid;
 

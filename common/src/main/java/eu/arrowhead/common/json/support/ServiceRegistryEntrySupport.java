@@ -8,7 +8,7 @@
 package eu.arrowhead.common.json.support;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 
 public class ServiceRegistryEntrySupport {
 

@@ -15,6 +15,6 @@
     <property name="show_sql">true</property>
     <property name="hibernate.hbm2ddl.auto">update</property>
 
-    <mapping class="eu.arrowhead.common.database.Logs"/>
+    <mapping class="eu.arrowhead.common.database.entity.Logs"/>
   </session-factory>
 </hibernate-configuration>

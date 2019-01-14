@@ -8,7 +8,7 @@
 package eu.arrowhead.core.eventhandler.filter;
 
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.EventFilter;
+import eu.arrowhead.common.database.entity.EventFilter;
 import eu.arrowhead.common.exception.AuthException;
 import eu.arrowhead.common.filter.AccessControlFilter;
 import eu.arrowhead.common.messages.PublishEvent;

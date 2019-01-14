@@ -60,7 +60,7 @@
 
       <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
-        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <artifactId>jackson-jaxrs-json-providerDevice</artifactId>
         <version>${jackson.version}</version>
       </dependency>
 

@@ -8,9 +8,9 @@
 package eu.arrowhead.core.gatekeeper;
 
 import eu.arrowhead.common.DatabaseManager;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.Broker;
-import eu.arrowhead.common.database.NeighborCloud;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.Broker;
+import eu.arrowhead.common.database.entity.NeighborCloud;
 import eu.arrowhead.common.exception.DataNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;

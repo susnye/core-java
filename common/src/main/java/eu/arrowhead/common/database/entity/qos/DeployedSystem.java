@@ -5,9 +5,9 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.common.database.qos;
+package eu.arrowhead.common.database.entity.qos;
 
-import eu.arrowhead.common.database.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;

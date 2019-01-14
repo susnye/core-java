@@ -8,11 +8,11 @@
 package eu.arrowhead.core.orchestrator;
 
 import eu.arrowhead.common.Utils;
-import eu.arrowhead.common.database.ArrowheadCloud;
-import eu.arrowhead.common.database.ArrowheadService;
-import eu.arrowhead.common.database.ArrowheadSystem;
-import eu.arrowhead.common.database.OrchestrationStore;
-import eu.arrowhead.common.database.ServiceRegistryEntry;
+import eu.arrowhead.common.database.entity.ArrowheadCloud;
+import eu.arrowhead.common.database.entity.ArrowheadService;
+import eu.arrowhead.common.database.entity.ArrowheadSystem;
+import eu.arrowhead.common.database.entity.OrchestrationStore;
+import eu.arrowhead.common.database.entity.ServiceRegistryEntry;
 import eu.arrowhead.common.exception.DataNotFoundException;
 import eu.arrowhead.common.messages.GSDAnswer;
 import eu.arrowhead.common.messages.GSDRequestForm;
@@ -222,7 +222,7 @@ final class OrchestratorDriver {
   /**
    * Queries the Orchestration Store database table for a consumer <tt>ArrowheadSystem</tt>. The Orchestration Store holds <i>hardwired</i>
    * <tt>ArrowheadService</tt>s between consumer and provider <tt>ArrowheadSystem</tt>s. The provider system can be local or part of another cloud.
-   * For more information see {@link eu.arrowhead.common.database.OrchestrationStore}.
+   * For more information see {@link OrchestrationStore}.
    *
    * @param consumer The <tt>ArrowheadSystem</tt> object representing the consumer system (mandatory)
    * @param service The <tt>ArrowheadService</tt> object representing the service to be consumed (optional)
