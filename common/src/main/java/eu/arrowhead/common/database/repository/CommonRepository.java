@@ -8,6 +8,8 @@ import eu.arrowhead.common.exception.DataNotFoundException;
 import eu.arrowhead.common.messages.ArrowheadCloudDTO;
 import eu.arrowhead.common.messages.ArrowheadServiceDTO;
 import eu.arrowhead.common.messages.ArrowheadSystemDTO;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -26,11 +28,20 @@ public class CommonRepository {
   }
 
   public static ArrowheadCloudDTO getCloudById(long id) {
-
+    ArrowheadCloud cloud = dm.get(ArrowheadCloud.class, id).orElseThrow(
+        () -> new DataNotFoundException("ArrowheadCloud entry not found with id: " + id));
+    return ArrowheadCloud.convertToDTO(cloud, true);
   }
 
   public static ArrowheadCloudDTO getCloudByOperatorAndName(String operator, String cloudName) {
-
+    if (operator == null || cloudName == null) {
+      throw new AssertionError("ArrowheadCloud bean validation failed");
+    }
+    restrictionMap.clear();
+    restrictionMap.put("operator", operator);
+    restrictionMap.put("cloudName", cloudName);
+    ArrowheadCloud cloud = dm.get(ArrowheadCloud.class, restrictionMap);
+    return ArrowheadCloud.convertToDTO(cloud, true);
   }
 
   public static List<ArrowheadCloudDTO> saveClouds(List<ArrowheadCloudDTO> clouds) {
@@ -58,15 +69,35 @@ public class CommonRepository {
   }
 
   public static ArrowheadServiceDTO getServiceById(long id) {
-
+    ArrowheadService service = dm.get(ArrowheadService.class, id).orElseThrow(
+        () -> new DataNotFoundException("ArrowheadService entry not found with id: " + id));
+    return ArrowheadService.convertToDTO(Collections.singletonList(service))
+                           .orElseThrow(() -> new AssertionError("ArrowheadService conversion failed."));
   }
 
   public static List<ArrowheadServiceDTO> getServicesByDefinition(String serviceDefinition) {
-
+    if (serviceDefinition == null) {
+      throw new AssertionError("ArrowheadService bean validation failed");
+    }
+    restrictionMap.clear();
+    restrictionMap.put("serviceDefinition", serviceDefinition);
+    List<ArrowheadService> services = dm.getAll(ArrowheadService.class, restrictionMap);
+    return ArrowheadService.convertListToDTO(services);
   }
 
-  public static List<ArrowheadServiceDTO> saveServices(List<ArrowheadServiceDTO> services) {
+  public static ArrowheadServiceDTO saveService(ArrowheadServiceDTO service) {
+    List<ArrowheadService> services = ArrowheadService.convertToEntity(service);
 
+    List<ArrowheadService> savedServices = new ArrayList<>();
+    for (ArrowheadService service : serviceList) {
+      restrictionMap.clear();
+      restrictionMap.put("serviceDefinition", service.getServiceDefinition());
+      ArrowheadService retrievedService = dm.get(ArrowheadService.class, restrictionMap);
+      if (retrievedService == null) {
+        dm.save(service);
+        savedServices.add(service);
+      }
+    }
   }
 
   public static ArrowheadServiceDTO updateService(long id, ArrowheadServiceDTO updatedService) {
@@ -89,12 +120,20 @@ public class CommonRepository {
     return ArrowheadSystem.convertListToDTO(systems, true);
   }
 
-  public static ArrowheadSystemDTO getSystemeById(long id) {
-
+  public static ArrowheadSystemDTO getSystemById(long id) {
+    ArrowheadSystem system = dm.get(ArrowheadSystem.class, id).orElseThrow(
+        () -> new DataNotFoundException("ArrowheadSystem entry not found with id: " + id));
+    return ArrowheadSystem.convertToDTO(system, true);
   }
 
   public static List<ArrowheadSystemDTO> getSystemsByName(String systemName) {
-
+    if (systemName == null) {
+      throw new AssertionError("ArrowheadSystem bean validation failed");
+    }
+    restrictionMap.clear();
+    restrictionMap.put("systemName", systemName);
+    List<ArrowheadSystem> systems = dm.getAll(ArrowheadSystem.class, restrictionMap);
+    return ArrowheadSystem.convertListToDTO(systems, true);
   }
 
   public static List<ArrowheadSystemDTO> saveSystems(List<ArrowheadSystemDTO> systems) {
