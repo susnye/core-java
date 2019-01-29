@@ -5,6 +5,7 @@ import eu.arrowhead.common.database.entity.ArrowheadCloud;
 import eu.arrowhead.common.database.entity.ArrowheadService;
 import eu.arrowhead.common.database.entity.ArrowheadSystem;
 import eu.arrowhead.common.exception.DataNotFoundException;
+import eu.arrowhead.common.exception.DuplicateEntryException;
 import eu.arrowhead.common.messages.ArrowheadCloudDTO;
 import eu.arrowhead.common.messages.ArrowheadServiceDTO;
 import eu.arrowhead.common.messages.ArrowheadSystemDTO;
@@ -46,11 +47,28 @@ public class CommonRepository {
   }
 
   public static List<ArrowheadCloudDTO> saveClouds(List<ArrowheadCloudDTO> clouds) {
+    List<ArrowheadCloud> convertedClouds = ArrowheadCloud.convertListToEntity(clouds);
+    List<ArrowheadCloud> savedClouds = new ArrayList<>();
 
+    for (ArrowheadCloud convertedCloud : convertedClouds) {
+      try {
+        ArrowheadCloud savedCloud = dm.save(convertedCloud);
+        savedClouds.add(savedCloud);
+      } catch (DuplicateEntryException e) {
+        log.info(convertedCloud.toString() + " already in the database, skipping it.");
+      }
+    }
+
+    return ArrowheadCloud.convertListToDTO(savedClouds, true);
   }
 
   public static ArrowheadCloudDTO updateCloud(long id, ArrowheadCloudDTO updatedCloud) {
-
+    ArrowheadCloud retrievedCloud = dm.get(ArrowheadCloud.class, id)
+                                      .orElseThrow(() -> new DataNotFoundException("Cloud not found with id " + id));
+    ArrowheadCloud convertedCloud = ArrowheadCloud.convertToEntity(updatedCloud);
+    retrievedCloud.partialUpdate(convertedCloud);
+    retrievedCloud = dm.save(retrievedCloud);
+    return ArrowheadCloud.convertToDTO(retrievedCloud, true);
   }
 
   public static void deleteCloud(long id) {
@@ -104,7 +122,16 @@ public class CommonRepository {
   }
 
   public static ArrowheadServiceDTO updateService(long id, ArrowheadServiceDTO updatedService) {
+    /*ArrowheadService retrievedService = dm.get(ArrowheadService.class, id).orElseThrow(
+        () -> new DataNotFoundException("Service not found with id " + id));
+    ArrowheadService convertedService = ArrowheadService.convertToEntity(updatedService).get(0);
 
+    ArrowheadCloud retrievedCloud = dm.get(ArrowheadCloud.class, id)
+                                      .orElseThrow(() -> new DataNotFoundException("Cloud not found with id " + id));
+    ArrowheadCloud convertedCloud = ArrowheadCloud.convertToEntity(updatedCloud);
+    retrievedCloud.partialUpdate(convertedCloud);
+    retrievedCloud = dm.save(retrievedCloud);
+    return ArrowheadCloud.convertToDTO(retrievedCloud, true);*/
   }
 
   public static void deleteService(long id) {
@@ -141,11 +168,28 @@ public class CommonRepository {
   }
 
   public static List<ArrowheadSystemDTO> saveSystems(List<ArrowheadSystemDTO> systems) {
+    List<ArrowheadSystem> convertedSystems = ArrowheadSystem.convertListToEntity(systems);
+    List<ArrowheadSystem> savedSystems = new ArrayList<>();
 
+    for (ArrowheadSystem convertedSystem : convertedSystems) {
+      try {
+        ArrowheadSystem savedSystem = dm.save(convertedSystem);
+        savedSystems.add(savedSystem);
+      } catch (DuplicateEntryException e) {
+        log.info(convertedSystem.toString() + " already in the database, skipping it.");
+      }
+    }
+
+    return ArrowheadSystem.convertListToDTO(savedSystems, true);
   }
 
   public static ArrowheadSystemDTO updateSystem(long id, ArrowheadSystemDTO updatedSystem) {
-
+    ArrowheadSystem retrievedSystem = dm.get(ArrowheadSystem.class, id)
+                                        .orElseThrow(() -> new DataNotFoundException("System not found with id " + id));
+    ArrowheadSystem convertedSystem = ArrowheadSystem.convertToEntity(updatedSystem);
+    retrievedSystem.partialUpdate(convertedSystem);
+    retrievedSystem = dm.save(retrievedSystem);
+    return ArrowheadSystem.convertToDTO(retrievedSystem, true);
   }
 
   public static void deleteSystem(long id) {
