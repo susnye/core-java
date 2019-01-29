@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import org.apache.log4j.Logger;
 
 public class CommonRepository {
@@ -56,6 +57,7 @@ public class CommonRepository {
     dm.get(ArrowheadCloud.class, id).map(cloud -> {
       dm.delete(cloud);
       log.info("deleteCloud deleted ArrowheadCloud with id " + id);
+      return Optional.empty();
     }).<DataNotFoundException>orElseThrow(() -> {
       log.info("deleteCloud found no ArrowheadCloud with id " + id);
       throw new DataNotFoundException("ArrowheadCloud entry not found with id: " + id);
@@ -86,18 +88,19 @@ public class CommonRepository {
   }
 
   public static ArrowheadServiceDTO saveService(ArrowheadServiceDTO service) {
-    List<ArrowheadService> services = ArrowheadService.convertToEntity(service);
-
+    List<ArrowheadService> convertedServices = ArrowheadService.convertToEntity(service);
     List<ArrowheadService> savedServices = new ArrayList<>();
-    for (ArrowheadService service : serviceList) {
+
+    for (ArrowheadService convertedService : convertedServices) {
       restrictionMap.clear();
-      restrictionMap.put("serviceDefinition", service.getServiceDefinition());
+      restrictionMap.put("serviceDefinition", convertedService.getServiceDefinition());
       ArrowheadService retrievedService = dm.get(ArrowheadService.class, restrictionMap);
       if (retrievedService == null) {
-        dm.save(service);
-        savedServices.add(service);
+        dm.save(convertedService);
+        savedServices.add(convertedService);
       }
     }
+    return ArrowheadService.convertToDTO(savedServices).orElse(null);
   }
 
   public static ArrowheadServiceDTO updateService(long id, ArrowheadServiceDTO updatedService) {
@@ -108,6 +111,7 @@ public class CommonRepository {
     dm.get(ArrowheadService.class, id).map(service -> {
       dm.delete(service);
       log.info("deleteService deleted ArrowheadService with id " + id);
+      return Optional.empty();
     }).<DataNotFoundException>orElseThrow(() -> {
       log.info("deleteService found no ArrowheadService with id " + id);
       throw new DataNotFoundException("ArrowheadService entry not found with id: " + id);
@@ -148,6 +152,7 @@ public class CommonRepository {
     dm.get(ArrowheadSystem.class, id).map(system -> {
       dm.delete(system);
       log.info("deleteSystem deleted ArrowheadSystem with id " + id);
+      return Optional.empty();
     }).<DataNotFoundException>orElseThrow(() -> {
       log.info("deleteSystem found no ArrowheadSystem with id " + id);
       throw new DataNotFoundException("ArrowheadSystem entry not found with id: " + id);
