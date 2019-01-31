@@ -56,12 +56,12 @@ public class OnboardingResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response ping() {
-        return Response.status(Response.Status.OK).entity("This is the Onboarding Arrowhead Core System.").build();
+        return Response.status(Response.Status.OK).entity("This is the Onboarding Arrowhead System.").build();
     }
 
     @POST
     @Path("/certificate")
-    @Operation(summary = "Onboarding with certificate", responses = {
+    @Operation(summary = "Onboarding with certificate request", responses = {
         @ApiResponse(content = @Content(schema = @Schema(implementation = OnboardingResponse.class)))})
     public Response request(final OnboardingWithCertificateRequest request) throws ArrowheadException {
         final PKCS10 cert = service.extractPKCS10(request.getCertificateRequest());

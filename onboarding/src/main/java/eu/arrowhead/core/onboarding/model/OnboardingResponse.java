@@ -8,6 +8,7 @@ import java.security.PublicKey;
 public class OnboardingResponse {
 
     private final boolean success;
+    // TODO provide only service registry
     private final ServiceEndpoint[] services;
     private final String onboardingCertificate;
     private final String immediateCertificate;
@@ -19,9 +20,16 @@ public class OnboardingResponse {
 
     private OnboardingResponse(boolean success, CertificateSigningResponse response, ServiceEndpoint[] services) {
         this.success = success;
+        if(response != null){
         this.onboardingCertificate = response.getEncodedSignedCert();
         this.immediateCertificate = response.getIntermediateCert();
-        this.rootCertificate = response.getRootCert();
+        this.rootCertificate = response.getRootCert();}
+            else
+            {
+                onboardingCertificate = null;
+                immediateCertificate = null;
+                rootCertificate = null;
+            }
         this.services = services;
     }
 
