@@ -20,7 +20,7 @@ public enum CoreSystemService {
   ORCH_SERVICE("OrchestrationService", "orchestrator/orchestration"),
   SYS_REG_SERVICE("PlaceHolder", "systemregistry/placeholder"),
   DEVICE_REG_SERVICE("Placeholder2", "deviceregistry/placeholder"),
-  ONBOARDING("Onboarding", "onboarding/request");
+  ONBOARDING_SERVICE("Onboarding", "onboarding");
 
   private final String serviceDef;
   private final String serviceURI;

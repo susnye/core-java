@@ -7,32 +7,35 @@
 
 package eu.arrowhead.core.onboarding;
 
-import eu.arrowhead.common.database.SystemRegistryEntry;
 import eu.arrowhead.common.exception.ArrowheadException;
-import eu.arrowhead.common.exception.BadPayloadException;
-import eu.arrowhead.common.misc.SecurityUtils;
+import eu.arrowhead.core.certificate_authority.model.CertificateSigningResponse;
+import eu.arrowhead.core.onboarding.model.OnboardingRequest;
 import eu.arrowhead.core.onboarding.model.OnboardingResponse;
+import eu.arrowhead.core.onboarding.model.OnboardingWithCertificateRequest;
+import eu.arrowhead.core.onboarding.model.OnboardingWithSharedKeyRequest;
 import eu.arrowhead.core.onboarding.model.ServiceEndpoint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.Certificate;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.apache.log4j.Logger;
+import sun.security.pkcs10.PKCS10;
 
 /**
  * @author ZSM
@@ -42,116 +45,93 @@ import javax.ws.rs.core.Response.Status;
 @Produces(MediaType.APPLICATION_JSON)
 public class OnboardingResource {
 
-  public static final String REQUEST_PATH = "/request";
+    private final Logger log = Logger.getLogger(OnboardingResource.class.getName());
+    private final OnboardingService service;
 
-  private final OnboardingService onboardingService;
-
-  public OnboardingResource() {
-    onboardingService = new OnboardingService();
-  }
-
-  @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response ping() {
-    return Response.status(Response.Status.OK).entity("This is the Onboarding Arrowhead Core System.").build();
-  }
-
-  @POST
-  @Path(REQUEST_PATH)
-  @Operation(summary = "Onboarding with certificate (as byte array)", responses = {@ApiResponse(content =
-  @Content(schema =
-  @Schema(implementation = OnboardingResponse.class)))})
-  public Response request(final String name, final byte[] certificate) throws ArrowheadException
-  {
-    final X509Certificate cert = onboardingService.extractCertificate(certificate);
-    final Response response;
-
-    if(onboardingService.isCertificateAllowed() && onboardingService.isCertificateValid(cert))
-    {
-      response = createResponse(name, cert);
-    }
-    else
-    {
-      response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+    public OnboardingResource() {
+        service = new OnboardingService();
+        log.info(OnboardingResource.class.getSimpleName() + " created");
     }
 
-    return response;
-  }
-  @POST
-  @Path(REQUEST_PATH)
-  @Operation(summary = "Onboarding with certificate (as InputStream)", responses = {@ApiResponse(content =
-  @Content(schema =
-  @Schema(implementation = OnboardingResponse.class)))})
-  public Response request(final String name, final InputStream certificate) throws ArrowheadException
-  {
-    final X509Certificate cert = onboardingService.extractCertificate(certificate);
-    final Response response;
-
-    if(onboardingService.isCertificateAllowed() && onboardingService.isCertificateValid(cert))
-    {
-      response = createResponse(name, cert);
-    }
-    else
-    {
-      response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response ping() {
+        return Response.status(Response.Status.OK).entity("This is the Onboarding Arrowhead Core System.").build();
     }
 
-    return response;
-  }
+    @POST
+    @Path("/certificate")
+    @Operation(summary = "Onboarding with certificate", responses = {
+        @ApiResponse(content = @Content(schema = @Schema(implementation = OnboardingResponse.class)))})
+    public Response request(final OnboardingWithCertificateRequest request) throws ArrowheadException {
+        final PKCS10 cert = service.extractPKCS10(request.getCertificateRequest());
+        final Response response;
 
-  @POST
-  @Path(REQUEST_PATH)
-  @Operation(summary = "Onboarding with shared key", responses = {@ApiResponse(content = @Content(schema =
-  @Schema(implementation = OnboardingResponse.class)))})
-  public Response request(final String name, final String sharedKey) throws ArrowheadException
-  {
-    final Response response;
+        if (service.isCertificateAllowed())
+        {
+            response = createResponse(cert);
+        } else {
+            response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+        }
 
-    if(onboardingService.isSharedKeyAllowed() && onboardingService.isKeyValid(sharedKey))
-    {
-      response = createResponse(name);
-    }
-    else
-    {
-      response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+        return response;
     }
 
-    return response;
-  }
+    @POST
+    @Path("/sharedKey")
+    @Operation(summary = "Onboarding with shared key", responses = {
+        @ApiResponse(content = @Content(schema = @Schema(implementation = OnboardingResponse.class)))})
+    public Response request(final OnboardingWithSharedKeyRequest request) throws ArrowheadException {
+        final Response response;
 
-  @POST
-  @Path(REQUEST_PATH)
-  @Operation(summary = "Onboarding without credentials", responses = {@ApiResponse(content = @Content(schema =
-  @Schema(implementation = OnboardingResponse.class)))})
-  public Response request(final String name) throws ArrowheadException
-  {
-    final Response response;
+        if (service.isSharedKeyAllowed() && service.isKeyValid(request.getSharedKey())) {
+            response = createResponse(request.getName());
+        } else {
+            response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+        }
 
-    if(onboardingService.isUnknownAllowed())
-    {
-      response = createResponse(name);
-    }
-    else
-    {
-      response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+        return response;
     }
 
-    return response;
-  }
+    @POST
+    @Path("/plain")
+    @Operation(summary = "Onboarding without credentials", responses = {
+        @ApiResponse(content = @Content(schema = @Schema(implementation = OnboardingResponse.class)))})
+    public Response request(final OnboardingRequest request) throws ArrowheadException {
+        final Response response;
 
-  private Response createResponse(final String name)
-  {
-    final byte[] onboardingCertificate = onboardingService.createCertificate(name);
-    final ServiceEndpoint[] endpoints = onboardingService.getEndpoints();
-    final OnboardingResponse returnValue = OnboardingResponse.success(onboardingCertificate, endpoints);
-    return Response.status(Status.OK).entity(returnValue).build();
-  }
+        if (service.isUnknownAllowed()) {
+            response = createResponse(request.getName());
+        } else {
+            response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+        }
 
-  private Response createResponse(final String name, final Certificate providedCertificate)
-  {
-    final byte[] onboardingCertificate = onboardingService.createCertificate(name, providedCertificate);
-    final ServiceEndpoint[] endpoints = onboardingService.getEndpoints();
-    final OnboardingResponse returnValue = OnboardingResponse.success(onboardingCertificate, endpoints);
-    return Response.status(Status.OK).entity(returnValue).build();
-  }
+        return response;
+    }
+
+    private Response createResponse(final String name) {
+        try {
+            final KeyPair keyPair = service.generateKeyPair("RSA", 1024);
+            final CertificateSigningResponse csrResponse = service.createAndSignCertificate(name, keyPair);
+            final ServiceEndpoint[] endpoints = service.getEndpoints();
+            final OnboardingResponse returnValue = OnboardingResponse.success(csrResponse, keyPair, endpoints);
+            return Response.status(Status.OK).entity(returnValue).build();
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException | CertificateException | SignatureException | URISyntaxException e) {
+            throw new ArrowheadException("Unable to create Certificate", e);
+        }
+    }
+
+    private Response createResponse(final PKCS10 providedCsr) {
+        try {
+            final KeyPair keyPair = new KeyPair(providedCsr.getSubjectPublicKeyInfo(), null);
+            final CertificateSigningResponse csrResponse = service.signCertificate(providedCsr);
+            final ServiceEndpoint[] endpoints = service.getEndpoints();
+            final OnboardingResponse returnValue = OnboardingResponse.success(csrResponse, keyPair,
+                                                                              endpoints);
+            return Response.status(Status.OK).entity(returnValue).build();
+        } catch (URISyntaxException e) {
+            throw new ArrowheadException("Unable to create Certificate", e);
+        }
+    }
+
 }

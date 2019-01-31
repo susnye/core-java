@@ -7,100 +7,164 @@
 
 package eu.arrowhead.core.onboarding;
 
-import eu.arrowhead.common.DatabaseManager;
 import eu.arrowhead.common.Utility;
-import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.BadPayloadException;
+import eu.arrowhead.common.misc.CoreSystem;
+import eu.arrowhead.common.misc.CoreSystemService;
 import eu.arrowhead.common.misc.TypeSafeProperties;
+import eu.arrowhead.core.certificate_authority.model.CertificateSigningRequest;
+import eu.arrowhead.core.certificate_authority.model.CertificateSigningResponse;
 import eu.arrowhead.core.onboarding.model.ServiceEndpoint;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.Certificate;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import javax.security.auth.x500.X500Principal;
+import javax.ws.rs.core.Response;
+import sun.security.pkcs10.PKCS10;
+import sun.security.x509.X500Name;
 
 public class OnboardingService {
 
-	private static final String PROPERTY_UNKNOWN_ENABLED = "enable_unknown";
-	private static final String PROPERTY_SHARED_KEY_ENABLED = "enable_shared_key";
-	private static final String PROPERTY_CERTIFICATE_ENABLED = "enable_certificate";
-	private static final String PROPERTY_SHARED_KEY = "shared_key";
+    // TODO CA does not expose a service ?!
+    private static final String PROPERTY_CA_IP = "ca_url";
+    private static final String PROPERTY_UNKNOWN_ENABLED = "enable_unknown";
+    private static final String PROPERTY_SHARED_KEY_ENABLED = "enable_shared_key";
+    private static final String PROPERTY_CERTIFICATE_ENABLED = "enable_certificate";
+    private static final String PROPERTY_SHARED_KEY = "shared_key";
 
-	private final DatabaseManager databaseManager;
-	private final TypeSafeProperties props;
-	private final CertificateFactory cf;
+    private final TypeSafeProperties props;
+    private final String caUri;
 
-  public OnboardingService() {
-  	try {
-			databaseManager = DatabaseManager.getInstance();
-			props = Utility.getProp();
-			cf = CertificateFactory.getInstance("X.509");
-		}
-  	catch (CertificateException ce)
-		{
-			throw new ArrowheadException(ce.getMessage(), ce);
-		}
-	}
+    public OnboardingService() {
+        props = Utility.getProp();
+        caUri = Utility.getUri(getCaIp(), CoreSystem.CERTIFICATE_AUTHORITY.getInsecurePort(), "ca", false, false);
+    }
 
-	public boolean isUnknownAllowed() {
-  	return props.getBooleanProperty(PROPERTY_UNKNOWN_ENABLED, false);
-	}
+    public String getCaIp() {
+        return props.getProperty(PROPERTY_CA_IP, "127.0.0.1");
+    }
 
-	public boolean isSharedKeyAllowed() {
-		return props.getBooleanProperty(PROPERTY_SHARED_KEY_ENABLED, false);
-	}
+    public boolean isUnknownAllowed() {
+        return props.getBooleanProperty(PROPERTY_UNKNOWN_ENABLED, false);
+    }
 
-	public boolean isCertificateAllowed() {
-		return props.getBooleanProperty(PROPERTY_CERTIFICATE_ENABLED, false);
-	}
+    public boolean isSharedKeyAllowed() {
+        return props.getBooleanProperty(PROPERTY_SHARED_KEY_ENABLED, false);
+    }
 
-	public byte[] createCertificate(final String name) {
-		return null;
-  }
+    public boolean isCertificateAllowed() {
+        return props.getBooleanProperty(PROPERTY_CERTIFICATE_ENABLED, false);
+    }
 
-	public byte[] createCertificate(final String name, final Certificate providedCertificate) {
-  	return null;
-	}
+    public KeyPair generateKeyPair(final String algorithm, int keySize) throws NoSuchAlgorithmException {
+        final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithm);
+        keyPairGenerator.initialize(keySize, new SecureRandom());
+        return keyPairGenerator.generateKeyPair();
+    }
 
-	public ServiceEndpoint[] getEndpoints() {
-  	return null;
-	}
+    public CertificateSigningResponse createAndSignCertificate(final String name, final KeyPair keyPair)
+        throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, SignatureException {
+        final String cloudName = getCloudname(caUri);
+        final String encodedCert = prepareAndCreateCSR(name + "." + cloudName, keyPair);
+        return sendCsr(new CertificateSigningRequest(encodedCert));
+    }
 
-	public boolean isKeyValid(final String providedKey) {
-  	final String sharedKey = props.getProperty(PROPERTY_SHARED_KEY, null);
+    private String getCloudname(final String caUri) {
+        Response caResponse = Utility.sendRequest(caUri, "GET", null);
+        return caResponse.readEntity(String.class);
+    }
 
-  	if(sharedKey == null || providedKey == null)
-		{
-			return false;
-		}
+    private String prepareAndCreateCSR(final String name, final KeyPair keyPair)
+        throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, SignatureException {
+        final X500Name x500Name = new X500Name("CN=" + name);
+        final Signature sig = Signature.getInstance("SHA256WithRSA");
+        sig.initSign(keyPair.getPrivate());
 
-  	return sharedKey.equals(providedKey);
-	}
+        return createCSR(x500Name, sig, keyPair.getPublic());
+    }
 
-	public boolean isCertificateValid(final X509Certificate cert) {
-  	return false;
-	}
+    private CertificateSigningResponse sendCsr(final CertificateSigningRequest csr) {
+        final Response caResponse = Utility.sendRequest(caUri, "POST", csr);
+        return caResponse.readEntity(CertificateSigningResponse.class);
+    }
 
-	public X509Certificate extractCertificate(final byte[] certificate) {
-		final X509Certificate cert;
-		try(final ByteArrayInputStream bais = new ByteArrayInputStream(certificate))
-		{
-			return extractCertificate(bais);
-		} catch (IOException e) {
-			throw new BadPayloadException(e.getMessage(), e);
-		}
-	}
+    private String createCSR(final X500Name x500name, final Signature signature, final PublicKey publicKey)
+        throws CertificateException, SignatureException, IOException {
+        final PKCS10 pkcs10 = new PKCS10(publicKey);
+        pkcs10.encodeAndSign(x500name, signature);
+        return Base64.getEncoder().encodeToString(pkcs10.getEncoded());
+    }
 
-	public X509Certificate extractCertificate(InputStream certificate) {
-		final X509Certificate cert;
-		try {
-			cert = (X509Certificate) cf.generateCertificate(certificate);
-			cert.checkValidity();
-		} catch (CertificateException e) {
-			throw new BadPayloadException(e.getMessage(), e);
-		}
-		return cert;
-	}
+    public CertificateSigningResponse signCertificate(final PKCS10 providedCsr) {
+        final String encodedCert = Base64.getEncoder().encodeToString(providedCsr.getEncoded());
+        return sendCsr(new CertificateSigningRequest(encodedCert));
+    }
+
+    public ServiceEndpoint[] getEndpoints() throws URISyntaxException {
+
+        final List<ServiceEndpoint> endpoints = new ArrayList<>();
+
+        final Optional<String[]> deviceRegistry = Utility
+            .getServiceInfo(CoreSystemService.DEVICE_REG_SERVICE.getServiceDef());
+        final Optional<String[]> systemRegistry = Utility
+            .getServiceInfo(CoreSystemService.SYS_REG_SERVICE.getServiceDef());
+        final Optional<String[]> serviceRegistry = Utility.getServiceInfo("ServiceRegistry");
+
+        if (deviceRegistry.isPresent()) {
+            endpoints.add(new ServiceEndpoint(CoreSystem.DEVICE_REGISTRY, new URI(deviceRegistry.get()[0])));
+        }
+
+        if (systemRegistry.isPresent()) {
+            endpoints.add(new ServiceEndpoint(CoreSystem.SYSTEM_REGISTRY, new URI(systemRegistry.get()[0])));
+        }
+
+        if (serviceRegistry.isPresent()) {
+            endpoints.add(new ServiceEndpoint(CoreSystem.SERVICE_REGISTRY_SQL, new URI(deviceRegistry.get()[0])));
+        }
+
+        return endpoints.toArray(new ServiceEndpoint[0]);
+    }
+
+    public boolean isKeyValid(final String providedKey) {
+        final String sharedKey = props.getProperty(PROPERTY_SHARED_KEY, null);
+
+        if (sharedKey == null || providedKey == null) {
+            return false;
+        }
+
+        return sharedKey.equals(providedKey);
+    }
+
+    public boolean isCertificateValid(final X509Certificate cert) {
+        try {
+            cert.checkValidity();
+            cert.verify(cert.getPublicKey());
+            return true;
+        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException e) {
+            return false;
+        }
+    }
+
+    public PKCS10 extractPKCS10(final String certificate) {
+        try {
+            return new PKCS10(certificate.getBytes());
+        } catch (IOException | SignatureException | NoSuchAlgorithmException e) {
+            throw new BadPayloadException(e.getMessage(), e);
+        }
+    }
 }

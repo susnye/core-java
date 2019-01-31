@@ -146,7 +146,7 @@ Currently the created services are not added to the default runlevel, so they wi
 
 #### Add a new application system
 
-You can use the script `ah_gen_system` to generate certificate, a configuration template, and add the necessary
+You can use the script `ah_gen_system` to generate sharedKey, a configuration template, and add the necessary
 database entries for a new application system: 
 
 ```sudo ah_gen_system SYSTEM_NAME HOST PORT SERVICE_NAME```
@@ -162,7 +162,7 @@ Generated certificates will appear in the user's home directory.
 
 #### Add a new cloud to a detached installation
 
-Run the script `ah_gen_cloud` to generate a new certificate and update the databases on the existing cloud: 
+Run the script `ah_gen_cloud` to generate a new sharedKey and update the databases on the existing cloud:
 
 ```sudo ah_gen_cloud CLOUD_NAME HOST```
 
@@ -170,7 +170,7 @@ E.g. (the IP address should be that of the new cloud):
 
 ```sudo ah_gen_cloud testcloud2 127.0.0.1```
 
-Use authorized mode to install the new cloud with the cloud and master certificate from the `/etc/arrowhead` folder.
+Use authorized mode to install the new cloud with the cloud and master sharedKey from the `/etc/arrowhead` folder.
 Afterwards, call `ah_add_neighbor` on the new cloud (`ah_gen_cloud` will output the correct parameters).
 
 #### Add a new neighbor to a cloud
@@ -206,7 +206,7 @@ remove everything arrowhead related.
 
 For the provider and consumer example in the client skeletons, the script `sudo ah_gen_quickstart HOST` can be used to
 generate the necessary certificates and database entries. `HOST` should be the IP address of where you intend to run
-the systems. It will also output the certificate/keystore password. Note,
+the systems. It will also output the sharedKey/keystore password. Note,
 this script should only be used for test clouds on a clean installation.
 
 To switch to insecure mode of all core services, remove `-tls` in the service files and restart them, e.g.:

@@ -20,13 +20,13 @@ db_get arrowhead-common/install_type; INSTALL_TYPE="$RET"
 case ${INSTALL_TYPE} in
     "Authorized" )
         if [ ! -f ${AH_CLOUDS_DIR}/${AH_CLOUD_NAME}.p12 ]; then
-            # Set default path for cloud certificate
+            # Set default path for cloud sharedKey
             db_get arrowhead-common/cloud_cert;
             if [ -z "$RET" ]; then
                 db_set arrowhead-common/cloud_cert "${HOME}/cloud.p12"
             fi
 
-            # Set default path for master certificate
+            # Set default path for master sharedKey
             db_get arrowhead-common/master_cert; master_cert=$RET
             if [ -z "$RET" ]; then
                 db_set arrowhead-common/master_cert "${HOME}/master.crt"
@@ -54,7 +54,7 @@ case ${INSTALL_TYPE} in
         ;;
 esac
 
-# Get certificate password
+# Get sharedKey password
 if [ -z "${AH_PASS_CERT}" ]; then
     db_input high arrowhead-common/cert_password || true
 fi
@@ -81,7 +81,7 @@ fi
 # Reload global variables
 . /usr/share/arrowhead/conf/ahconf.sh
 
-# Generate certificate password (if required)
+# Generate sharedKey password (if required)
 if [ -z "${AH_PASS_CERT}" ]; then
     PASS="$(openssl rand -base64 12)"
     db_set arrowhead-common/cert_password ${PASS}
@@ -123,7 +123,7 @@ esac
 case ${INSTALL_TYPE} in
     "Authorized" )
         if [ ! -f ${AH_CLOUDS_DIR}/${AH_CLOUD_NAME}.p12 ]; then
-            # Store cloud certificate
+            # Store cloud sharedKey
             keytool -importkeystore \
                 -srckeypass ${cloud_password} \
                 -destkeypass ${AH_PASS_CERT} \
@@ -137,7 +137,7 @@ case ${INSTALL_TYPE} in
             chown :arrowhead "${AH_CLOUDS_DIR}/${AH_CLOUD_NAME}.p12"
             chmod 640 "${AH_CLOUDS_DIR}/${AH_CLOUD_NAME}.p12"
 
-            # Store master certificate
+            # Store master sharedKey
             cp "${master_cert}" "${AH_CONF_DIR}/master.crt"
             chown :arrowhead "${AH_CONF_DIR}/master.crt"
             chmod 640 "${AH_CONF_DIR}/master.crt"
@@ -157,5 +157,5 @@ case ${INSTALL_TYPE} in
         ;;
 esac
 
-# Trust the cloud certificate
+# Trust the cloud sharedKey
 ah_cert_trust ${AH_CONF_DIR} ${AH_CLOUDS_DIR} ${AH_CLOUD_NAME}

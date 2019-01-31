@@ -39,7 +39,7 @@ public enum CoreSystem {
   DEVICE_REGISTRY(8438, 8439, ArrowheadMain.dbFields, ArrowheadMain.certFields,
                   Collections.singletonList(CoreSystemService.DEVICE_REG_SERVICE)),
   ONBOARDING(8434, 8435, ArrowheadMain.dbFields, ArrowheadMain.certFields,
-             Collections.singletonList(CoreSystemService.ONBOARDING));
+             Collections.singletonList(CoreSystemService.ONBOARDING_SERVICE));
 
   private final int insecurePort;
   private final int securePort;

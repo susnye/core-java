@@ -42,6 +42,11 @@
       <artifactId>shiro-core</artifactId>
       <version>1.4.0</version>
     </dependency>
+    <dependency>
+      <groupId>eu.arrowhead</groupId>
+      <artifactId>arrowhead-certificate_authority</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
   </dependencies>
 
