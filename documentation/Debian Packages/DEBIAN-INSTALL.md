@@ -34,11 +34,14 @@ First, get the latest repository package from <https://dev.mysql.com/downloads/r
 
 ```bash
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.10-1_all.deb
-sudo dpkg -i mysql-apt-config_0.8.10-1_all.deb
+sudo apt dpkg -i mysql-apt-config_0.8.10-1_all.deb
 sudo apt update
 ```
 
-To install the MySQL server, run:
+As of writing, please leave an empty root password for the database, when installing it. The MySQL scripts in Arrowhead
+does not (yet) support password protected databases. After Arrowhead is installed and you finished calling any of the
+generation scripts below, it should be safe to set a root password for the database. Arrowhead itself uses its own
+`arrowhead` user, only the scripts requires a non-password `root` user. To install the MySQL server, run:
 
 ```bash
 sudo apt install mysql-server
@@ -106,8 +109,6 @@ cd debian_packages/
 
 #### 4b. Build Arrowhead Debian Packages
 
-**NOTE:** To compile Arrowhead yourself, you should have both the JDK and Maven installed. Raspbian users should probably do this on their PC and then copy the files to their Raspberry Pi.
-
 To build the Debian packages yourself, start by cloning the repository:
 
 `git clone https://github.com/arrowhead-f/core-java.git -b develop`
@@ -116,10 +117,18 @@ Build them with:
 
 `mvn package`
 
-Copy all the packages to your Arrowhead server/Raspberry Pi (you may have to start SSH server on it first with `sudo systemctl start ssh`:
+Copy all the packages to one location:
 
 ```bash
-scp target/arrowhead-*.deb X.X.X.X:~/
+scp common/target/arrowhead-common_4.1.0_all.deb \
+    authorization/target/arrowhead-authorization_4.1.0_all.deb \
+    certificate_authority/target/arrowhead-certificate_authority_4.1.0_all.deb \
+    serviceregistry_sql/target/arrowhead-serviceregistry-sql_4.1.0_all.deb \
+    gateway/target/arrowhead-gateway_4.1.0_all.deb \
+    eventhandler/target/arrowhead-eventhandler_4.1.0_all.deb \
+    gatekeeper/target/arrowhead-gatekeeper_4.1.0_all.deb \
+    orchestrator/target/arrowhead-orchestrator_4.1.0_all.deb \
+    X.X.X.X:~/
 ```
 
 ### 5. Install Arrowhead Core Debian Packages
@@ -137,7 +146,7 @@ Currently the created services are not added to the default runlevel, so they wi
 
 #### Add a new application system
 
-You can use the script `ah_gen_system` to generate certificate, a configuration template, and add the necessary
+You can use the script `ah_gen_system` to generate sharedKey, a configuration template, and add the necessary
 database entries for a new application system: 
 
 ```sudo ah_gen_system SYSTEM_NAME HOST PORT SERVICE_NAME```
@@ -153,7 +162,7 @@ Generated certificates will appear in the user's home directory.
 
 #### Add a new cloud to a detached installation
 
-Run the script `ah_gen_cloud` to generate a new certificate and update the databases on the existing cloud: 
+Run the script `ah_gen_cloud` to generate a new sharedKey and update the databases on the existing cloud:
 
 ```sudo ah_gen_cloud CLOUD_NAME HOST```
 
@@ -161,7 +170,7 @@ E.g. (the IP address should be that of the new cloud):
 
 ```sudo ah_gen_cloud testcloud2 127.0.0.1```
 
-Use authorized mode to install the new cloud with the cloud and master certificate from the `/etc/arrowhead` folder.
+Use authorized mode to install the new cloud with the cloud and master sharedKey from the `/etc/arrowhead` folder.
 Afterwards, call `ah_add_neighbor` on the new cloud (`ah_gen_cloud` will output the correct parameters).
 
 #### Add a new neighbor to a cloud
@@ -197,7 +206,7 @@ remove everything arrowhead related.
 
 For the provider and consumer example in the client skeletons, the script `sudo ah_gen_quickstart HOST` can be used to
 generate the necessary certificates and database entries. `HOST` should be the IP address of where you intend to run
-the systems. It will also output the certificate/keystore password. Note,
+the systems. It will also output the sharedKey/keystore password. Note,
 this script should only be used for test clouds on a clean installation.
 
 To switch to insecure mode of all core services, remove `-tls` in the service files and restart them, e.g.:

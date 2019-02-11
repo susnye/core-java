@@ -188,7 +188,7 @@ public final class SecurityUtils {
 
   public static boolean isKeyStoreCNArrowheadValid(String clientCN, String cloudCN) {
     String[] clientFields = clientCN.split("\\.", 2);
-    return cloudCN.equalsIgnoreCase(clientFields[1]);
+    return clientFields.length == 2 && cloudCN.equalsIgnoreCase(clientFields[1]);
   }
 
   public static boolean isTrustStoreCNArrowheadValid(String commonName) {

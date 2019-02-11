@@ -17,7 +17,8 @@ public enum CoreSystem {
   AUTHORIZATION(8444, 8445, Arrays.asList("db_user", "db_password", "db_address", "keystore", "keystorepass"),
                 Arrays.asList("keypass", "truststore", "truststorepass"),
                 Arrays.asList(CoreSystemService.AUTH_CONTROL_SERVICE, CoreSystemService.TOKEN_GEN_SERVICE)),
-  CERTIFICATE_AUTHORITY(8458, 8459, null, null, null),
+  CERTIFICATE_AUTHORITY(8458, 8459, null,
+                        Arrays.asList("keystore", "keystorepass", "keypass", "truststore", "truststorepass", "cloudstore", "cloudstorepass"), null),
   CHOREOGRAPHER(8456, 8457, null, null, null),
   EVENT_HANDLER(8454, 8455, ArrowheadMain.dbFields, ArrowheadMain.certFields,
                 Arrays.asList(CoreSystemService.EVENT_PUBLISH, CoreSystemService.EVENT_SUBSCRIPTION)),
@@ -35,7 +36,10 @@ public enum CoreSystem {
   SERVICE_REGISTRY_DNS(8442, 8443, null, ArrowheadMain.certFields, null),
   SERVICE_REGISTRY_SQL(8442, 8443, ArrowheadMain.dbFields, ArrowheadMain.certFields, null),
   SYSTEM_REGISTRY(8436, 8437, ArrowheadMain.dbFields, ArrowheadMain.certFields, Collections.singletonList(CoreSystemService.SYS_REG_SERVICE)),
-  DEVICE_REGISTRY(8438, 8439, ArrowheadMain.dbFields, ArrowheadMain.certFields, Collections.singletonList(CoreSystemService.DEVICE_REG_SERVICE));
+  DEVICE_REGISTRY(8438, 8439, ArrowheadMain.dbFields, ArrowheadMain.certFields,
+                  Collections.singletonList(CoreSystemService.DEVICE_REG_SERVICE)),
+  ONBOARDING(8434, 8435, ArrowheadMain.dbFields, ArrowheadMain.certFields,
+             Collections.singletonList(CoreSystemService.ONBOARDING_SERVICE));
 
   private final int insecurePort;
   private final int securePort;

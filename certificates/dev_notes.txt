@@ -1,35 +1,35 @@
 How to create Arrowhead-compliant certificates
 
-0. Take the certificate keystore that is wished to be used as the signer
+0. Take the sharedKey keystore that is wished to be used as the signer
 
 1. Open it in KeyStore Explorer (http://keystore-explorer.org/downloads.html)
   - default KeyStore and Key pwd-s for all test certificates: '12345'
 
-2. Right click on the certificate itself --> Sign / Sign New Key Pair
+2. Right click on the sharedKey itself --> Sign / Sign New Key Pair
 
-3. Edit settings for the new certificate:
+3. Edit settings for the new sharedKey:
   - validity period: e.g. set to 10 years
   - Name --> There is a book icon with '@': set CN fields
     CN: <systemName>.<cloudName>.<operator>.arrowhead.eu format
     Other fields can be filled out arbitrarily.
 
-4. Move the newly created certificate to a new tab within the app
+4. Move the newly created sharedKey to a new tab within the app
   - drag & drop works
   - it creates a new jks file for it
   - 'Save as' this new keystore as a '.jks' file
 
 5. Tools --> Set Keystore Password
 
-6. Right click on the certificate --> Set Password
+6. Right click on the sharedKey --> Set Password
   - the 'old' password is empty
-  - give a new password to the certificate itself
+  - give a new password to the sharedKey itself
 
 7. Tools --> Set Keystore Type --> JKS
   - this changes from 'p12' filetype to Java Keystore format
 
 8. Save the keystore again (File --> Save or CTRL+S)
 
-+1. Don't forget to delete the new certificate from the old one's keystore!
++1. Don't forget to delete the new sharedKey from the old one's keystore!
 
 ---------------------------------------------------------------------------
 How to extract crt and key files from jks files: (run as sudo/administrator)
@@ -50,27 +50,27 @@ keytool -importkeystore -srckeystore my.jks -destkeystore keystore.p12 -deststor
 openssl pkcs12 -in keystore.p12 -nodes -nocerts -out server.key
  
 ---------------------------------------------------------------------------
-How to export certificate public key in Base64 with the ArrowheadProvider client skeleton:
+How to export sharedKey public key in Base64 with the ArrowheadProvider client skeleton:
 1. Edit the app.config file with the proper client and trust store keystores
 2. Start the skeleton with "-tls" command line arguments.
 3. The skeleton will print out the Base64 encoded string on the console during start. (This is the 2nd print, which starts as: "Server PublicKey Base64: ")
 
 ---------------------------------------------------------------------------
-How to export certificate public key in Base64 for the database manually:
+How to export sharedKey public key in Base64 for the database manually:
 1. Open the jks in Keystore Explorer
-2. Right click on certificate
+2. Right click on sharedKey
 3. Export -> Export Public Key
 4. Remove --BEGIN-- and --END-- from .openssl file
 5. Insert into Auth_info field in Arrowhead database
 ---------------------------------------------------------------------------
 
-How to add our root certificate to the JDK
+How to add our root sharedKey to the JDK
 1. Go to the ~/jdk1.8.0_92/jre/bin
 2. Copy the master_arrowhead_cert.crt here
 3. Open a command line as administrator here
 4. Type: keytool -import -alias "arrowhead.eu" -keystore "$JAVA_HOME/lib/security/cacerts" -file master_arrowhead_cert.crt
    (JAVA_HOME can be the JRE or JDK/jre/lib version of cacert, used truststore may depend on individual setup)
-5. The default password is "changeit", then type "y" and hit enter. The certificate is added to the JDK truststore now.
+5. The default password is "changeit", then type "y" and hit enter. The sharedKey is added to the JDK truststore now.
 
 How to delete an alias from java cacerts keystore
 1. keytool -delete -alias "aliasname" -keystore "file_path_to_cacerts"
