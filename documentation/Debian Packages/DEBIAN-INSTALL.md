@@ -34,14 +34,11 @@ First, get the latest repository package from <https://dev.mysql.com/downloads/r
 
 ```bash
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.10-1_all.deb
-sudo apt dpkg -i mysql-apt-config_0.8.10-1_all.deb
+sudo dpkg -i mysql-apt-config_0.8.10-1_all.deb
 sudo apt update
 ```
 
-As of writing, please leave an empty root password for the database, when installing it. The MySQL scripts in Arrowhead
-does not (yet) support password protected databases. After Arrowhead is installed and you finished calling any of the
-generation scripts below, it should be safe to set a root password for the database. Arrowhead itself uses its own
-`arrowhead` user, only the scripts requires a non-password `root` user. To install the MySQL server, run:
+To install the MySQL server, run:
 
 ```bash
 sudo apt install mysql-server
@@ -109,6 +106,8 @@ cd debian_packages/
 
 #### 4b. Build Arrowhead Debian Packages
 
+**NOTE:** To compile Arrowhead yourself, you should have both the JDK and Maven installed. Raspbian users should probably do this on their PC and then copy the files to their Raspberry Pi.
+
 To build the Debian packages yourself, start by cloning the repository:
 
 `git clone https://github.com/arrowhead-f/core-java.git -b develop`
@@ -117,18 +116,10 @@ Build them with:
 
 `mvn package`
 
-Copy all the packages to one location:
+Copy all the packages to your Arrowhead server/Raspberry Pi (you may have to start SSH server on it first with `sudo systemctl start ssh`:
 
 ```bash
-scp common/target/arrowhead-common_4.1.0_all.deb \
-    authorization/target/arrowhead-authorization_4.1.0_all.deb \
-    certificate_authority/target/arrowhead-certificate_authority_4.1.0_all.deb \
-    serviceregistry_sql/target/arrowhead-serviceregistry-sql_4.1.0_all.deb \
-    gateway/target/arrowhead-gateway_4.1.0_all.deb \
-    eventhandler/target/arrowhead-eventhandler_4.1.0_all.deb \
-    gatekeeper/target/arrowhead-gatekeeper_4.1.0_all.deb \
-    orchestrator/target/arrowhead-orchestrator_4.1.0_all.deb \
-    X.X.X.X:~/
+scp target/arrowhead-*.deb X.X.X.X:~/
 ```
 
 ### 5. Install Arrowhead Core Debian Packages

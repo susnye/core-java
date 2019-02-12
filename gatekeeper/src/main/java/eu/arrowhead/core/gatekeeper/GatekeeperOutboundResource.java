@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 /**
  * This is the REST resource for the Gatekeeper Core System.
  */
-@Path("gatekeeper")
+@Path(GatekeeperMain.GATEKEEPER_SERVICE_URI)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class GatekeeperOutboundResource {
@@ -149,9 +149,8 @@ public class GatekeeperOutboundResource {
     requestForm.getNegotiationFlags().put("useGateway", GatekeeperMain.USE_GATEWAY);
     // Compiling the payload and then getting the request URI
     ICNProposal icnProposal = new ICNProposal(requestForm.getRequestedService(), Utility.getOwnCloud(GatekeeperMain.IS_SECURE),
-                                              requestForm.getRequesterSystem(),
-                                              requestForm.getPreferredSystems(), requestForm.getNegotiationFlags(), null, GatekeeperMain.TIMEOUT,
-                                              null);
+                                              requestForm.getRequesterSystem(), requestForm.getPreferredSystems(), requestForm.getNegotiationFlags(),
+                                              null, GatekeeperMain.TIMEOUT, null);
 
     if (GatekeeperMain.USE_GATEWAY) {
       Map<String, Object> restrictionMap = new HashMap<>();
