@@ -103,6 +103,17 @@ public class EventFilter {
     this.matchMetadata = matchMetadata;
   }
 
+  public EventFilter(EventFilter other) {
+    this.eventType = other.eventType;
+    this.consumer = other.consumer;
+    this.sources = other.sources;
+    this.startDate = other.startDate;
+    this.endDate = other.endDate;
+    this.filterMetadata = other.filterMetadata;
+    this.notifyUri = other.notifyUri;
+    this.matchMetadata = other.matchMetadata;
+  }
+
   public Long getId() {
     return id;
   }
