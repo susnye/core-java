@@ -53,7 +53,7 @@ public class EventHandlerApi {
   public Response updateEventSubscriptionById(@PathParam("id") long id, @Valid EventFilter updatedFilter) {
     EventFilter filter = dm.get(EventFilter.class, id).<DataNotFoundException>orElseThrow(
         () -> new DataNotFoundException("EventFilter not found with id: " + id));
-    filter = new EventFilter(updatedFilter);
+    filter.partialUpdateFilter(updatedFilter);
     filter = dm.merge(filter);
     return Response.ok().entity(filter).build();
   }
