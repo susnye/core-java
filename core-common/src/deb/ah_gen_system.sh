@@ -24,7 +24,7 @@ fi
 
 mkdir -p "${SYSTEM_DIR}"
 
-echo "Generating sharedKey for '${SYSTEM_NAME}'" >&2
+echo "Generating certificate for '${SYSTEM_NAME}'" >&2
 ah_cert_signed_system ${SYSTEM_NAME}
 
 if [ ! -z "${SERVICE}" ]; then

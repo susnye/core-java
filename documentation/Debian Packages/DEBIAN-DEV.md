@@ -198,7 +198,7 @@ if [ ! -d "${SYSTEM_DIR}" ]; then
 fi
 ```
 
-- Generate a signed system sharedKey in this dir (use functions in ahconf.sh again)
+- Generate a signed system certificate in this dir (use functions in ahconf.sh again)
 
 ```bash
 ah_cert_signed_system ${SYSTEM_NAME}

@@ -15,7 +15,7 @@ CLOUD_STORE="${AH_CLOUDS_DIR}/${CLOUD_NAME}.p12"
 CLOUD_INIT="${AH_CLOUDS_DIR}/${CLOUD_NAME}.sh"
 
 if [ ! -f "${AH_CONF_DIR}/master.p12" ]; then
-    echo "Keystore for master sharedKey not found." >&2
+    echo "Keystore for master certificate not found." >&2
     echo "Generating new clouds only works when existing cloud have been installed in detached mode." >&2
     exit 1;
 fi
@@ -25,7 +25,7 @@ if [ -f "${AH_CLOUDS_DIR}/${CLOUD_NAME}.p12" ]; then
     exit 1;
 fi
 
-echo "Generating sharedKey for '${CLOUD_NAME}'" >&2
+echo "Generating certificate for '${CLOUD_NAME}'" >&2
 ah_cert_signed "${AH_CLOUDS_DIR}" ${CLOUD_NAME} "${CLOUD_NAME}.${AH_OPERATOR}.arrowhead.eu" ${AH_CONF_DIR} master
 
 CLOUD_64PUB=$(\
@@ -40,7 +40,7 @@ ah_add_neighbor ${AH_OPERATOR} ${CLOUD_NAME} ${CLOUD_HOST} ${CLOUD_64PUB}
 
 echo >&2
 echo "Certificate stored in '${AH_CLOUDS_DIR}'" >&2
-echo "Password for sharedKey stores: ${AH_PASS_CERT}" >&2
+echo "Password for certificate stores: ${AH_PASS_CERT}" >&2
 
 db_get arrowhead-gatekeeper/address; OWN_HOST="$RET"
 
