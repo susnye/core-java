@@ -25,7 +25,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
-@Table(name = "arrowhead_system", uniqueConstraints = {@UniqueConstraint(columnNames = {"system_name", "address", "port"})})
+@Table(name = "arrowhead_system", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"system_name", "address", "port"})})
 public class ArrowheadSystem {
 
   @Id
@@ -35,8 +36,8 @@ public class ArrowheadSystem {
 
   @NotBlank
   @Size(max = 255, message = "System name must be 255 character at max")
-  @Pattern(regexp = "[A-Za-z0-9-_:]+", message = "System name can only contain alphanumerical characters and some special characters (dash, "
-      + "underscore and colon)")
+  @Pattern(regexp = "[\\p{L}0-9-_:]+", message = "System name can only contain alphanumerical characters and some "
+      + "special characters (dash, underscore and colon)")
   @Column(name = "system_name")
   private String systemName;
 
@@ -146,7 +147,8 @@ public class ArrowheadSystem {
       return false;
     }
     ArrowheadSystem that = (ArrowheadSystem) o;
-    return Objects.equals(systemName, that.systemName) && Objects.equals(address, that.address) && Objects.equals(port, that.port);
+    return Objects.equals(systemName, that.systemName) && Objects.equals(address, that.address) && Objects
+        .equals(port, that.port);
   }
 
   @Override
@@ -154,7 +156,8 @@ public class ArrowheadSystem {
     return Objects.hash(systemName, address, port);
   }
 
-  //NOTE ArrowheadSystemKeyDeserializer relies on this implementation, do not change it without changing the (String json) constructor
+  //NOTE ArrowheadSystemKeyDeserializer relies on this implementation, do not change it without changing the (String
+  // json) constructor
   @Override
   public String toString() {
     return systemName + "," + address + "," + port + "," + authenticationInfo;
@@ -164,7 +167,8 @@ public class ArrowheadSystem {
     this.systemName = other.getSystemName() != null ? other.getSystemName() : this.systemName;
     this.address = other.getAddress() != null ? other.getAddress() : this.address;
     this.port = other.getPort() != null ? other.getPort() : this.port;
-    this.authenticationInfo = other.getAuthenticationInfo() != null ? other.getAuthenticationInfo() : this.authenticationInfo;
+    this.authenticationInfo =
+        other.getAuthenticationInfo() != null ? other.getAuthenticationInfo() : this.authenticationInfo;
   }
 
 }
