@@ -25,8 +25,8 @@
   <modules>
     <module>authorization</module>
     <module>certificate_authority</module>
-    <module>common</module>
     <module>deviceregistry</module>
+    <module>core-common</module>
     <module>dnssd</module>
     <module>eventhandler</module>
     <module>gatekeeper</module>
@@ -88,7 +88,7 @@
 
       <dependency>
         <groupId>eu.arrowhead</groupId>
-        <artifactId>arrowhead-common</artifactId>
+        <artifactId>arrowhead-core-common</artifactId>
         <version>${project.version}</version>
       </dependency>
 
