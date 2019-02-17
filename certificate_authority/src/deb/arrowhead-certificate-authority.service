@@ -1,5 +1,5 @@
 [Unit]
-Description=arrowhead-sharedKey-authority
+Description=arrowhead-certificate-authority
 After=network.target mysql.target arrowhead-serviceregistry-sql.service arrowhead-authorization.service
 Requires=arrowhead-serviceregistry-sql.service arrowhead-authorization.service
 

@@ -12,8 +12,5 @@
   <session-factory>
     <property name="show_sql">true</property>
     <property name="hibernate.hbm2ddl.auto">update</property>
-    <mapping class="eu.arrowhead.common.database.ArrowheadSystem"/>
-    <mapping class="eu.arrowhead.common.database.ArrowheadDevice"/>
-    <mapping class="eu.arrowhead.common.database.SystemRegistryEntry"/>
   </session-factory>
 </hibernate-configuration>
