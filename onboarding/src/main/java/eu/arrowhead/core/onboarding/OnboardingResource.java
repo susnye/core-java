@@ -8,6 +8,7 @@
 package eu.arrowhead.core.onboarding;
 
 import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.core.certificate_authority.model.CertificateSigningResponse;
 import eu.arrowhead.core.onboarding.model.OnboardingRequest;
 import eu.arrowhead.core.onboarding.model.OnboardingResponse;
@@ -23,9 +24,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.util.Base64;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -35,7 +34,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
-import sun.security.pkcs10.PKCS10;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 
 /**
  * @author ZSM
@@ -64,14 +64,22 @@ public class OnboardingResource {
     @Operation(summary = "Onboarding with certificate request", responses = {
         @ApiResponse(content = @Content(schema = @Schema(implementation = OnboardingResponse.class)))})
     public Response request(final OnboardingWithCertificateRequest request) throws ArrowheadException {
-        final PKCS10 cert = service.extractPKCS10(request.getCertificateRequest());
+        final byte[] csrBytes;
+        final JcaPKCS10CertificationRequest csr;
         final Response response;
 
-        if (service.isCertificateAllowed())
-        {
-            response = createResponse(cert);
-        } else {
-            response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+        try {
+            csrBytes = Base64.getDecoder().decode(request.getCertificateRequest());
+            csr = new JcaPKCS10CertificationRequest(csrBytes);
+            if (service.isCertificateAllowed())
+            {
+                response = createResponse(csr);
+            } else {
+                response = Response.status(Status.FORBIDDEN).entity(OnboardingResponse.failure()).build();
+            }
+        } catch (IOException e) {
+            log.warn(e.getMessage(), e);
+            throw new BadPayloadException(e.getMessage());
         }
 
         return response;
@@ -116,20 +124,20 @@ public class OnboardingResource {
             final ServiceEndpoint[] endpoints = service.getEndpoints();
             final OnboardingResponse returnValue = OnboardingResponse.success(csrResponse, keyPair, endpoints);
             return Response.status(Status.OK).entity(returnValue).build();
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException | CertificateException | SignatureException | URISyntaxException e) {
+        } catch (IOException | NoSuchAlgorithmException | URISyntaxException | OperatorCreationException e) {
             throw new ArrowheadException("Unable to create Certificate", e);
         }
     }
 
-    private Response createResponse(final PKCS10 providedCsr) {
+    private Response createResponse(final JcaPKCS10CertificationRequest providedCsr) {
         try {
-            final KeyPair keyPair = new KeyPair(providedCsr.getSubjectPublicKeyInfo(), null);
+            final KeyPair keyPair = new KeyPair(providedCsr.getPublicKey(), null);
             final CertificateSigningResponse csrResponse = service.signCertificate(providedCsr);
             final ServiceEndpoint[] endpoints = service.getEndpoints();
             final OnboardingResponse returnValue = OnboardingResponse.success(csrResponse, keyPair,
                                                                               endpoints);
             return Response.status(Status.OK).entity(returnValue).build();
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | InvalidKeyException | NoSuchAlgorithmException | IOException e) {
             throw new ArrowheadException("Unable to create Certificate", e);
         }
     }

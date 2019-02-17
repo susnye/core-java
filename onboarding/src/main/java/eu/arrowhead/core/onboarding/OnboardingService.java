@@ -8,7 +8,6 @@
 package eu.arrowhead.core.onboarding;
 
 import eu.arrowhead.common.Utility;
-import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.misc.CoreSystem;
 import eu.arrowhead.common.misc.CoreSystemService;
 import eu.arrowhead.common.misc.TypeSafeProperties;
@@ -18,25 +17,22 @@ import eu.arrowhead.core.onboarding.model.ServiceEndpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.Response;
-import sun.security.pkcs10.PKCS10;
-import sun.security.x509.X500Name;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 
 public class OnboardingService {
 
@@ -78,7 +74,7 @@ public class OnboardingService {
     }
 
     public CertificateSigningResponse createAndSignCertificate(final String name, final KeyPair keyPair)
-        throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, SignatureException {
+        throws IOException, OperatorCreationException {
         final String cloudName = getCloudname(caUri);
         final String encodedCert = prepareAndCreateCSR(name + "." + cloudName, keyPair);
         return sendCsr(new CertificateSigningRequest(encodedCert));
@@ -90,12 +86,14 @@ public class OnboardingService {
     }
 
     private String prepareAndCreateCSR(final String name, final KeyPair keyPair)
-        throws IOException, NoSuchAlgorithmException, InvalidKeyException, CertificateException, SignatureException {
-        final X500Name x500Name = new X500Name("CN=" + name);
-        final Signature sig = Signature.getInstance("SHA256WithRSA");
-        sig.initSign(keyPair.getPrivate());
+        throws IOException, OperatorCreationException {
 
-        return createCSR(x500Name, sig, keyPair.getPublic());
+        final X500Name x500Name = new X500Name("CN=" + name);
+        final JcaPKCS10CertificationRequestBuilder builder = new JcaPKCS10CertificationRequestBuilder(x500Name, keyPair.getPublic());
+        final JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder("SHA256WithRSA");
+        final ContentSigner contentSigner = contentSignerBuilder.build(keyPair.getPrivate());
+        final PKCS10CertificationRequest csr = builder.build(contentSigner);
+        return Base64.getEncoder().encodeToString(csr.getEncoded());
     }
 
     private CertificateSigningResponse sendCsr(final CertificateSigningRequest csr) {
@@ -103,14 +101,8 @@ public class OnboardingService {
         return caResponse.readEntity(CertificateSigningResponse.class);
     }
 
-    private String createCSR(final X500Name x500name, final Signature signature, final PublicKey publicKey)
-        throws CertificateException, SignatureException, IOException {
-        final PKCS10 pkcs10 = new PKCS10(publicKey);
-        pkcs10.encodeAndSign(x500name, signature);
-        return Base64.getEncoder().encodeToString(pkcs10.getEncoded());
-    }
-
-    public CertificateSigningResponse signCertificate(final PKCS10 providedCsr) {
+    public CertificateSigningResponse signCertificate(final JcaPKCS10CertificationRequest providedCsr)
+        throws IOException {
         final String encodedCert = Base64.getEncoder().encodeToString(providedCsr.getEncoded());
         return sendCsr(new CertificateSigningRequest(encodedCert));
     }
@@ -134,7 +126,7 @@ public class OnboardingService {
         }
 
         if (serviceRegistry.isPresent()) {
-            endpoints.add(new ServiceEndpoint(CoreSystem.SERVICE_REGISTRY_SQL, new URI(deviceRegistry.get()[0])));
+            endpoints.add(new ServiceEndpoint(CoreSystem.SERVICE_REGISTRY_SQL, new URI(serviceRegistry.get()[0])));
         }
 
         return endpoints.toArray(new ServiceEndpoint[0]);
@@ -148,23 +140,5 @@ public class OnboardingService {
         }
 
         return sharedKey.equals(providedKey);
-    }
-
-    public boolean isCertificateValid(final X509Certificate cert) {
-        try {
-            cert.checkValidity();
-            cert.verify(cert.getPublicKey());
-            return true;
-        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException e) {
-            return false;
-        }
-    }
-
-    public PKCS10 extractPKCS10(final String certificate) {
-        try {
-            return new PKCS10(certificate.getBytes());
-        } catch (IOException | SignatureException | NoSuchAlgorithmException e) {
-            throw new BadPayloadException(e.getMessage(), e);
-        }
     }
 }
