@@ -151,5 +151,4 @@ public class DeviceRegistryApi {
     log.info("updateDeviceRegistryEntry successfully returns.");
     return Response.status(Status.ACCEPTED).entity(retreivedEntry).build();
   }
-
 }

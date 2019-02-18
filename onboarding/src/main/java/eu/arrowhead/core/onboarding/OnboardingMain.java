@@ -5,27 +5,22 @@
  * national funding authorities from involved countries.
  */
 
-package eu.arrowhead.core.deviceregistry;
+package eu.arrowhead.core.onboarding;
 
 import eu.arrowhead.common.ArrowheadMain;
 import eu.arrowhead.common.misc.CoreSystem;
 
-public class DeviceRegistryMain extends ArrowheadMain {
+public class OnboardingMain extends ArrowheadMain {
 
-  private DeviceRegistryMain(String[] args) {
-
-    String[] packages = {
-    		"eu.arrowhead.common.exception", 
-    		"eu.arrowhead.common.json", 
-    		"eu.arrowhead.common.filter", 
-				"eu.arrowhead.core.deviceregistry"};
-    init(CoreSystem.DEVICE_REGISTRY, args, null, packages);
-
+  private OnboardingMain(String[] args) {
+    String[] packages = {"eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter",
+        "eu.arrowhead.core.onboarding"};
+    init(CoreSystem.ONBOARDING, args, null, packages);
 
     listenForInput();
   }
 
   public static void main(String[] args) {
-    new DeviceRegistryMain(args);
+    new OnboardingMain(args);
   }
 }
