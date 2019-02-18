@@ -30,7 +30,6 @@ public class NotSupportedMediaTypeExceptionMapper implements ExceptionMapper<Not
     }
 
     return Response.status(Status.UNSUPPORTED_MEDIA_TYPE).entity(errorMessage)
-                   .header("Content-type", "application/json")
-                   .build();
+                   .header("Content-type", "application/json").build();
   }
 }

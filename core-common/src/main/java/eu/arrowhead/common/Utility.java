@@ -223,6 +223,8 @@ public final class Utility {
           throw new ArrowheadException(errorMessage.getErrorMessage(), errorMessage.getErrorCode(), errorMessage.getOrigin());
         case AUTH:
           throw new AuthException(errorMessage.getErrorMessage(), errorMessage.getErrorCode(), errorMessage.getOrigin());
+        case BAD_MEDIA_TYPE:
+          throw new ArrowheadException(errorMessage.getErrorMessage(), errorMessage.getErrorCode());
         case BAD_METHOD:
           throw new ArrowheadException(errorMessage.getErrorMessage(), errorMessage.getErrorCode(), errorMessage.getOrigin());
         case BAD_PAYLOAD:
