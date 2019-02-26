@@ -313,7 +313,7 @@ public class DatabaseManager {
         session.delete(object);
       }
       transaction.commit();
-    } catch (ConstraintViolationException e) {
+    } catch (PersistenceException e) {
       if (transaction != null) {
         transaction.rollback();
       }
