@@ -21,12 +21,12 @@ import java.util.Set;
 public class DataManagerMain extends ArrowheadMain {
 
   private DataManagerMain(String[] args) {
+    TypeSafeProperties props = Utility.getProp("app.properties");	
+    DataManagerService.Init(props);
+    
     Set<Class<?>> classes = new HashSet<>(Arrays.asList(DataManagerResource.class,  ArrowheadSystemApi.class));
     String[] packages = {"eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter"};
     init(CoreSystem.DATAMANAGER, args, classes, packages);
-
-    TypeSafeProperties props = Utility.getProp("app.properties");	
-    DataManagerService.Init(props);
 
     listenForInput();
   }
