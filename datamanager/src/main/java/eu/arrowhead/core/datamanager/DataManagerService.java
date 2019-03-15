@@ -145,6 +145,7 @@ final class DataManagerService {
       + "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n"
       + "did INT(8) NOT NULL,\n"
       + "ts BIGINT UNSIGNED NOT NULL,\n"
+      + "msg BLOB NOT NULL,\n"
       + "stored datetime,\n"
       + "FOREIGN KEY(did) REFERENCES iot_devices(id) ON DELETE CASCADE"
       + ")\n";
