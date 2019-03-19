@@ -24,7 +24,7 @@ public class SigMLMessage{
   private Double bt;
   private String bn;
 
-  public Vector<SenMLMessage> sml = null;
+  public Vector<SenMLMessage> e = null;
 
   public SigMLMessage() {
     this.p = 0;
@@ -60,11 +60,11 @@ public class SigMLMessage{
   }
 
   public void setSenML(Vector<SenMLMessage> msg) {
-    this.sml = msg;
+    this.e = msg;
   }
 
   public Vector<SenMLMessage> getSenML() {
-    return sml;
+    return e;
   }
 
   public String toString() {

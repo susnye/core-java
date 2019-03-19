@@ -71,8 +71,8 @@ final class ProxyService {
       ProxyElement pe = epi.next();
       if (name.equals(pe.name)) {
 	System.out.println("Found endpoint: " + pe.name);
-	pe.msg = msg.sml;
-	System.out.println("Updating with: " + msg.sml.toString());
+	pe.msg = msg.e;
+	System.out.println("Updating with: " + msg.e.toString());
         return true;
       }
     }

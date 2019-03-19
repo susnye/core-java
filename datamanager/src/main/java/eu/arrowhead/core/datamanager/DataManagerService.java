@@ -14,7 +14,7 @@ import eu.arrowhead.common.misc.TypeSafeProperties;
 import eu.arrowhead.common.Utility;
 import eu.arrowhead.core.datamanager.ArrowheadSystem;
 import eu.arrowhead.common.exception.ArrowheadException;
-import eu.arrowhead.common.messages.SigMLMessage;
+//import eu.arrowhead.common.messages.SigMLMessage;
 import eu.arrowhead.common.messages.SenMLMessage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +45,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import com.google.gson.Gson;
 
 final class DataManagerService {
   private static final Logger log = Logger.getLogger(DataManagerResource.class.getName());
@@ -226,9 +227,17 @@ final class DataManagerService {
       Connection conn = getConnection();
       int id = macToID(name, conn);
       if (id != -1) {
-	SigMLMessage m = new SigMLMessage();
-	m.setSenML(msg);
-	ret = updateEndpoint(name, m);
+	Statement stmt = conn.createStatement();
+	String sql = "INSERT INTO iot_messages(did, ts, msg, stored) VALUES("+id+", 0, '"+msg.toString()+"',NOW());"; //how to escape "
+	System.out.println(sql);
+	int mid = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+	ResultSet rs = stmt.getGeneratedKeys();
+	rs.next();
+	mid = rs.getInt(1);
+	rs.close();
+	//SigMLMessage m = new SigMLMessage();
+	//m.setSenML(msg);
+	//ret = updateEndpoint(name, m);
 	closeConnection(conn);
       } else {
       }
@@ -237,7 +246,7 @@ final class DataManagerService {
     }
     return ret;
   }
-
+/*
   static boolean updateEndpoint(String name, SigMLMessage msg) {
     boolean ret = false;
     try {
@@ -263,7 +272,7 @@ final class DataManagerService {
 
     return false;
   }
-
+*/
 
   static boolean createEndpoint(String name) {
     try {
@@ -293,7 +302,7 @@ final class DataManagerService {
   }
 
 
-  static SigMLMessage fetchEndpoint(String name, int count, Vector<String> signals) {
+  static Vector<SenMLMessage> fetchEndpoint(String name, int count, Vector<String> signals) {
     try {
       Connection conn = getConnection();
       int id = macToID(name, conn);
@@ -311,19 +320,20 @@ final class DataManagerService {
 	System.out.println(sql);
 	ResultSet rs = stmt.executeQuery(sql);
 
-
-	String sigml = "";
+	String msg= "";
 	Vector<SenMLMessage> messages = new Vector<SenMLMessage>(); 
 	while(rs.next() == true) {
-	  sigml = rs.getString("msg");
-	  SigMLMessage sm = Utility.fromJson(sigml, SigMLMessage.class);
-	  System.out.println("fetch() " + sigml);
-	  for (SenMLMessage m : sm.sml) {
+	  msg = rs.getString("msg");
+	  //SigMLMessage sm = Utility.fromJson(msg, SigMLMessage.class);
+	  Gson gson = new Gson();
+	  SenMLMessage[] smlarr = gson.fromJson(msg, SenMLMessage[].class);
+	  System.out.println("fetch() " + msg);
+	  for (SenMLMessage m : smlarr) {
 
 	  System.out.println("  got " + m.getN());
 	    // check if m contains a value in signals
 	    if (signals.contains(m.getN())) {
-	      m.setT(sm.getBt()+m.getT());
+	      //m.setT(sm.getBt()+m.getT());
 	      messages.add(m);
 	    }
 	  }
@@ -334,7 +344,8 @@ final class DataManagerService {
 
 
 	//recalculate a bt time and update all relative timestamps
-	SigMLMessage ret = new SigMLMessage();
+        messages.firstElement().setBn(name);
+	/*SigMLMessage ret = new SigMLMessage();
 	ret.setBn(name);
 	if (messages.size() != 0) {
 	  ret.setBt(messages.get(0).getT());
@@ -345,10 +356,10 @@ final class DataManagerService {
 	} else 
 	  messages = null;
 
-	ret.setSenML(messages);
+	ret.setSenML(messages);*/
 
 	closeConnection(conn);
-	return ret;
+	return messages;
 
       } else {
       }
@@ -359,29 +370,42 @@ final class DataManagerService {
     return null;
   }
 
-  static SigMLMessage fetchEndpoint(String name, int count) {
+  //static SigMLMessage fetchEndpoint(String name, int count) {
+  static Vector<SenMLMessage> fetchEndpoint(String name, int count) {
     try {
       Connection conn = getConnection();
       int id = macToID(name, conn);
       System.out.println("Got id of: " + id);
       if (id != -1) {
 	Statement stmt = conn.createStatement();
-	String sql = "SELECT * FROM iot_messages WHERE did="+id+" ORDER BY stored DESC LIMIT "+count+";"; //how to escape "
+	String sql = "SELECT * FROM iot_messages WHERE did="+id+" ORDER BY stored DESC LIMIT "+count+";";
 	System.out.println(sql);
 	ResultSet rs = stmt.executeQuery(sql);
 
 
-	String sigml = "";
+	String msg = "";
 	Vector<SenMLMessage> messages = new Vector<SenMLMessage>(); 
 	while(rs.next() == true) {
-	  sigml = rs.getString("msg");
-	  SigMLMessage sm = Utility.fromJson(sigml, SigMLMessage.class);
-	  System.out.println("fetch() " + sigml);
-	  for (SenMLMessage m : sm.sml) {
-	    if (m.getT() == null)
-	      m.setT(sm.getBt()); //System.out.println("bT is NULL!!!" );
+	  msg = rs.getString("msg");
+	  System.out.println(msg);
+	  /*SigMLMessage sm = null;
+	  try {
+	    sm = Utility.fromJson(msg, SigMLMessage.class);
+	  } catch(Exception e){
+	  }
+	  if (sm == null)
+	    System.out.println("sm is null");*/
+	  Gson gson = new Gson();
+	  SenMLMessage[] smlarr = gson.fromJson(msg, SenMLMessage[].class);
+	  if (smlarr == null) 
+	    System.out.println("senml is null");
+
+	  System.out.println("fetch() " + msg);
+	  for (SenMLMessage m : smlarr) {
+	    //if (m.getT() == null)
+	      //m.setT(sm.getBt()); //System.out.println("bT is NULL!!!" );
 	      
-	    m.setT(sm.getBt()+m.getT());
+	    //m.setT(sm.getBt()+m.getT());
 	    messages.add(m);
 	  }
 	}
@@ -390,7 +414,7 @@ final class DataManagerService {
 	stmt.close();
 
 	//recalculate a bt time and update all relative timestamps
-	SigMLMessage ret = new SigMLMessage();
+	/*SigMLMessage ret = new SigMLMessage();
 	ret.setBn(name);
 	ret.setBt(messages.get(0).getT());
 	for (SenMLMessage m : messages) {
@@ -400,9 +424,9 @@ final class DataManagerService {
 
 
 	ret.setSenML(messages);
-
+*/
 	closeConnection(conn);
-	return ret;
+	return messages; //ret;
 
       } else {
       }

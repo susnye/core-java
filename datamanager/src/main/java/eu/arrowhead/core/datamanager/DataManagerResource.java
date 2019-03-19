@@ -12,7 +12,7 @@ package eu.arrowhead.core.datamanager;
 import eu.arrowhead.common.Utility;
 import eu.arrowhead.common.exception.BadPayloadException;
 import eu.arrowhead.common.messages.SenMLMessage;
-import eu.arrowhead.common.messages.SigMLMessage;
+//import eu.arrowhead.common.messages.SigMLMessage;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
@@ -73,7 +73,7 @@ public class DataManagerResource {
 
   @GET
   @Path("historian/{consumerName}")
-  //@Produces("application/sigml+json")
+  @Produces("application/json")
   public Response getData(@PathParam("consumerName") String consumerName, @QueryParam("count") @DefaultValue("1") String count_s, @Context UriInfo uriInfo) {
     int statusCode = 0;
     int count = Integer.parseInt(count_s);
@@ -98,27 +98,56 @@ public class DataManagerResource {
 
 //    System.out.println("getData returned with count: " + );
     //return Response.status(Status.OK).build();
-    SigMLMessage ret = null;
+    /*SigMLMessage ret = null;
+    if(signals == null)
+      ret = DataManagerService.fetchEndpoint(consumerName, count);
+    else
+      ret = DataManagerService.fetchEndpoint(consumerName, count, signals);*/
+    Vector<SenMLMessage> ret = null;
     if(signals == null)
       ret = DataManagerService.fetchEndpoint(consumerName, count);
     else
       ret = DataManagerService.fetchEndpoint(consumerName, count, signals);
 
-    return Response.status(Status.CREATED).entity(ret).build();
+    return Response.status(Status.OK).entity(ret).build();
   }
 
   @PUT
+  @Path("historian/{consumerName}")
+  @Consumes("application/senml+json")
+  public Response PutData(@PathParam("consumerName") String consumerName, @Valid Vector<SenMLMessage> sml) {
+    boolean statusCode = DataManagerService.createEndpoint(consumerName);
+    System.out.println("Got SenML message");
+
+    SenMLMessage head = sml.firstElement();
+    if(head.getBt() == null)
+      head.setBt((double)System.currentTimeMillis() / 1000.0);
+
+    for(SenMLMessage s: sml) {
+      System.out.println("object" + s.toString());
+      if(s.getT() == null && s.getBt() != null)
+	s.setT(0.0);
+    } 
+    statusCode = DataManagerService.updateEndpoint(consumerName, sml);
+    System.out.println("putData returned with status code: " + statusCode);
+
+    String jsonret = "{\"p\": "+ 0 +",\"x\": 0}";
+    return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
+  }
+
+/*  @PUT
   @Path("historian/{consumerName}")
   @Consumes("application/sigml+json")
   public Response PutData(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sml) {
     boolean statusCode = DataManagerService.createEndpoint(consumerName);
 
+    System.out.println("PutData() from " + consumerName);
 
     if (sml.getBn() == null)
       sml.setBn(consumerName);
     if (sml.getBt() == null)
       sml.setBt((double)System.currentTimeMillis() / 1000.0);
-    for (SenMLMessage m : sml.sml) {
+    for (SenMLMessage m : sml.e) {
       if(m.getT() == null)
 	m.setT(0.0);
     }
@@ -129,7 +158,7 @@ public class DataManagerResource {
     String jsonret = "{\"p\": "+sml.getP()+",\"x\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
   }
-
+*/
  
   /*@PUT
   @Path("historian/{consumerName}")
@@ -176,7 +205,7 @@ public class DataManagerResource {
   }
 
 
-  @PUT
+  /*@PUT
   @Path("proxy/{consumerName}")
   @Consumes("application/sigml+json")
   public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid SigMLMessage sml) {
@@ -192,9 +221,9 @@ public class DataManagerResource {
 
     String jsonret = "{\"rc\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
-  }
+  }*/
 
-  /*@PUT
+  @PUT
   @Path("proxy/{consumerName}")
   @Consumes("application/senml+json")
   public Response proxyPut(@PathParam("consumerName") String consumerName, @Valid Vector<SenMLMessage> sml) {
@@ -211,6 +240,6 @@ public class DataManagerResource {
 
     String jsonret = "{\"rc\": 0}";
     return Response.ok(jsonret, MediaType.APPLICATION_JSON).build();
-  }*/
+  }
 
 }
