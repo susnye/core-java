@@ -140,6 +140,7 @@ ah_cert_signed () {
             -storepass ${AH_PASS_CERT} \
         | keytool -gencert \
             -alias ${src_name} \
+            -validity 3650 \
             -keypass ${AH_PASS_CERT} \
             -keystore ${src_file} \
             -storepass ${AH_PASS_CERT} \
