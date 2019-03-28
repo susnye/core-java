@@ -192,6 +192,7 @@ public class DataManagerResource {
 
   @GET
   @Path("proxy/{consumerName}")
+  @Produces("application/json")
   public Response proxyGet(@PathParam("consumerName") String consumerName) {
     int statusCode = 0;
     ProxyElement pe = ProxyService.getEndpoint(consumerName);
