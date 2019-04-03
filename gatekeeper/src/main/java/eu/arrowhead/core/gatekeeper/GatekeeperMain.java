@@ -88,7 +88,6 @@ public class GatekeeperMain implements NeedsCoreSystemService {
   static {
     props = Utility.getProp();
     DatabaseManager.init();
-    // TODO PropertyConfigurator.configure(props);
     USE_GATEWAY = props.getBooleanProperty("use_gateway", false);
     TIMEOUT = props.getIntProperty("timeout", 30000);
   }

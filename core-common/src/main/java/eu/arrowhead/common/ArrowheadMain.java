@@ -68,11 +68,11 @@ public abstract class ArrowheadMain {
 
   {
     DatabaseManager.init();
-    // TODO PropertyConfigurator.configure(props);
   }
 
   protected void init(CoreSystem coreSystem, String[] args, Set<Class<?>> classes, String[] packages) {
     System.out.println("Working directory: " + System.getProperty("user.dir"));
+    log.info("Working directory: " + System.getProperty("user.dir"));
     packages = addSwaggerToPackages(packages);
     this.coreSystem = coreSystem;
 
