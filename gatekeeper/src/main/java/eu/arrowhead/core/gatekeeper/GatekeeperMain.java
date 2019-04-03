@@ -45,8 +45,8 @@ import java.util.TimerTask;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -79,7 +79,7 @@ public class GatekeeperMain implements NeedsCoreSystemService {
   private static String[] GATEWAY_PROVIDER_URI;
 
   private static final TypeSafeProperties props;
-  private static final Logger log = Logger.getLogger(GatekeeperMain.class.getName());
+  private static final Logger log = LogManager.getLogger(GatekeeperMain.class.getName());
 
   private static final String GET_CORE_SYSTEM_URLS_ERROR_MESSAGE = "The Gatekeeper core system has not acquireq the addresses of the "
       + "Authorization, Orchestrator and Gateway core systems yet from the Service Registry. Wait 15 seconds and retry your request";
@@ -87,7 +87,7 @@ public class GatekeeperMain implements NeedsCoreSystemService {
   static {
     props = Utility.getProp();
     DatabaseManager.init();
-    PropertyConfigurator.configure(props);
+    // TODO PropertyConfigurator.configure(props);
     USE_GATEWAY = props.getBooleanProperty("use_gateway", false);
     TIMEOUT = props.getIntProperty("timeout", 30000);
   }

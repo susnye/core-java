@@ -45,7 +45,7 @@
     <jackson.version>2.9.7</jackson.version>
     <javax.servlet.version>4.0.1</javax.servlet.version>
     <jersey.version>2.27</jersey.version>
-    <log4j.version>1.2.17</log4j.version>
+    <log4j.version>2.11.2</log4j.version>
     <mariadb.jdbc.driver>2.3.0</mariadb.jdbc.driver>
     <mysql.jdbc.driver>8.0.13</mysql.jdbc.driver>
     <postgre.jdbc.driver>42.2.5</postgre.jdbc.driver>
@@ -108,8 +108,8 @@
       </dependency>
 
       <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
         <version>${log4j.version}</version>
       </dependency>
 

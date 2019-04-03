@@ -254,7 +254,7 @@ log4j.rootLogger=INFO, DB, FILE
 
 # Database related config
 # Define the DB appender
-log4j.appender.DB=org.apache.log4j.jdbc.JDBCAppender
+log4j.appender.DB=org.apache.logging.log4j.jdbc.JDBCAppender
 # Set Database URL
 log4j.appender.DB.URL=jdbc:mysql://127.0.0.1:3306/arrowhead
 # Set database user name and password
@@ -263,13 +263,13 @@ log4j.appender.DB.password=${AH_PASS_DB}
 # Set the SQL statement to be executed.
 log4j.appender.DB.sql=INSERT INTO logs(id, date, origin, level, message) VALUES(DEFAULT,'%d{yyyy-MM-dd HH:mm:ss}','%C','%p','%m')
 # Define the layout for file appender
-log4j.appender.DB.layout=org.apache.log4j.PatternLayout
+log4j.appender.DB.layout=org.apache.logging.log4j.PatternLayout
 # Disable Hibernate verbose logging
 log4j.logger.org.hibernate=fatal
 
 # File related config
 # Define the file appender
-log4j.appender.FILE=org.apache.log4j.FileAppender
+log4j.appender.FILE=org.apache.logging.log4j.FileAppender
 # Set the name of the file
 log4j.appender.FILE.File=/var/log/arrowhead/${system_name}.log
 # Set the immediate flush to true (default)
@@ -279,7 +279,7 @@ log4j.appender.FILE.Threshold=debug
 # Set the append to false, overwrite
 log4j.appender.FILE.Append=false
 # Define the layout for file appender
-log4j.appender.FILE.layout=org.apache.log4j.PatternLayout
+log4j.appender.FILE.layout=org.apache.logging.log4j.PatternLayout
 log4j.appender.FILE.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss}, %C, %p, %m%n
 EOF
         chown root:arrowhead ${file}

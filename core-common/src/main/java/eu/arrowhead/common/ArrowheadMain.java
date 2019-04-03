@@ -34,8 +34,8 @@ import java.util.Set;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -63,11 +63,11 @@ public abstract class ArrowheadMain {
   private String base64PublicKey;
   private int registeringTries = 1;
 
-  private static final Logger log = Logger.getLogger(ArrowheadMain.class.getName());
+  private static final Logger log = LogManager.getLogger(ArrowheadMain.class.getName());
 
   {
     DatabaseManager.init();
-    PropertyConfigurator.configure(props);
+    // TODO PropertyConfigurator.configure(props);
   }
 
   protected void init(CoreSystem coreSystem, String[] args, Set<Class<?>> classes, String[] packages) {
