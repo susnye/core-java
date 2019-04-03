@@ -43,6 +43,7 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator.GenericStoreException;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public abstract class ArrowheadMain {
@@ -151,6 +152,11 @@ public abstract class ArrowheadMain {
     final ResourceConfig config = new ResourceConfig();
     config.registerClasses(classes);
     config.packages(packages);
+    if (Boolean.valueOf(System.getProperty("debug_mode", "false")))
+      config.register(new LoggingFeature(
+          org.apache.logging.log4j.jul.LogManager.getLogManager().getLogger(this.getClass().getName()),
+          LoggingFeature.Verbosity.PAYLOAD_ANY
+      ));
 
     URI uri = UriBuilder.fromUri(baseUri).build();
     try {
@@ -169,6 +175,11 @@ public abstract class ArrowheadMain {
     final ResourceConfig config = new ResourceConfig();
     config.registerClasses(classes);
     config.packages(packages);
+    if (Boolean.valueOf(System.getProperty("debug_mode", "false")))
+      config.register(new LoggingFeature(
+          org.apache.logging.log4j.jul.LogManager.getLogManager().getLogger(this.getClass().getName()),
+          LoggingFeature.Verbosity.PAYLOAD_ANY
+      ));
 
     String keystorePath = props.getProperty("keystore");
     String keystorePass = props.getProperty("keystorepass");

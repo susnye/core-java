@@ -54,6 +54,7 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator.GenericStoreException;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class GatekeeperMain implements NeedsCoreSystemService {
@@ -215,6 +216,11 @@ public class GatekeeperMain implements NeedsCoreSystemService {
     }
     config.packages("eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter", "eu.arrowhead.core.gatekeeper.filter");
     config.packages("io.swagger.v3.jaxrs2.integration.resources");
+    if (Boolean.valueOf(System.getProperty("debug_mode", "false")))
+      config.register(new LoggingFeature(
+          org.apache.logging.log4j.jul.LogManager.getLogManager().getLogger(GatekeeperMain.class.getName()),
+          LoggingFeature.Verbosity.PAYLOAD_ANY
+      ));
 
     URI uri = UriBuilder.fromUri(url).build();
     try {
@@ -244,6 +250,11 @@ public class GatekeeperMain implements NeedsCoreSystemService {
     }
     config.packages("eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter", "eu.arrowhead.core.gatekeeper.filter");
     config.packages("io.swagger.v3.jaxrs2.integration.resources");
+    if (Boolean.valueOf(System.getProperty("debug_mode", "false")))
+      config.register(new LoggingFeature(
+          org.apache.logging.log4j.jul.LogManager.getLogManager().getLogger(GatekeeperMain.class.getName()),
+          LoggingFeature.Verbosity.PAYLOAD_ANY
+      ));
 
     String gatekeeperKeystorePath = props.getProperty("gatekeeper_keystore");
     String gatekeeperKeystorePass = props.getProperty("gatekeeper_keystore_pass");
