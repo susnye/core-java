@@ -29,6 +29,8 @@ public class Plans {
     this.name = name;
   }
 
+  public Plans() {}
+
   public Plans(String name) {
     this.name = name;
   }
