@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import eu.arrowhead.common.json.constraint.LDTInFuture;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -70,8 +71,10 @@ public class ServiceRegistryEntry {
 
   private Integer version = 1;
 
+  @JsonIgnore
   @ManyToMany(mappedBy = "usedServices")
-  private Set<PlanSteps> plans;
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Set<PlanSteps> plans = new HashSet<>();
 
   //Takes the providedService metadata map
   @JsonIgnore
@@ -162,6 +165,14 @@ public class ServiceRegistryEntry {
 
   public void setVersion(Integer version) {
     this.version = version;
+  }
+
+  public Set<PlanSteps> getPlans() {
+    return plans;
+  }
+
+  public void setPlans(Set<PlanSteps> plans) {
+    this.plans = plans;
   }
 
   @Override

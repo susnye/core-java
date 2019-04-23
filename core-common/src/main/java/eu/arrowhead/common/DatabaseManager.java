@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
@@ -224,6 +225,27 @@ public class DatabaseManager {
     return retrievedList;
   }
 
+  public <T> List<T> query(Class<T> queryClass, Consumer<Criteria> criteriaConsumer) {
+    List<T> retrievedList;
+    Transaction transaction = null;
+
+    try (Session session = getSessionFactory().openSession()) {
+      transaction = session.beginTransaction();
+      //NOTE session.createCriteria will be removed in Hibernate 6
+      //noinspection deprecation
+      Criteria criteria = session.createCriteria(queryClass);
+      criteriaConsumer.accept(criteria);
+      retrievedList = (List<T>) criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
+      transaction.commit();
+    } catch (Exception e) {
+      if (transaction != null) {
+        transaction.rollback();
+      }
+      throw e;
+    }
+
+    return retrievedList;
+  }
 
   @SafeVarargs
   public final <T> T save(T... objects) {

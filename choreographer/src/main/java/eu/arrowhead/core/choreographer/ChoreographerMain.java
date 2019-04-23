@@ -9,6 +9,7 @@ package eu.arrowhead.core.choreographer;
 
 import eu.arrowhead.common.ArrowheadMain;
 import eu.arrowhead.common.misc.CoreSystem;
+import eu.arrowhead.core.choreographer.api.ChoreographerPlanApi;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +18,7 @@ public class ChoreographerMain extends ArrowheadMain {
 
   private ChoreographerMain(String[] args) {
     Set<Class<?>> classes = new HashSet<>(Collections.singleton(ChoreographerResource.class));
+    classes.add(ChoreographerPlanApi.class);
     String[] packages = {"eu.arrowhead.common.exception", "eu.arrowhead.common.json", "eu.arrowhead.common.filter"};
     init(CoreSystem.CHOREOGRAPHER, args, classes, packages);
     listenForInput();

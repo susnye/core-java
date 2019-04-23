@@ -1,7 +1,12 @@
 package eu.arrowhead.common.database;
 
+import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -17,34 +22,38 @@ import org.hibernate.annotations.OnDeleteAction;
 public class PlanSteps {
 
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   private String name;
 
-  @Valid
+  //@Valid
   @JoinColumn(name = "plan_id", nullable = false)
   @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
-  private Plans planId;
+  private Plans plan;
 
-  @ManyToMany
+  @ManyToMany (cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
   @JoinTable(
       name = "plan_step_service",
       joinColumns = @JoinColumn(name = "plan_step_id"),
       inverseJoinColumns = @JoinColumn(name = "service_id")
   )
-  private Set<ServiceRegistryEntry> usedServices;
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Set<ServiceRegistryEntry> usedServices = new HashSet<>();
 
-  @ManyToMany
+  @ManyToMany (cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
   @JoinTable(
       name = "next_steps",
       joinColumns = @JoinColumn(name = "plan_step_id"),
       inverseJoinColumns = @JoinColumn(name = "next_step_id")
   )
-  private Set<PlanSteps> nextSteps;
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Set<PlanSteps> nextSteps = new HashSet<>();
 
   @ManyToMany(mappedBy = "nextSteps")
-  private Set<PlanSteps> planStep;
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Set<PlanSteps> planStep = new HashSet<>();
 
   public Long getId() {
     return id;
@@ -62,18 +71,59 @@ public class PlanSteps {
     this.name = name;
   }
 
-  public Plans getPlanId() {
-    return planId;
+  public Plans getPlan() {
+    return plan;
   }
 
-  public void setPlanId(Plans planId) {
-    this.planId = planId;
+  public void setPlan(Plans planId) {
+    this.plan = planId;
+  }
+
+  public Set<ServiceRegistryEntry> getUsedServices() {
+    return usedServices;
+  }
+
+  public void setUsedServices(Set<ServiceRegistryEntry> usedServices) {
+    this.usedServices = usedServices;
+  }
+
+  public Set<PlanSteps> getNextSteps() {
+    return nextSteps;
+  }
+
+  public void setNextSteps(Set<PlanSteps> nextSteps) {
+    this.nextSteps = nextSteps;
+  }
+
+  public Set<PlanSteps> getPlanStep() {
+    return planStep;
+  }
+
+  public void setPlanStep(Set<PlanSteps> planStep) {
+    this.planStep = planStep;
   }
 
   public PlanSteps() {}
 
-  public PlanSteps(String name, Plans planId) {
+  /**
+   * Creating a step of a plan which needs given services.
+   * @param name Name of the step in the plan.
+   * @param usedServices The services the step needs for operation.
+   */
+  public PlanSteps(String name, Set<ServiceRegistryEntry> usedServices) {
     this.name = name;
-    this.planId = planId;
+    this.usedServices = usedServices;
+  }
+
+  /**
+   * Creating a step of a plan with given services and given following steps (which follow the current step).
+   * @param name Name of the step in the plan.
+   * @param usedServices The services the step needs for operation.
+   * @param nextSteps The list of the steps following the current one.
+   */
+  public PlanSteps(String name, Set<ServiceRegistryEntry> usedServices, Set<PlanSteps> nextSteps) {
+    this.name = name;
+    this.usedServices = usedServices;
+    this.nextSteps = nextSteps;
   }
 }

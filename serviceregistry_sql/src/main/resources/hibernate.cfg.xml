@@ -34,5 +34,7 @@
     <mapping class="eu.arrowhead.common.database.ArrowheadSystem"/>
     <mapping class="eu.arrowhead.common.database.ArrowheadService"/>
     <mapping class="eu.arrowhead.common.database.ServiceRegistryEntry"/>
+    <mapping class="eu.arrowhead.common.database.Plans"/>
+    <mapping class="eu.arrowhead.common.database.PlanSteps"/>
   </session-factory>
 </hibernate-configuration>
