@@ -338,7 +338,7 @@ CREATE TABLE `plans` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -355,7 +355,7 @@ CREATE TABLE `plan_steps` (
   PRIMARY KEY (`id`),
   KEY `FKaxgcwgyga50fsi9tyupu19xp` (`plan_id`),
   CONSTRAINT `FKaxgcwgyga50fsi9tyupu19xp` FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -372,7 +372,7 @@ CREATE TABLE `plan_step_service` (
   KEY `FK62jllkni532a5e757u1x7jjnw` (`service_id`),
   CONSTRAINT `FK62jllkni532a5e757u1x7jjnw` FOREIGN KEY (`service_id`) REFERENCES `service_registry` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FKfvq70kdu6sibc1i3acutbnqp2` FOREIGN KEY (`plan_step_id`) REFERENCES `plan_steps` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -389,7 +389,7 @@ CREATE TABLE `next_steps` (
   KEY `FKkc9vycv0onpa957jdey7f7rdm` (`next_step_id`),
   CONSTRAINT `FK5x0k6luexx1mmtci9iqmangig` FOREIGN KEY (`plan_step_id`) REFERENCES `plan_steps` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FKkc9vycv0onpa957jdey7f7rdm` FOREIGN KEY (`next_step_id`) REFERENCES `plan_steps` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

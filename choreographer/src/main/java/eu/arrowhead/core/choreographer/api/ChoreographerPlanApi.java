@@ -95,6 +95,42 @@ public class ChoreographerPlanApi {
   }
 
   @GET
+  public Response getAllPlans() {
+    List<Plans> planEntities = dm.getAll(Plans.class, null);
+
+    if(planEntities.isEmpty()) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+
+    List<PlanDto> plans = new ArrayList<>();
+
+    for (Plans planEntity : planEntities) {
+       PlanDto plan = new PlanDto();
+
+       plan.setName(planEntity.getName());
+       List<PlanStepDto> steps = new ArrayList<>();
+
+       for(PlanSteps stepEntity : planEntity.getPlanSteps()) {
+         PlanStepDto step = new PlanStepDto();
+
+         step.setName(stepEntity.getName());
+         if(!stepEntity.getNextSteps().isEmpty()) {
+           step.setNextSteps(stepEntity.getNextSteps().stream().map(PlanSteps::getName).collect(Collectors.toList()));
+         }
+         step.setServices(stepEntity.getUsedServices().stream().map(x -> x.getProvidedService().getServiceDefinition()).collect(
+             Collectors.toList()));
+
+         steps.add(step);
+         plan.setSteps(steps);
+       }
+
+       plans.add(plan);
+    }
+
+    return Response.ok(plans).build();
+  }
+
+  @GET
   @Path("{id}")
   public Response getPlan(@PathParam("id") long id) {
     Optional<Plans> planEntityOpt =  dm.get(Plans.class, id);
