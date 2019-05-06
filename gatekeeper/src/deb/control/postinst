@@ -56,7 +56,7 @@ case "$1" in
 # Database connection (mandatory)
 db_user=arrowhead
 db_password=${AH_PASS_DB}
-db_address=jdbc:mysql://127.0.0.1:3306/arrowhead
+db_address=jdbc:mysql://127.0.0.1:3306/arrowhead?serverTimezone=UTC
 
 # Certificate related paths and passwords (mandatory in secure mode)
 gatekeeper_keystore=${SYSTEM_DIR}/${SYSTEM_NAME}.p12
@@ -119,7 +119,7 @@ appender.file.immediateFlush=true
 appender.db.type=JDBC
 appender.db.name=DB
 appender.db.connectionSource.type=DriverManager
-appender.db.connectionSource.connectionString=jdbc:mysql://127.0.0.1:3306/arrowhead
+appender.db.connectionSource.connectionString=jdbc:mysql://127.0.0.1:3306/arrowhead?serverTimezone=UTC
 appender.db.connectionSource.username=arrowhead
 appender.db.connectionSource.password=${AH_PASS_DB}
 appender.db.tableName=logs

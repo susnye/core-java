@@ -50,7 +50,7 @@ public class DatabaseManager {
         dbUser = prop.getProperty("db_user");
         dbPassword = prop.getProperty("db_password");
       } else {
-        dbAddress = prop.getProperty("log4j.appender.DB.URL", "jdbc:mysql://127.0.0.1:3306/log");
+        dbAddress = prop.getProperty("log4j.appender.DB.URL", "jdbc:mysql://127.0.0.1:3306/log?serverTimezone=UTC");
         dbUser = prop.getProperty("log4j.appender.DB.user", "root");
         dbPassword = prop.getProperty("log4j.appender.DB.password", "root");
       }
