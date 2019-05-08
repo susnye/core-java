@@ -366,6 +366,7 @@ DROP TABLE IF EXISTS `plan_step_service`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `plan_step_service` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `plan_step_id` bigint(20) NOT NULL,
   `service_id` bigint(20) NOT NULL,
   PRIMARY KEY (`plan_step_id`,`service_id`),
@@ -383,6 +384,7 @@ DROP TABLE IF EXISTS `next_steps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `next_steps` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `plan_step_id` bigint(20) NOT NULL,
   `next_step_id` bigint(20) NOT NULL,
   PRIMARY KEY (`plan_step_id`,`next_step_id`),

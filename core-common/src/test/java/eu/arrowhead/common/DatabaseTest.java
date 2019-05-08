@@ -21,6 +21,7 @@ public class DatabaseTest {
     //System.out.println(dm.get(Plans.class, 1));
   }
 
+  @Ignore
   @Test
   public void addRowsToPlanSteps() {
     int rand = new Random().nextInt();

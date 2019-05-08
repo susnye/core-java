@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class PlanStepDto {
-  @JsonProperty("Name")
+  @JsonProperty("name")
   private String name;
 
-  @JsonProperty("NextSteps")
+  @JsonProperty("nextSteps")
   private List<String> nextSteps;
 
-  @JsonProperty("Services")
+  @JsonProperty("services")
   private List<String> services;
 
   public String getName() {

@@ -5,7 +5,8 @@ import eu.arrowhead.common.database.PlanSteps;
 import eu.arrowhead.common.database.Plans;
 import eu.arrowhead.common.database.ServiceRegistryEntry;
 import eu.arrowhead.core.choreographer.ChoreographerResource;
-import eu.arrowhead.core.choreographer.dto.PlanDto;
+import eu.arrowhead.core.choreographer.dto.PlanDtoRequest;
+import eu.arrowhead.core.choreographer.dto.PlanDtoResponse;
 import eu.arrowhead.core.choreographer.dto.PlanStepDto;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class ChoreographerPlanApi {
   private static final DatabaseManager dm = DatabaseManager.getInstance();
 
   @POST
-  public Response addPlan(PlanDto request) {
+  public Response addPlan(PlanDtoRequest request) {
 
     Plans planEntity = new Plans();
     planEntity.setName(request.getName());
@@ -102,12 +103,14 @@ public class ChoreographerPlanApi {
       return Response.status(Status.NOT_FOUND).build();
     }
 
-    List<PlanDto> plans = new ArrayList<>();
+    List<PlanDtoResponse> plans = new ArrayList<>();
 
     for (Plans planEntity : planEntities) {
-       PlanDto plan = new PlanDto();
+      PlanDtoResponse plan = new PlanDtoResponse();
 
        plan.setName(planEntity.getName());
+       plan.setId(planEntity.getId());
+
        List<PlanStepDto> steps = new ArrayList<>();
 
        for(PlanSteps stepEntity : planEntity.getPlanSteps()) {
@@ -141,7 +144,7 @@ public class ChoreographerPlanApi {
 
     Plans planEntity = planEntityOpt.get();
 
-    PlanDto response = new PlanDto();
+    PlanDtoRequest response = new PlanDtoRequest();
 
     response.setName(planEntity.getName());
     List<PlanStepDto> steps = new ArrayList<>();
