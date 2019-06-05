@@ -121,7 +121,7 @@ public class OnboardingService {
 
     public ServiceEndpoint[] getEndpoints() throws URISyntaxException {
 
-        log.info("getting endpoints...");
+        log.info("Getting publish service endpoints of device registry and system registry...");
 
         final String orchServiceURI = CoreSystemService.ORCH_SERVICE.getServiceURI();
         final String orcServiceDef = CoreSystemService.ORCH_SERVICE.getServiceDef();
