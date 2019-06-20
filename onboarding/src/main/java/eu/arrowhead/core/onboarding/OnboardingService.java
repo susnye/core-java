@@ -147,34 +147,50 @@ public class OnboardingService {
       Interfaces: supported message formats (e.g. JSON, XML, JSON-SenML), a potential provider has to have at least 1 match,
       so the communication between consumer and provider can be facilitated.
      */
-        ArrowheadService servDevReg = new ArrowheadService(Utility.createSD(CoreSystemService.DEVICE_REG_SERVICE.getServiceDef(), true), Collections
+        ArrowheadService servRegisterDevice = new ArrowheadService(Utility.createSD(CoreSystemService.DEVICE_REG_SERVICE.getServiceDef(), true), Collections
+            .singleton("HTTP-SECURE-JSON"), metadata);
+        ArrowheadService servUnregisterDevice =
+            new ArrowheadService(Utility.createSD(CoreSystemService.DEVICE_UNREG_SERVICE.getServiceDef(), true),
+                                 Collections
             .singleton("HTTP-SECURE-JSON"), metadata);
 
-        ArrowheadService servSysReg =
+        ArrowheadService servRegisterSystem =
             new ArrowheadService(Utility.createSD(CoreSystemService.SYS_REG_SERVICE.getServiceDef(), true), Collections
             .singleton("HTTP-SECURE-JSON"), metadata);
+        ArrowheadService servUnregisterSystem =
+            new ArrowheadService(Utility.createSD(CoreSystemService.SYS_UNREG_SERVICE.getServiceDef(), true),
+                                 Collections
+                .singleton("HTTP-SECURE-JSON"), metadata);
 
         //Some of the orchestrationFlags the consumer can use, to influence the orchestration process
 
         Map<String, Boolean> orchestrationFlags = new HashMap<>();
         orchestrationFlags.put("overrideStore", true);
 
-        final ServiceRequestForm devRegSRF = compileSRF(servDevReg, orchestrationFlags);
-        final ServiceRequestForm sysRegSRF = compileSRF(servSysReg, orchestrationFlags);
+        final ServiceRequestForm registerDeviceSRF = compileSRF(servRegisterDevice, orchestrationFlags);
+        final ServiceRequestForm unregisterDeviceSRF = compileSRF(servUnregisterDevice, orchestrationFlags);
+        final ServiceRequestForm registerSystemSRF = compileSRF(servRegisterSystem, orchestrationFlags);
+        final ServiceRequestForm unregisterSystemSRF = compileSRF(servUnregisterSystem, orchestrationFlags);
 
         log.info("sending orchestration requests (devreg and sysreg services)...");
 
-        String devregServiceURI = sendOrchestrationRequest(orchServiceFullURI, devRegSRF);
-        String sysregServiceURI = sendOrchestrationRequest(orchServiceFullURI, sysRegSRF);
+        String registerDeviceServiceURI = sendOrchestrationRequest(orchServiceFullURI, registerDeviceSRF);
+        String unregisterDeviceServiceURI = sendOrchestrationRequest(orchServiceFullURI, unregisterDeviceSRF);
+        String registerSystemServiceURI = sendOrchestrationRequest(orchServiceFullURI, registerSystemSRF);
+        String unregisterSystemServiceURI = sendOrchestrationRequest(orchServiceFullURI, unregisterSystemSRF);
 
 
-        log.info(String.format("dev reg service endpoint: %s", devregServiceURI));
-        log.info(String.format("sys reg service endpoint: %s", sysregServiceURI));
+        log.info(String.format("Register device service endpoint: %s", registerDeviceServiceURI));
+        log.info(String.format("Unregister device service endpoint: %s", unregisterDeviceServiceURI));
+        log.info(String.format("Register system endpoint: %s", registerSystemServiceURI));
+        log.info(String.format("Unregister system endpoint: %s", unregisterSystemServiceURI));
 
         final List<ServiceEndpoint> endpoints = new ArrayList<>();
 
-        endpoints.add(new ServiceEndpoint(CoreSystem.DEVICE_REGISTRY, new URI(devregServiceURI)));
-        endpoints.add(new ServiceEndpoint(CoreSystem.SYSTEM_REGISTRY, new URI(sysregServiceURI)));
+        endpoints.add(new ServiceEndpoint(CoreSystem.DEVICE_REGISTRY, new URI(registerDeviceServiceURI)));
+        endpoints.add(new ServiceEndpoint(CoreSystem.SYSTEM_REGISTRY, new URI(registerSystemServiceURI)));
+        endpoints.add(new ServiceEndpoint(CoreSystem.DEVICE_REGISTRY, new URI(unregisterDeviceServiceURI)));
+        endpoints.add(new ServiceEndpoint(CoreSystem.SYSTEM_REGISTRY, new URI(unregisterSystemServiceURI)));
 
         return endpoints.toArray(new ServiceEndpoint[0]);
 
