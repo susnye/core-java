@@ -14,6 +14,7 @@ import eu.arrowhead.common.database.SystemRegistryEntry;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.DataNotFoundException;
 import eu.arrowhead.common.misc.registry_interfaces.RegistryService;
+import java.util.HashMap;
 import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
 import javax.ws.rs.core.Response.Status;
@@ -47,6 +48,8 @@ public class SystemRegistryService implements RegistryService<SystemRegistryEntr
 		final SystemRegistryEntry returnValue;
 
 		try {
+			//WARNING: how should the consumer know about arrowhead system id, to be provided as providedSystem in
+			// SystemRegistryEntity?? Without id provided system cannot be resolved!
 			entity.setProvidedSystem(resolve(entity.getProvidedSystem()));
 			entity.setProvider(resolve(entity.getProvider()));
 			returnValue = databaseManager.save(entity);
@@ -76,11 +79,40 @@ public class SystemRegistryService implements RegistryService<SystemRegistryEntr
 	protected ArrowheadSystem resolve(final ArrowheadSystem providedSystem) {
 		final ArrowheadSystem returnValue;
 
+
 		if (providedSystem.getId() != null) {
 			Optional<ArrowheadSystem> optional = databaseManager.get(ArrowheadSystem.class, providedSystem.getId());
 			returnValue = optional.orElseThrow(() -> new ArrowheadException("ProvidedSystem does not exist", Status.BAD_REQUEST.getStatusCode()));
 		} else {
-			returnValue = databaseManager.save(providedSystem);
+
+			//TODO: system name of SystemRegistry entry should be unique? Then this code below is not necessary...
+			if(providedSystem.getSystemName() != null){
+				System.out.println("System registry entry, provider system name: "+providedSystem.getSystemName());
+
+				HashMap<String, Object> restrictionMap = new HashMap<>();
+				restrictionMap.put("systemName", providedSystem.getSystemName());
+				final ArrowheadSystem ahSys = databaseManager.get(ArrowheadSystem.class, restrictionMap);
+
+				if(ahSys == null){
+					System.out.println("System registry entry, provider system not found in arrowhead system store, "
+										   + "saving as new arrowhead system");
+					returnValue = databaseManager.save(providedSystem);
+				}
+				else{
+					System.out.println("System registry entry, provider system found in arrowhead system store");
+					returnValue = ahSys;
+				}
+
+			}
+			else{
+				System.out.println("System registry entry, provider system not found in arrowhead system store, "
+									   + "saving as new arrowhead system");
+
+				returnValue = databaseManager.save(providedSystem);
+			}
+
+
+//			returnValue = databaseManager.save(providedSystem);
 		}
 
 		return returnValue;
@@ -93,7 +125,30 @@ public class SystemRegistryService implements RegistryService<SystemRegistryEntr
 			Optional<ArrowheadDevice> optional = databaseManager.get(ArrowheadDevice.class, provider.getId());
 			returnValue = optional.orElseThrow(() -> new ArrowheadException("Provider does not exist", Status.BAD_REQUEST.getStatusCode()));
 		} else {
-			returnValue = databaseManager.save(provider);
+			//TODO: device name of ArrowheadDevice should be unique? Then this code below is not necessary...
+			if(provider.getDeviceName() != null){
+				System.out.println("Device registry entry, provider device name: "+provider.getDeviceName());
+				HashMap<String, Object> restrictionMap = new HashMap<>();
+
+				restrictionMap.put("deviceName", provider.getDeviceName());
+				final ArrowheadDevice ahDev = databaseManager.get(ArrowheadDevice.class, restrictionMap);
+
+				if(ahDev == null){
+					System.out.println("Device registry entry, provider device not found in arrowhead device store, "
+										   + "saving as new arrowhead device");
+					returnValue = databaseManager.save(provider);
+				}
+				else{
+					System.out.println("Device registry entry, provider device found in arrowhead device store");
+					returnValue = ahDev;
+				}
+			}
+			else{
+				System.out.println("Device registry entry, provider device not found in arrowhead device store, "
+									   + "saving as new arrowhead device");
+
+				returnValue = databaseManager.save(provider);
+			}
 		}
 
 		return returnValue;
